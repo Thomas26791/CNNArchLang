@@ -1,0 +1,97 @@
+package de.monticore.lang.montiarc;
+
+grammar CNNArch extends de.monticore.common.Common {
+
+    Architecture = "architecture"
+                     name:Name "("
+                     inputPort:Name& ")" "{"
+                     (MainLayer)+
+                     outputPort:Name& "="
+                     OutputLayer
+                     "}";
+
+    interface Layer;
+    ast Layer = method ASTMethod getMethod(){};
+    interface Method;
+    interface MainLayerMethod extends Method;
+    interface OutputLayerMethod extends Method;
+
+    interface ArgumentAssignment;
+    ast ArgumentAssignment = method public Enum getLhs(){}
+                             method public ASTRhs getRhs(){};
+
+    Rhs = stringVal:String
+        | intVal:Num_Int
+        | doubleVal:Num_Double
+        | intTuple:IntTuple
+        | refOrBool:Name;
+    IntTuple = "(" values:Num_Int "," values:(Num_Int || ",")+ ")";
+
+
+
+    MainLayer implements Layer = method:MainLayerMethod;
+    OutputLayer implements Layer = method:OutputLayerMethod;
+
+
+
+    ConvolutionMethod implements MainLayerMethod = name:"Convolution" "(" arguments:(ConvolutionArgumentAssignment || ",")* ")";
+    ConvolutionArgumentAssignment implements ArgumentAssignment = lhs:ConvolutionArgument "=" rhs:Rhs;
+    enum ConvolutionArgument = KERNEL:"kernel"               //required
+                             | NUMFILTER:"num_filter"        //required
+                             | STRIDE:"stride"
+                             | PAD:"pad"
+                             | NOBIAS:"no_bias";
+
+    FullyConnectedMethod implements MainLayerMethod = name:"FullyConnected" "(" arguments:(FullyConnectedArgumentAssignment || ",")* ")";
+    FullyConnectedArgumentAssignment implements ArgumentAssignment = lhs:FullyConnectedArgument "=" rhs:Rhs;
+    enum FullyConnectedArgument = NUMHIDDEN:"num_hidden"     //required
+                                | NOBIAS:"no_bias";
+
+    ActivationMethod implements MainLayerMethod = name:"Activation" "(" arguments:(ActivationArgumentAssignment || ",")* ")";
+    ActivationArgumentAssignment implements ArgumentAssignment = lhs:ActivationArgument "=" rhs:Rhs;
+    enum ActivationArgument = ACTTYPE:"act_type";            //required
+
+    PoolingMethod implements MainLayerMethod = name:"Pooling" "(" arguments:(PoolingArgumentAssignment || ",")* ")";
+    PoolingArgumentAssignment implements ArgumentAssignment = lhs:PoolingArgument "=" rhs:Rhs;
+    enum PoolingArgument = KERNEL:"kernel"                   //required
+                         | POOLTYPE:"pool_type"              //required
+                         | POOLINGCONVENTION:"pooling_convention"
+                         | STRIDE:"stride"
+                         | PAD:"pad";
+
+    DropoutMethod implements MainLayerMethod = name:"Dropout" "(" arguments:(DropoutArgumentAssignment || ",")* ")";
+    DropoutArgumentAssignment implements ArgumentAssignment = lhs:DropoutArgument "=" rhs:Rhs;
+    enum DropoutArgument = P:"p"
+                         | MODE:"mode";
+
+    LRNMethod implements MainLayerMethod = name:"LRN" "(" arguments:(LRNArgumentAssignment || ",")* ")";
+    LRNArgumentAssignment implements ArgumentAssignment = lhs:LRNArgument "=" rhs:Rhs;
+    enum LRNArgument = ALPHA:"alpha"
+                     | BETA:"beta"
+                     | KNORM:"knorm"
+                     | NSIZE:"nsize";                         //required
+
+    FlattenMethod implements MainLayerMethod = name:"Flatten" "(" ")";
+
+
+
+
+    StandardOutputLayerMethod implements OutputLayerMethod = (optName:"SoftmaxOutput"
+                                                           | optName:"MAERegressionOutput"
+                                                           | optName:"LinearRegressionOutput"
+                                                           | optName:"LogisticRegressionOutput") "("
+                                                             arguments:(StandardOutputArgumentAssignment || ",")* ")";
+    ast StandardOutputLayerMethod = method public String getName(){
+                                          return optName.get();
+                                      };
+    StandardOutputArgumentAssignment implements ArgumentAssignment = lhs:StandardOutputArgument "=" rhs:Rhs;
+    enum StandardOutputArgument = GRADSCALE:"grad_scale";
+
+
+    SVMOutputLayerMethod implements OutputLayerMethod = name:"SVMOutput" "("
+                                                            arguments:(SVMOutputArgumentAssignment || ",")* ")";
+    SVMOutputArgumentAssignment implements ArgumentAssignment = lhs:SVMOutputArgument "=" rhs:Rhs;
+    enum SVMOutputArgument = MARGIN:"margin"
+                           | REGULARIZATIONCOEFFICIENT:"regularization_coefficient"
+                           | USELINEAR:"use_linear";
+}
