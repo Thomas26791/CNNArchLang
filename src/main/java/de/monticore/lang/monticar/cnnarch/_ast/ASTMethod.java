@@ -32,8 +32,8 @@ public interface ASTMethod extends ASTMethodTOP {
         return new LinkedList<>();
     }
 
-    default ASTRhs get(String lhsName) {
-        ASTRhs rhs = null;
+    default ASTArgumentRhs get(String lhsName) {
+        ASTArgumentRhs rhs = null;
         lhsName = lhsName.replace("_", "");
         for (ASTArgumentAssignment assignment : getAssignments()) {
             String assignmentLhs = assignment.getLhs().name();

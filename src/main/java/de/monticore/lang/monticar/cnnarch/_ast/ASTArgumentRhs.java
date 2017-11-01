@@ -22,14 +22,14 @@ package de.monticore.lang.monticar.cnnarch._ast;
 
 import java.util.Optional;
 
-public class ASTRhs extends ASTRhsTOP{
+public class ASTArgumentRhs extends ASTArgumentRhsTOP{
 
     private boolean containsBoolean;
 
-    public ASTRhs() {
+    public ASTArgumentRhs() {
     }
 
-    public ASTRhs(String stringVal, String intVal, String doubleVal, ASTIntTuple intTuple, String refOrBool) {
+    public ASTArgumentRhs(String stringVal, String intVal, String doubleVal, ASTIntTuple intTuple, String refOrBool) {
         super(stringVal, intVal, doubleVal, intTuple, refOrBool);
     }
 

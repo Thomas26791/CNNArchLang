@@ -2,13 +2,16 @@ package de.monticore.lang.monticar;
 
 grammar CNNArch extends de.monticore.common.Common {
 
+    CNNArchCompilationUnit = Architecture;
+
     symbol scope Architecture = "architecture"
-                                 name:Name& "("
-                                 inputPort:Name& ")" "{"
+                                 Name& "{"
                                  (MainLayer)+
-                                 outputPort:Name& "="
                                  OutputLayer
                                  "}";
+
+    //InputPort = Name "-->";
+    //OutputPort = "-->" Name;
 
     interface Layer;
     ast Layer = method ASTMethod getMethod(){};
@@ -18,13 +21,13 @@ grammar CNNArch extends de.monticore.common.Common {
 
     interface ArgumentAssignment;
     ast ArgumentAssignment = method public Enum getLhs(){}
-                             method public ASTRhs getRhs(){};
+                             method public ASTArgumentRhs getRhs(){};
 
-    Rhs = stringVal:String
-        | intVal:Num_Int
-        | doubleVal:Num_Double
-        | intTuple:IntTuple
-        | refOrBool:Name;
+    ArgumentRhs = stringVal:String
+                | intVal:Num_Int
+                | doubleVal:Num_Double
+                | intTuple:IntTuple
+                | refOrBool:Name;
     IntTuple = "(" values:Num_Int "," values:(Num_Int || ",")+ ")";
 
 
@@ -35,7 +38,7 @@ grammar CNNArch extends de.monticore.common.Common {
 
 
     ConvolutionMethod implements MainLayerMethod = name:"Convolution" "(" arguments:(ConvolutionArgumentAssignment || ",")* ")";
-    ConvolutionArgumentAssignment implements ArgumentAssignment = lhs:ConvolutionArgument "=" rhs:Rhs;
+    ConvolutionArgumentAssignment implements ArgumentAssignment = lhs:ConvolutionArgument "=" rhs:ArgumentRhs;
     enum ConvolutionArgument = KERNEL:"kernel"               //required
                              | NUMFILTER:"num_filter"        //required
                              | STRIDE:"stride"
@@ -43,16 +46,16 @@ grammar CNNArch extends de.monticore.common.Common {
                              | NOBIAS:"no_bias";
 
     FullyConnectedMethod implements MainLayerMethod = name:"FullyConnected" "(" arguments:(FullyConnectedArgumentAssignment || ",")* ")";
-    FullyConnectedArgumentAssignment implements ArgumentAssignment = lhs:FullyConnectedArgument "=" rhs:Rhs;
+    FullyConnectedArgumentAssignment implements ArgumentAssignment = lhs:FullyConnectedArgument "=" rhs:ArgumentRhs;
     enum FullyConnectedArgument = NUMHIDDEN:"num_hidden"     //required
                                 | NOBIAS:"no_bias";
 
     ActivationMethod implements MainLayerMethod = name:"Activation" "(" arguments:(ActivationArgumentAssignment || ",")* ")";
-    ActivationArgumentAssignment implements ArgumentAssignment = lhs:ActivationArgument "=" rhs:Rhs;
+    ActivationArgumentAssignment implements ArgumentAssignment = lhs:ActivationArgument "=" rhs:ArgumentRhs;
     enum ActivationArgument = ACTTYPE:"act_type";            //required
 
     PoolingMethod implements MainLayerMethod = name:"Pooling" "(" arguments:(PoolingArgumentAssignment || ",")* ")";
-    PoolingArgumentAssignment implements ArgumentAssignment = lhs:PoolingArgument "=" rhs:Rhs;
+    PoolingArgumentAssignment implements ArgumentAssignment = lhs:PoolingArgument "=" rhs:ArgumentRhs;
     enum PoolingArgument = KERNEL:"kernel"                   //required
                          | POOLTYPE:"pool_type"              //required
                          | POOLINGCONVENTION:"pooling_convention"
@@ -60,12 +63,12 @@ grammar CNNArch extends de.monticore.common.Common {
                          | PAD:"pad";
 
     DropoutMethod implements MainLayerMethod = name:"Dropout" "(" arguments:(DropoutArgumentAssignment || ",")* ")";
-    DropoutArgumentAssignment implements ArgumentAssignment = lhs:DropoutArgument "=" rhs:Rhs;
+    DropoutArgumentAssignment implements ArgumentAssignment = lhs:DropoutArgument "=" rhs:ArgumentRhs;
     enum DropoutArgument = P:"p"
                          | MODE:"mode";
 
     LRNMethod implements MainLayerMethod = name:"LRN" "(" arguments:(LRNArgumentAssignment || ",")* ")";
-    LRNArgumentAssignment implements ArgumentAssignment = lhs:LRNArgument "=" rhs:Rhs;
+    LRNArgumentAssignment implements ArgumentAssignment = lhs:LRNArgument "=" rhs:ArgumentRhs;
     enum LRNArgument = ALPHA:"alpha"
                      | BETA:"beta"
                      | KNORM:"knorm"
@@ -84,13 +87,13 @@ grammar CNNArch extends de.monticore.common.Common {
     ast StandardOutputLayerMethod = method public String getName(){
                                           return optName.get();
                                       };
-    StandardOutputArgumentAssignment implements ArgumentAssignment = lhs:StandardOutputArgument "=" rhs:Rhs;
+    StandardOutputArgumentAssignment implements ArgumentAssignment = lhs:StandardOutputArgument "=" rhs:ArgumentRhs;
     enum StandardOutputArgument = GRADSCALE:"grad_scale";
 
 
     SVMOutputLayerMethod implements OutputLayerMethod = name:"SVMOutput" "("
                                                             arguments:(SVMOutputArgumentAssignment || ",")* ")";
-    SVMOutputArgumentAssignment implements ArgumentAssignment = lhs:SVMOutputArgument "=" rhs:Rhs;
+    SVMOutputArgumentAssignment implements ArgumentAssignment = lhs:SVMOutputArgument "=" rhs:ArgumentRhs;
     enum SVMOutputArgument = MARGIN:"margin"
                            | REGULARIZATIONCOEFFICIENT:"regularization_coefficient"
                            | USELINEAR:"use_linear";
