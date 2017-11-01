@@ -28,7 +28,9 @@ public interface ASTMethod extends ASTMethodTOP {
 
     String getName();
 
-    List<? extends ASTArgumentAssignment> getArguments();
+    default List<? extends ASTArgumentAssignment> getArguments() {
+        return new LinkedList<ASTArgumentAssignment>();
+    }
 
     default ASTArgumentRhs get(String lhsName) {
         ASTArgumentRhs rhs = null;
