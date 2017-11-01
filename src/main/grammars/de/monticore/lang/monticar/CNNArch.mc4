@@ -2,13 +2,13 @@ package de.monticore.lang.monticar;
 
 grammar CNNArch extends de.monticore.common.Common {
 
-    Architecture = "architecture"
-                     name:Name "("
-                     inputPort:Name& ")" "{"
-                     (MainLayer)+
-                     outputPort:Name& "="
-                     OutputLayer
-                     "}";
+    symbol scope Architecture = "architecture"
+                                 name:Name& "("
+                                 inputPort:Name& ")" "{"
+                                 (MainLayer)+
+                                 outputPort:Name& "="
+                                 OutputLayer
+                                 "}";
 
     interface Layer;
     ast Layer = method ASTMethod getMethod(){};

@@ -20,29 +20,13 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.symboltable.MutableScope;
-import de.monticore.symboltable.ResolvingConfiguration;
-import de.monticore.symboltable.SymbolTableCreator;
+public class ArchitectureSymbol extends de.monticore.symboltable.CommonScopeSpanningSymbol  {
 
-import java.util.Optional;
+    public static final ArchitectureKind KIND = new ArchitectureKind();
 
-public class CNNArchLanguage extends CNNArchLanguageTOP {
 
-    public static final String FILE_ENDING = "cnna";
-
-    public CNNArchLanguage() {
-        super("CNNArch Language", FILE_ENDING);
-    }
-
-    @Override
-    protected CNNArchModelLoader provideModelLoader() {
-        return new CNNArchModelLoader(this);
-    }
-
-    @Override
-    protected void initResolvingFilters() {
-        super.initResolvingFilters();
-        setModelNameCalculator(new CNNArchModelNameCalculator());
+    public ArchitectureSymbol(String name) {
+        super(name, KIND);
     }
 
 }
