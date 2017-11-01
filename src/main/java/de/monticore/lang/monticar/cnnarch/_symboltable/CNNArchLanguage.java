@@ -18,13 +18,34 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.montiarc.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch._symboltable;
 
-public class CNNArchCocos {
+import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.ResolvingConfiguration;
+import de.monticore.symboltable.SymbolTableCreator;
 
-    public static CNNArchCoCoChecker createChecker() {
-        return new CNNArchCoCoChecker()
-                .addCoCo(new ArgumentCheck())
-                .addCoCo(new ArchitectureCheck());
+import java.util.Optional;
+
+public class CNNArchLanguage extends CNNArchLanguageTOP {
+
+    public static final String FILE_ENDING = "cnna";
+
+    public CNNArchLanguage() {
+        super("CNNArch Language", FILE_ENDING);
+    }
+
+    @Override
+    protected CNNArchModelLoader provideModelLoader() {
+        return new CNNArchModelLoader(this);
+    }
+
+    @Override
+    protected void initResolvingFilters() {
+        super.initResolvingFilters();
+    }
+
+    @Override
+    public Optional<? extends SymbolTableCreator> getSymbolTableCreator(ResolvingConfiguration resolvingConfiguration, MutableScope mutableScope) {
+        return null;
     }
 }

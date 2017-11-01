@@ -18,9 +18,9 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.montiarc.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.montiarc.cnnarch._ast.*;
+import de.monticore.lang.monticar.cnnarch._ast.*;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package de.monticore.lang.montiarc;
+package de.monticore.lang.monticar;
 
 grammar CNNArch extends de.monticore.common.Common {
 

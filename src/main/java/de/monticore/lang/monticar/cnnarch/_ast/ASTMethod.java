@@ -18,7 +18,7 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.montiarc.cnnarch._ast;
+package de.monticore.lang.monticar.cnnarch._ast;
 
 
 import java.util.LinkedList;

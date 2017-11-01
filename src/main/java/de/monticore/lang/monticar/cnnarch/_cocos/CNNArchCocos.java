@@ -18,18 +18,13 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.montiarc.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.montiarc.cnnarch._ast.ASTArgumentAssignment;
-import de.se_rwth.commons.logging.Log;
+public class CNNArchCocos {
 
-import java.util.HashSet;
-import java.util.Set;
-
-public class ArgumentCheck implements CNNArchASTArgumentAssignmentCoCo {
-
-    @Override
-    public void check(ASTArgumentAssignment node) {
-
+    public static CNNArchCoCoChecker createChecker() {
+        return new CNNArchCoCoChecker()
+                .addCoCo(new ArgumentCheck())
+                .addCoCo(new ArchitectureCheck());
     }
 }
