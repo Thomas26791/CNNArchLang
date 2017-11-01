@@ -28,14 +28,12 @@ public interface ASTMethod extends ASTMethodTOP {
 
     String getName();
 
-    default List<? extends ASTArgumentAssignment> getAssignments() {
-        return new LinkedList<>();
-    }
+    List<? extends ASTArgumentAssignment> getArguments();
 
     default ASTArgumentRhs get(String lhsName) {
         ASTArgumentRhs rhs = null;
         lhsName = lhsName.replace("_", "");
-        for (ASTArgumentAssignment assignment : getAssignments()) {
+        for (ASTArgumentAssignment assignment : getArguments()) {
             String assignmentLhs = assignment.getLhs().name();
             if (assignmentLhs.equalsIgnoreCase(lhsName)) {
                 rhs =  assignment.getRhs();
