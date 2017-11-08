@@ -1,17 +1,11 @@
 package de.monticore.lang.monticar;
 
-grammar CNNArch extends de.monticore.common.Common {
+grammar CNNArch extends de.monticore.lang.math.Math {
 
-    CNNArchCompilationUnit = Architecture;
+    symbol scope CNNArchCompilationUnit = "architecture" Name& "{" Architecture "}";
 
-    symbol scope Architecture = "architecture"
-                                 Name& "{"
-                                 (MainLayer)+
-                                 OutputLayer
-                                 "}";
+    Architecture = (MainLayer)+ OutputLayer;
 
-    //InputPort = Name "-->";
-    //OutputPort = "-->" Name;
 
     interface Layer;
     ast Layer = method ASTMethod getMethod(){};
@@ -24,11 +18,11 @@ grammar CNNArch extends de.monticore.common.Common {
                              method public ASTArgumentRhs getRhs(){};
 
     ArgumentRhs = stringVal:String
-                | intVal:Num_Int
-                | doubleVal:Num_Double
-                | intTuple:IntTuple
-                | refOrBool:Name;
-    IntTuple = "(" values:Num_Int "," values:(Num_Int || ",")+ ")";
+                | number:Number
+                | tuple:Tuple
+                | booleanVal:Boolean;
+    Tuple = "(" values:Number "," values:(Number || ",")+ ")";
+    enum Boolean = TRUE:"true" | FALSE:"false" | TRUE:"True" | FALSE:"False";
 
 
 

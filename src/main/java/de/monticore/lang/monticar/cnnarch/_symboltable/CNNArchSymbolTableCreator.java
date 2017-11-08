@@ -49,7 +49,7 @@ public class CNNArchSymbolTableCreator extends CNNArchSymbolTableCreatorTOP {
 
     @Override
     public void visit(final ASTCNNArchCompilationUnit compilationUnit) {
-        Log.debug("Building Symboltable for Script: " + compilationUnit.getArchitecture().getName(),
+        Log.debug("Building Symboltable for Script: " + compilationUnit.getName(),
                 CNNArchSymbolTableCreator.class.getSimpleName());
 
         List<ImportStatement> imports = new ArrayList<>();
@@ -60,15 +60,14 @@ public class CNNArchSymbolTableCreator extends CNNArchSymbolTableCreatorTOP {
                 imports);
 
         putOnStack(artifactScope);
-    }
 
-    public void visit(final ASTArchitecture architecture) {
-        ArchitectureSymbol architectureSymbol = new ArchitectureSymbol(
-                architecture.getName()
+        CNNArchCompilationUnitSymbol compilationUnitSymbol = new CNNArchCompilationUnitSymbol(
+                compilationUnit.getName()
         );
 
-        addToScopeAndLinkWithNode(architectureSymbol, architecture);
+        addToScopeAndLinkWithNode(compilationUnitSymbol, compilationUnit);
     }
+
 
     public void endVisit(final ASTArchitecture architecture) {
         removeCurrentScope();
