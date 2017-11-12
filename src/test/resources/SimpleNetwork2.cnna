@@ -1,0 +1,6 @@
+Architecture SimpleNetwork2{
+    FullyConnected(units=64)
+    Activation(type=tanh)
+    FullyConnected(units=64)
+    Output(type=softmax)
+}

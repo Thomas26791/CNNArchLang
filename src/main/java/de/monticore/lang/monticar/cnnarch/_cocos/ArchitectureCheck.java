@@ -26,7 +26,7 @@ import java.util.List;
 
 public class ArchitectureCheck implements CNNArchASTArchitectureCoCo {
 
-    private static final ASTFlattenMethod.Builder flattenMethodBuilder = new ASTFlattenMethod.Builder().name("Flatten");
+    //private static final ASTFlattenMethod.Builder flattenMethodBuilder = new ASTFlattenMethod.Builder().name("Flatten");
 
     @Override
     public void check(ASTArchitecture node) {
@@ -35,7 +35,7 @@ public class ArchitectureCheck implements CNNArchASTArchitectureCoCo {
 
     //set position for each layer and insert flatten layer if necessary
     private void completeArchitecture(List<ASTMainLayer> layers) {
-        int pos = 0;
+        /*int pos = 0;
         boolean isConvNet = false;
         int flattenPos = -1;
 
@@ -58,6 +58,6 @@ public class ArchitectureCheck implements CNNArchASTArchitectureCoCo {
             ASTMainLayer flattenLayer = (new ASTMainLayer.Builder()).method(flattenMethodBuilder.build()).build();
             layers.add(flattenPos, flattenLayer);
             //flattenLayer.setPosition(flattenPos);
-        }
+        }*/
     }
 }

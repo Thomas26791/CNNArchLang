@@ -1,0 +1,4 @@
+Architecture MissingFullyConnectedArgument{
+    FullyConnected(no_bias=true)
+    Output(type=softmax)
+}

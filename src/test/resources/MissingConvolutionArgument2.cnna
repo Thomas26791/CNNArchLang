@@ -1,0 +1,4 @@
+Architecture MissingConvolutionArgument2{
+    Convolution(num_filter=64, no_bias=true)
+    Output(type=softmax)
+}

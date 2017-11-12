@@ -1,0 +1,3 @@
+Architecture MissingOutputNetwork{
+    FullyConnected(units=64, no_bias=true)
+}

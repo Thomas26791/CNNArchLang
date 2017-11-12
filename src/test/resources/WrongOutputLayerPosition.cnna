@@ -1,0 +1,4 @@
+Architecture WrongOutputLayerPosition {
+    Output(type=softmax)
+    FullyConnected(units=64)
+}

@@ -2,7 +2,7 @@ package de.monticore.lang.monticar;
 
 grammar CNNArch extends de.monticore.lang.math.Math {
 
-    symbol scope CNNArchCompilationUnit = "architecture" Name& "{" Architecture "}";
+    symbol scope CNNArchCompilationUnit = "Architecture" Name& "{" Architecture "}";
 
     Architecture = (MainLayer)+ OutputLayer;
 
@@ -17,12 +17,14 @@ grammar CNNArch extends de.monticore.lang.math.Math {
     ast ArgumentAssignment = method public Enum getLhs(){}
                              method public ASTArgumentRhs getRhs(){};
 
-    ArgumentRhs = stringVal:String
-                | number:Number
+    ArgumentRhs = number:Number
                 | tuple:Tuple
-                | booleanVal:Boolean;
+                | booleanVal:Boolean
+                | type:ArgumentKeyword;
     Tuple = "(" values:Number "," values:(Number || ",")+ ")";
     enum Boolean = TRUE:"true" | FALSE:"false" | TRUE:"True" | FALSE:"False";
+    interface ArgumentKeyword;
+    ast ArgumentKeyword = method Optional<String> getName(){};
 
 
 
@@ -41,25 +43,33 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     FullyConnectedMethod implements MainLayerMethod = name:"FullyConnected" "(" arguments:(FullyConnectedArgumentAssignment || ",")* ")";
     FullyConnectedArgumentAssignment implements ArgumentAssignment = lhs:FullyConnectedArgument "=" rhs:ArgumentRhs;
-    enum FullyConnectedArgument = NUMHIDDEN:"num_hidden"     //required
+    enum FullyConnectedArgument = NUMHIDDEN:"units"     //required
                                 | NOBIAS:"no_bias";
 
     ActivationMethod implements MainLayerMethod = name:"Activation" "(" arguments:(ActivationArgumentAssignment || ",")* ")";
     ActivationArgumentAssignment implements ArgumentAssignment = lhs:ActivationArgument "=" rhs:ArgumentRhs;
-    enum ActivationArgument = ACTTYPE:"act_type";            //required
+    enum ActivationArgument = ACTTYPE:"type";            //required
+    ActivationType implements ArgumentKeyword = name:"relu"
+                                              | name:"sigmoid"
+                                              | name:"tanh"
+                                              | name:"softmax";
 
     PoolingMethod implements MainLayerMethod = name:"Pooling" "(" arguments:(PoolingArgumentAssignment || ",")* ")";
     PoolingArgumentAssignment implements ArgumentAssignment = lhs:PoolingArgument "=" rhs:ArgumentRhs;
     enum PoolingArgument = KERNEL:"kernel"                   //required
-                         | POOLTYPE:"pool_type"              //required
+                         | POOLTYPE:"type"                   //required
                          | POOLINGCONVENTION:"pooling_convention"
                          | STRIDE:"stride"
                          | PAD:"pad";
+    PoolingType implements ArgumentKeyword = name:"max"
+                                           | name:"avg"
+                                           | name:"sum";
+    PoolingConvention implements ArgumentKeyword = name:"full"
+                                                 | name:"valid";
 
     DropoutMethod implements MainLayerMethod = name:"Dropout" "(" arguments:(DropoutArgumentAssignment || ",")* ")";
     DropoutArgumentAssignment implements ArgumentAssignment = lhs:DropoutArgument "=" rhs:ArgumentRhs;
-    enum DropoutArgument = P:"p"
-                         | MODE:"mode";
+    enum DropoutArgument = P:"p";
 
     LRNMethod implements MainLayerMethod = name:"LRN" "(" arguments:(LRNArgumentAssignment || ",")* ")";
     LRNArgumentAssignment implements ArgumentAssignment = lhs:LRNArgument "=" rhs:ArgumentRhs;
@@ -68,27 +78,22 @@ grammar CNNArch extends de.monticore.lang.math.Math {
                      | KNORM:"knorm"
                      | NSIZE:"nsize";                         //required
 
-    FlattenMethod implements MainLayerMethod = name:"Flatten" "(" ")";
 
 
-
-
-    StandardOutputLayerMethod implements OutputLayerMethod = (optName:"SoftmaxOutput"
-                                                           | optName:"MAERegressionOutput"
-                                                           | optName:"LinearRegressionOutput"
-                                                           | optName:"LogisticRegressionOutput") "("
-                                                             arguments:(StandardOutputArgumentAssignment || ",")* ")";
-    ast StandardOutputLayerMethod = method public String getName(){
-                                          return optName.get();
-                                      };
+    StandardOutputLayerMethod implements OutputLayerMethod = name:"Output" "(" arguments:(StandardOutputArgumentAssignment || ",")* ")";
     StandardOutputArgumentAssignment implements ArgumentAssignment = lhs:StandardOutputArgument "=" rhs:ArgumentRhs;
-    enum StandardOutputArgument = GRADSCALE:"grad_scale";
+    enum StandardOutputArgument = GRADSCALE:"grad_scale"
+                                | TYPE:"type";
+    OutputType implements ArgumentKeyword = name:"softmax"
+                                          | name:"linear"
+                                          | name:"logistic"
+                                          | name:"mae";
 
 
-    SVMOutputLayerMethod implements OutputLayerMethod = name:"SVMOutput" "("
-                                                            arguments:(SVMOutputArgumentAssignment || ",")* ")";
-    SVMOutputArgumentAssignment implements ArgumentAssignment = lhs:SVMOutputArgument "=" rhs:ArgumentRhs;
-    enum SVMOutputArgument = MARGIN:"margin"
-                           | REGULARIZATIONCOEFFICIENT:"regularization_coefficient"
-                           | USELINEAR:"use_linear";
+    //SVMOutputLayerMethod implements OutputLayerMethod = name:"SVMOutput" "("
+    //                                                        arguments:(SVMOutputArgumentAssignment || ",")* ")";
+    //SVMOutputArgumentAssignment implements ArgumentAssignment = lhs:SVMOutputArgument "=" rhs:ArgumentRhs;
+    //enum SVMOutputArgument = MARGIN:"margin"
+    //                       | REGULARIZATIONCOEFFICIENT:"regularization_coefficient"
+    //                       | USELINEAR:"use_linear";
 }

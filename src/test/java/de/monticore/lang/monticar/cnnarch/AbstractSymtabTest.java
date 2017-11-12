@@ -18,13 +18,30 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch;
 
-public class CNNArchCocos {
+import de.monticore.ModelingLanguageFamily;
+import de.monticore.io.paths.ModelPath;
+import de.monticore.lang.embeddedmontiarc.LogConfig;
+import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchLanguage;
+import de.monticore.symboltable.GlobalScope;
+import de.monticore.symboltable.Scope;
 
-    public static CNNArchCoCoChecker createChecker() {
-        return new CNNArchCoCoChecker()
-                .addCoCo(new DuplicateArgumentCheck())
-                .addCoCo(new ArchitectureCheck());
+import java.nio.file.Paths;
+
+public class AbstractSymtabTest {
+    protected static Scope createSymTab(String... modelPath) {
+        ModelingLanguageFamily fam = new ModelingLanguageFamily();
+
+        fam.addModelingLanguage(new CNNArchLanguage());
+
+        final ModelPath mp = new ModelPath();
+        for (String m : modelPath) {
+            mp.addEntry(Paths.get(m));
+        }
+        GlobalScope scope = new GlobalScope(mp, fam);
+
+        LogConfig.init();
+        return scope;
     }
 }

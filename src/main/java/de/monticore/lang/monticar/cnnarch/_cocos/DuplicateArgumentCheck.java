@@ -20,11 +20,26 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-public class CNNArchCocos {
+import de.monticore.lang.monticar.cnnarch._ast.ASTArgumentAssignment;
+import de.monticore.lang.monticar.cnnarch._ast.ASTMethod;
+import de.se_rwth.commons.logging.Log;
 
-    public static CNNArchCoCoChecker createChecker() {
-        return new CNNArchCoCoChecker()
-                .addCoCo(new DuplicateArgumentCheck())
-                .addCoCo(new ArchitectureCheck());
+import java.util.HashSet;
+import java.util.Set;
+
+public class DuplicateArgumentCheck implements CNNArchASTMethodCoCo {
+
+    @Override
+    public void check(ASTMethod node) {
+        Set<Enum> set = new HashSet<>();
+        for (ASTArgumentAssignment assignment : node.getArguments()) {
+            if (set.contains(assignment.getLhs())) {
+                Log.error("0x03011 Multiple assignments of the same argument are not allowed",
+                        assignment.get_SourcePositionStart());
+            }
+            else {
+                set.add(assignment.getLhs());
+            }
+        }
     }
 }

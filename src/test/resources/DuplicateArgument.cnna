@@ -1,0 +1,4 @@
+Architecture DuplicateArgument{
+    FullyConnected(units=64, units=64)
+    Output(type=softmax)
+}

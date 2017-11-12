@@ -18,14 +18,34 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArgumentAssignment;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-public class ArgumentCheck implements CNNArchASTArgumentAssignmentCoCo {
+import de.monticore.lang.monticar.cnnarch._parser.CNNArchParser;
+import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
+import de.monticore.symboltable.Scope;
+import org.junit.Ignore;
+import org.junit.Test;
 
-    @Override
-    public void check(ASTArgumentAssignment node) {
+public class SymtabTest extends AbstractSymtabTest {
+
+    @Test
+    public void testParsing() throws Exception {
+        CNNArchParser parser = new CNNArchParser();
+        assertTrue(parser.parse("src/test/resources/SimpleNetwork2.cnna").isPresent());
+    }
+
+    @Test
+    public void testAlexnet(){
+        Scope symTab = createSymTab("src/test/resources");
+        CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
+                "Alexnet",
+                CNNArchCompilationUnitSymbol.KIND).orElse(null);
+        assertNotNull(a);
 
     }
+
 }

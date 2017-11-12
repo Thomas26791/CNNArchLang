@@ -1,0 +1,6 @@
+Architecture MissingLRNArgument{
+    Convolution(num_filter=64, kernel=(4,4))
+    LRN()
+    FullyConnected(units=64, no_bias=true)
+    Output(type=softmax)
+}
