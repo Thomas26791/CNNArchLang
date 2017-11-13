@@ -35,8 +35,8 @@ public class AllCoCoTest extends AbstractCoCoTest {
         testModel("SimpleNetwork2");
         testModel("Alexnet");
 
-        testInvalidModel("DuplicateArgument",1,"x03011");
-        /*testInvalidModel("IntegerArgumentTypeTest",9,"x03012");
+        /*testInvalidModel("DuplicateArgument",1,"x03011");
+        testInvalidModel("IntegerArgumentTypeTest",9,"x03012");
         testInvalidModel("InvalidActivationBeforeOutput1",1,"x03015");
         testInvalidModel("InvalidLayerDimension",1,"x03018");
         testInvalidModel("MissingConvolutionArgument1",1,"x0301A");

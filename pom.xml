@@ -42,7 +42,6 @@
         <mc.grammars.assembly.version>0.0.6-SNAPSHOT</mc.grammars.assembly.version>
         <SIUnit.version>0.0.6-SNAPSHOT</SIUnit.version>
         <Common-MontiCar.version>0.0.3-SNAPSHOT</Common-MontiCar.version>
-        <Embedded-MontiArc.version>0.0.3-SNAPSHOT</Embedded-MontiArc.version>
         <Math.version>0.0.3-SNAPSHOT-REWORK</Math.version>
         <!-- .. Libraries .................................................. -->
         <guava.version>18.0</guava.version>
@@ -134,20 +133,6 @@
             <groupId>de.monticore.lang.monticar</groupId>
             <artifactId>common-monticar</artifactId>
             <version>${Common-MontiCar.version}</version>
-            <classifier>${grammars.classifier}</classifier>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>de.monticore.lang.monticar</groupId>
-            <artifactId>embedded-montiarc</artifactId>
-            <version>${Embedded-MontiArc.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>de.monticore.lang.monticar</groupId>
-            <artifactId>embedded-montiarc</artifactId>
-            <version>${Embedded-MontiArc.version}</version>
             <classifier>${grammars.classifier}</classifier>
             <scope>provided</scope>
         </dependency>
@@ -326,8 +311,8 @@
                 <configuration>
                     <header>${project.baseUri}/src/license/se/license.txt</header>
                     <properties>
-                        <owner>Thomas Timmermanns</owner>
-                        <email>thomas.timmermanns@rwth-aachen.de</email>
+                        <owner>Michael von Wenckstern</owner>
+                        <email>vonwenckstern@se-rwth.de</email>
                     </properties>
                     <excludes>
                         <exclude>**/README</exclude>

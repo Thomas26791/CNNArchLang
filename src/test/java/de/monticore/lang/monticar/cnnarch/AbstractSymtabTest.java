@@ -22,7 +22,6 @@ package de.monticore.lang.monticar.cnnarch;
 
 import de.monticore.ModelingLanguageFamily;
 import de.monticore.io.paths.ModelPath;
-import de.monticore.lang.embeddedmontiarc.LogConfig;
 import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchLanguage;
 import de.monticore.symboltable.GlobalScope;
 import de.monticore.symboltable.Scope;
@@ -41,7 +40,6 @@ public class AbstractSymtabTest {
         }
         GlobalScope scope = new GlobalScope(mp, fam);
 
-        LogConfig.init();
         return scope;
     }
 }
