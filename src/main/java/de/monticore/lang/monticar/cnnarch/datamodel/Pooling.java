@@ -18,29 +18,7 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._ast;
+package de.monticore.lang.monticar.cnnarch.datamodel;
 
-
-import java.util.LinkedList;
-import java.util.List;
-
-public interface ASTMethod extends ASTMethodTOP {
-
-    String getName();
-
-    default List<? extends ASTArgumentAssignment> getArguments() {
-        return new LinkedList<ASTArgumentAssignment>();
-    }
-
-    default ASTArgumentRhs get(String lhsName) {
-        ASTArgumentRhs rhs = null;
-        lhsName = lhsName.replace("_", "");
-        for (ASTArgumentAssignment assignment : getArguments()) {
-            String assignmentLhs = assignment.getLhs().name();
-            if (assignmentLhs.equalsIgnoreCase(lhsName)) {
-                rhs =  assignment.getRhs();
-            }
-        }
-        return rhs;
-    }
+public class Pooling {
 }

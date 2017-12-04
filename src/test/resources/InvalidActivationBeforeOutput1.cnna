@@ -1,5 +1,0 @@
-Architecture InvalidActivationBeforeOutput1 {
-    FullyConnected(units=64)
-    Activation(type=relu)
-    Output(type=linear)
-}

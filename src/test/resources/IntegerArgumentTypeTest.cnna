@@ -1,7 +1,0 @@
-Architecture IntegerArgumentTypeTest {
-    Convolution(num_filter=3.4, kernel=(2,2.5), stride=(2.3,3), pad=(3/3,3/3))
-    LRN(nsize=2.5)
-    Pooling(type=max, kernel=(2,2.5), stride=(2.3,3), pad=(3.2,3.1))
-    FullyConnected(units=3/2)
-    Output(type=softmax)
-}

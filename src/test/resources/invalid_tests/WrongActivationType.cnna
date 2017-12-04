@@ -1,0 +1,11 @@
+architecture WrongActivationType {
+    def input in
+    def output out
+    
+    in ->
+    fullyConnected(units=64)
+    activation.maxs()
+    output{
+        fullyConnected()
+    } -> out
+}

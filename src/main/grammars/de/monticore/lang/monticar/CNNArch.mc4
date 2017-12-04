@@ -1,99 +1,166 @@
 package de.monticore.lang.monticar;
 
-grammar CNNArch extends de.monticore.lang.math.Math {
+grammar CNNArch extends de.monticore.lang.monticar.Common2 {
 
-    symbol scope CNNArchCompilationUnit = "Architecture" Name& "{" Architecture "}";
+    symbol scope CNNArchCompilationUnit = "architecture" Name& "{" Architecture "}";
 
-    Architecture = (MainLayer)+ OutputLayer;
+    Architecture = defs:VarDef* inputStructure:InputStructure elements:ArchitectureElement*;
 
+    interface VarDef;
+    symbol InputDef implements VarDef = "def" "input" Name& (ArrayDeclaration)?;
+    symbol OutputDef implements VarDef = "def" "output" Name& (ArrayDeclaration)?;
 
-    interface Layer;
-    ast Layer = method ASTMethod getMethod(){};
+    interface ArchitectureElement extends GroupElement;
+    interface GroupElement;
     interface Method;
-    interface MainLayerMethod extends Method;
-    interface OutputLayerMethod extends Method;
-
+    interface GroupMethod extends Method,GroupElement;
+    interface MergeMethod extends Method;
+    interface LayerMethod extends Method,ArchitectureElement;
+    interface InputStructure;
+    interface InputElement;
+    interface ArgumentListing;
     interface ArgumentAssignment;
-    ast ArgumentAssignment = method public Enum getLhs(){}
-                             method public ASTArgumentRhs getRhs(){};
+    interface GroupStructure;
+    interface Group;
+
+    SingleInput implements InputStructure,InputElement = input:Name@InputDef "->";
+    ArrayInput implements InputElement = input:Name@InputDef "[" (index:UnitNumberResolution)? "]" "->";
+
+    InputGroupStructure implements GroupStructure,InputStructure = groups:InputGroup+
+                                                                   MergeStructure;
+
+
+    OutputStructure implements ArchitectureElement = "output" (GroupOrdinalRange)? "{"
+                                                     elements:ArchitectureElement* "}" "->"
+                                                     output:Name@OutputDef;
+
+    RepeatStructure implements ArchitectureElement = "repeat"
+                                                     intLiteral:UnitNumberResolution "{"
+                                                     ArchitectureElement* "}";
+
+    StandardGroupStructure implements ArchitectureElement,GroupStructure = groups:StandardGroup+
+                                                                           MergeStructure;
+
+
+
+    MergeStructure = "merge" method:MergeMethod;
+
+    StandardGroup implements Group = declaration:GroupDeclaration "{"
+                                     body:GroupBody "}";
+
+    InputGroup implements Group = declaration:GroupDeclaration "{"
+                                  input:InputElement
+                                  body:GroupBody "}";
+
+    GroupDeclaration = "group" (GroupOrdinalRange|GroupOrdinal);
+    GroupOrdinal = intLiteral:UnitNumberResolution;
+    GroupOrdinalRange = startInt:UnitNumberResolution".."endInt:UnitNumberResolution;
+
+    GroupBody = elements:GroupElement*;
+
+
 
     ArgumentRhs = number:Number
                 | tuple:Tuple
-                | booleanVal:Boolean
-                | type:ArgumentKeyword;
+                | booleanVal:BooleanLiteral;
+                //| type:ArgumentKeyword;
+
     Tuple = "(" values:Number "," values:(Number || ",")+ ")";
-    enum Boolean = TRUE:"true" | FALSE:"false" | TRUE:"True" | FALSE:"False";
-    interface ArgumentKeyword;
-    ast ArgumentKeyword = method Optional<String> getName(){};
+    //interface ArgumentKeyword;
+    //ast ArgumentKeyword = method Optional<String> getName(){};
 
 
 
-    MainLayer implements Layer = method:MainLayerMethod;
-    OutputLayer implements Layer = method:OutputLayerMethod;
+
+    ast Method = method ASTArgumentListing getArgumentListing(){}
+                 method Enum getType(){};
+    ast ArgumentAssignment = method Enum getLhs(){}
+                             method ASTArgumentRhs getRhs(){};
+    //ast ArgumentListing = method java.util.List<? extends ASTArgumentAssignment> getArguments(){};
+    ast InputElement = method String getInput(){}
+                       method Optional<de.monticore.lang.monticar.cnnarch._symboltable.InputDefSymbol> getInputSymbol(){};
+    ast Group = method ASTGroupDeclaration getDeclaration(){}
+                method ASTGroupBody getBody(){};
 
 
 
-    ConvolutionMethod implements MainLayerMethod = name:"Convolution" "(" arguments:(ConvolutionArgumentAssignment || ",")* ")";
+
+    ConcatenateMethod implements MergeMethod = type:ConcatenateType "(" argumentListing:ConcatenateArgumentListing ")";
+    ConcatenateArgumentListing implements ArgumentListing = arguments:(ConcatenateArgumentAssignment || ",")*;
+    ConcatenateArgumentAssignment implements ArgumentAssignment = lhs:ConcatenateArgument "=" rhs:ArgumentRhs;
+    enum ConcatenateArgument = "placeholder";
+    enum ConcatenateType = "concatenate";
+
+    AddMethod implements MergeMethod = type:AddType "(" argumentListing:AddArgumentListing ")";
+    AddArgumentListing implements ArgumentListing = arguments:(AddArgumentAssignment|| ",")*;
+    AddArgumentAssignment implements ArgumentAssignment = lhs:AddArgument "=" rhs:ArgumentRhs;
+    enum AddArgument = "placeholder";
+    enum AddType = "add";
+
+    SplitMethod implements GroupMethod = type:SplitType "(" argumentListing:SplitArgumentListing ")";
+    SplitArgumentListing implements ArgumentListing = arguments:(SplitArgumentAssignment || ",")*;
+    SplitArgumentAssignment implements ArgumentAssignment = lhs:SplitArgument "=" rhs:ArgumentRhs;
+    enum SplitArgument = "placeholder";
+    enum SplitType = "split";
+
+
+    ConvolutionMethod implements LayerMethod = type:ConvolutionType "(" argumentListing:ConvolutionArgumentListing ")";
+    ConvolutionArgumentListing implements ArgumentListing = arguments:(ConvolutionArgumentAssignment || ",")*;
     ConvolutionArgumentAssignment implements ArgumentAssignment = lhs:ConvolutionArgument "=" rhs:ArgumentRhs;
     enum ConvolutionArgument = KERNEL:"kernel"               //required
-                             | NUMFILTER:"num_filter"        //required
+                             | FILTERS:"filters"             //required
                              | STRIDE:"stride"
-                             | PAD:"pad"
                              | NOBIAS:"no_bias";
+    enum ConvolutionType = "convolution";
 
-    FullyConnectedMethod implements MainLayerMethod = name:"FullyConnected" "(" arguments:(FullyConnectedArgumentAssignment || ",")* ")";
+    FullyConnectedMethod implements LayerMethod = type:FullyConnectedType "(" argumentListing:FullyConnectedArgumentListing ")";
+    FullyConnectedArgumentListing implements ArgumentListing = arguments:(FullyConnectedArgumentAssignment || ",")*;
     FullyConnectedArgumentAssignment implements ArgumentAssignment = lhs:FullyConnectedArgument "=" rhs:ArgumentRhs;
-    enum FullyConnectedArgument = NUMHIDDEN:"units"     //required
+    enum FullyConnectedArgument = UNITS:"units"     //required
                                 | NOBIAS:"no_bias";
+    enum FullyConnectedType = "fullyConnected";
 
-    ActivationMethod implements MainLayerMethod = name:"Activation" "(" arguments:(ActivationArgumentAssignment || ",")* ")";
+
+    ActivationMethod implements LayerMethod = "activation."type:ActivationType "(" argumentListing:ActivationArgumentListing ")";
+    ActivationArgumentListing implements ArgumentListing = arguments:(ActivationArgumentAssignment || ",")*;
     ActivationArgumentAssignment implements ArgumentAssignment = lhs:ActivationArgument "=" rhs:ArgumentRhs;
-    enum ActivationArgument = ACTTYPE:"type";            //required
-    ActivationType implements ArgumentKeyword = name:"relu"
-                                              | name:"sigmoid"
-                                              | name:"tanh"
-                                              | name:"softmax";
+    enum ActivationArgument = "placeholder";
+    enum ActivationType = "relu"
+                        | "sigmoid"
+                        | "tanh"
+                        | "softmax";
 
-    PoolingMethod implements MainLayerMethod = name:"Pooling" "(" arguments:(PoolingArgumentAssignment || ",")* ")";
+
+    PoolingMethod implements LayerMethod = "pooling."type:PoolingType "(" argumentListing:PoolingArgumentListing ")";
+    PoolingArgumentListing implements ArgumentListing = arguments:(PoolingArgumentAssignment || ",")*;
     PoolingArgumentAssignment implements ArgumentAssignment = lhs:PoolingArgument "=" rhs:ArgumentRhs;
     enum PoolingArgument = KERNEL:"kernel"                   //required
-                         | POOLTYPE:"type"                   //required
-                         | POOLINGCONVENTION:"pooling_convention"
                          | STRIDE:"stride"
-                         | PAD:"pad";
-    PoolingType implements ArgumentKeyword = name:"max"
-                                           | name:"avg"
-                                           | name:"sum";
-    PoolingConvention implements ArgumentKeyword = name:"full"
-                                                 | name:"valid";
+                         | Global:"global";
+    enum PoolingType = "max"
+                     | "avg";
 
-    DropoutMethod implements MainLayerMethod = name:"Dropout" "(" arguments:(DropoutArgumentAssignment || ",")* ")";
+
+    DropoutMethod implements LayerMethod = type:DropoutType "(" argumentListing:DropoutArgumentListing ")";
+    DropoutArgumentListing implements ArgumentListing = arguments:(DropoutArgumentAssignment || ",")*;
     DropoutArgumentAssignment implements ArgumentAssignment = lhs:DropoutArgument "=" rhs:ArgumentRhs;
     enum DropoutArgument = P:"p";
+    enum DropoutType = "dropout";
 
-    LRNMethod implements MainLayerMethod = name:"LRN" "(" arguments:(LRNArgumentAssignment || ",")* ")";
-    LRNArgumentAssignment implements ArgumentAssignment = lhs:LRNArgument "=" rhs:ArgumentRhs;
-    enum LRNArgument = ALPHA:"alpha"
+
+    BatchNormMethod implements LayerMethod = type:BatchNormType "(" argumentListing:BatchNormArgumentListing ")";
+    BatchNormArgumentListing implements ArgumentListing = arguments:(BatchNormArgumentAssignment || ",")*;
+    BatchNormArgumentAssignment implements ArgumentAssignment = lhs:BatchNormArgument "=" rhs:ArgumentRhs;
+    enum BatchNormArgument = "placeholder";
+    enum BatchNormType = "batchNorm";
+
+    LrnMethod implements LayerMethod = type:LrnType "(" argumentListing:LrnArgumentListing ")";
+    LrnArgumentListing implements ArgumentListing = arguments:(LrnArgumentAssignment || ",")*;
+    LrnArgumentAssignment implements ArgumentAssignment = lhs:LrnArgument "=" rhs:ArgumentRhs;
+    enum LrnArgument = NSIZE:"nsize"              //required
+                     | ALPHA:"alpha"
                      | BETA:"beta"
-                     | KNORM:"knorm"
-                     | NSIZE:"nsize";                         //required
+                     | KNORM:"knorm";
+    enum LrnType = "lrn";
 
-
-
-    StandardOutputLayerMethod implements OutputLayerMethod = name:"Output" "(" arguments:(StandardOutputArgumentAssignment || ",")* ")";
-    StandardOutputArgumentAssignment implements ArgumentAssignment = lhs:StandardOutputArgument "=" rhs:ArgumentRhs;
-    enum StandardOutputArgument = GRADSCALE:"grad_scale"
-                                | TYPE:"type";
-    OutputType implements ArgumentKeyword = name:"softmax"
-                                          | name:"linear"
-                                          | name:"logistic"
-                                          | name:"mae";
-
-
-    //SVMOutputLayerMethod implements OutputLayerMethod = name:"SVMOutput" "("
-    //                                                        arguments:(SVMOutputArgumentAssignment || ",")* ")";
-    //SVMOutputArgumentAssignment implements ArgumentAssignment = lhs:SVMOutputArgument "=" rhs:ArgumentRhs;
-    //enum SVMOutputArgument = MARGIN:"margin"
-    //                       | REGULARIZATIONCOEFFICIENT:"regularization_coefficient"
-    //                       | USELINEAR:"use_linear";
 }

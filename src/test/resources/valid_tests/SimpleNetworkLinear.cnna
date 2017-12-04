@@ -1,0 +1,11 @@
+architecture SimpleNetworkLinear{
+    def input in
+    def output out
+    
+    in ->
+    fullyConnected(units=64, no_bias=true)
+    activation.tanh()
+    output {
+        fullyConnected(no_bias=true)
+    } -> out
+}

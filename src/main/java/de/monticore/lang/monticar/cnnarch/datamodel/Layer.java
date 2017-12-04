@@ -18,29 +18,38 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch.datamodel;
+
+import java.util.HashMap;
+
+public class Layer {
+
+    private Dimension inputDimension;
+    private Dimension outputDimension;
+    private HashMap<String, Value> argumentMap;
 
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArgumentAssignment;
-import de.monticore.lang.monticar.cnnarch._ast.ASTMethod;
-import de.se_rwth.commons.logging.Log;
+    public Dimension getInputDimension() {
+        return inputDimension;
+    }
 
-import java.util.HashSet;
-import java.util.Set;
+    public void setInputDimension(Dimension inputDimension) {
+        this.inputDimension = inputDimension;
+    }
 
-public class DuplicateArgumentCheck implements CNNArchASTMethodCoCo {
+    public Dimension getOutputDimension() {
+        return outputDimension;
+    }
 
-    @Override
-    public void check(ASTMethod node) {
-        Set<Enum> set = new HashSet<>();
-        for (ASTArgumentAssignment assignment : node.getArgumentListing().getArguments()) {
-            if (set.contains(assignment.getLhs())) {
-                Log.error("0x03011 Multiple assignments of the same argument are not allowed",
-                        assignment.get_SourcePositionStart());
-            }
-            else {
-                set.add(assignment.getLhs());
-            }
-        }
+    public void setOutputDimension(Dimension outputDimension) {
+        this.outputDimension = outputDimension;
+    }
+
+    public HashMap<String, Value> getArgumentMap() {
+        return argumentMap;
+    }
+
+    public void setArgumentMap(HashMap<String, Value> argumentMap) {
+        this.argumentMap = argumentMap;
     }
 }

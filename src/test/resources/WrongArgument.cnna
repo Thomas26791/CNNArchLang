@@ -1,4 +1,0 @@
-Architecture WrongArgument{
-    FullyConnected(units=64, no_bis=true)
-    Output(type=softmax)
-}

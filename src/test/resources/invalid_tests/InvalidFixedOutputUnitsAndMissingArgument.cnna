@@ -1,0 +1,12 @@
+architecture FixedOutputUnitsAndMissingArgument{
+    def input in
+    def output out
+    
+    in ->
+    output {
+        fullyConnected()
+        activation.tanh()
+        fullyConnected(units=4)
+        activation.softmax()
+    } -> out
+}

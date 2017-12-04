@@ -1,0 +1,110 @@
+architecture Resnet34{
+    def input image
+    def output out
+
+    image ->
+    convolution(filters=64, kernel=7, stride=2)
+    batchNorm()
+    activation.relu()
+    pooling.max(kernel=3, stride=2)
+    
+    repeat 3{
+        group 1{
+            convolution(filters=64, kernel=3)
+            batchNorm()
+            activation.relu()
+            convolution(filters=64, kernel=3)
+            batchNorm()
+        }
+        group 2{}
+        merge add()
+        activation.relu()
+    }
+    
+    group 1{
+        convolution(filters=128, kernel=3, stride=2)
+        batchNorm()
+        activation.relu()
+        convolution(filters=128, kernel=3)
+        batchNorm()
+    }
+    group 2{
+        convolution(filters=128, kernel=1, stride=2)
+        batchNorm()
+    }
+    merge add()
+    activation.relu()
+    
+    repeat 3{
+        group 1{
+            convolution(filters=128, kernel=3)
+            batchNorm()
+            activation.relu()
+            convolution(filters=128, kernel=3)
+            batchNorm()
+        }
+        group 2{}
+        merge add()
+        activation.relu()
+    }
+    
+    group 1{
+        convolution(filters=256, kernel=3, stride=2)
+        batchNorm()
+        activation.relu()
+        convolution(filters=256, kernel=3)
+        batchNorm()
+    }
+    group 2{
+        convolution(filters=256, kernel=1, stride=2)
+        batchNorm()
+    }
+    merge add()
+    activation.relu()
+    
+    repeat 5{
+        group 1{
+            convolution(filters=256, kernel=3)
+            batchNorm()
+            activation.relu()
+            convolution(filters=256, kernel=3)
+            batchNorm()
+        }
+        group 2{}
+        merge add()
+        activation.relu()
+    }
+    
+    group 1{
+        convolution(filters=512, kernel=3, stride=2)
+        batchNorm()
+        activation.relu()
+        convolution(filters=512, kernel=3)
+        batchNorm()
+    }
+    group 2{
+        convolution(filters=512, kernel=1, stride=2)
+        batchNorm()
+    }
+    merge add()
+    activation.relu()
+    
+    repeat 2{
+        group 1{
+            convolution(filters=512, kernel=3)
+            batchNorm()
+            activation.relu()
+            convolution(filters=512, kernel=3)
+            batchNorm()
+        }
+        group 2{}
+        merge add()
+        activation.relu()
+    }
+    
+    output {
+        pooling.avg(global=true)
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

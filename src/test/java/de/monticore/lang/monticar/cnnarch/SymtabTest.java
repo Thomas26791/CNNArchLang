@@ -35,14 +35,34 @@ public class SymtabTest extends AbstractSymtabTest {
     @Test
     public void testParsing() throws Exception {
         CNNArchParser parser = new CNNArchParser();
-        assertTrue(parser.parse("src/test/resources/SimpleNetwork2.cnna").isPresent());
+        assertTrue(parser.parse("src/test/resources/valid_tests/SimpleNetworkSoftmax.cnna").isPresent());
     }
 
     @Test
     public void testAlexnet(){
-        Scope symTab = createSymTab("src/test/resources");
+        Scope symTab = createSymTab("src/test/resources/architectures");
         CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
                 "Alexnet",
+                CNNArchCompilationUnitSymbol.KIND).orElse(null);
+        assertNotNull(a);
+
+    }
+
+    @Test
+    public void testMultiInput(){
+        Scope symTab = createSymTab("src/test/resources/architectures");
+        CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
+                "ThreeInputCNN_M14",
+                CNNArchCompilationUnitSymbol.KIND).orElse(null);
+        assertNotNull(a);
+
+    }
+
+    @Test
+    public void testMultiInputArray(){
+        Scope symTab = createSymTab("src/test/resources/architectures");
+        CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
+                "ThreeInputCNN_M14_alternative",
                 CNNArchCompilationUnitSymbol.KIND).orElse(null);
         assertNotNull(a);
 

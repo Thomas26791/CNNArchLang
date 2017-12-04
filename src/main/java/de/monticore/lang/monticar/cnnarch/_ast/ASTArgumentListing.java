@@ -18,29 +18,14 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._cocos;
-
+package de.monticore.lang.monticar.cnnarch._ast;
 
 import de.monticore.lang.monticar.cnnarch._ast.ASTArgumentAssignment;
-import de.monticore.lang.monticar.cnnarch._ast.ASTMethod;
-import de.se_rwth.commons.logging.Log;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-public class DuplicateArgumentCheck implements CNNArchASTMethodCoCo {
+public interface ASTArgumentListing extends ASTArgumentListingTOP {
 
-    @Override
-    public void check(ASTMethod node) {
-        Set<Enum> set = new HashSet<>();
-        for (ASTArgumentAssignment assignment : node.getArgumentListing().getArguments()) {
-            if (set.contains(assignment.getLhs())) {
-                Log.error("0x03011 Multiple assignments of the same argument are not allowed",
-                        assignment.get_SourcePositionStart());
-            }
-            else {
-                set.add(assignment.getLhs());
-            }
-        }
-    }
+    List<? extends ASTArgumentAssignment> getArguments();
+
 }

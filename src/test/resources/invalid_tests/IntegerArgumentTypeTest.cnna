@@ -1,0 +1,14 @@
+architecture IntegerArgumentTypeTest {
+    def input in
+    def output out
+    
+    in ->
+    convolution(filters=3.4, kernel=(2,2.5), stride=(2.3,3.4))
+    lrn(nsize=2.5)
+    pooling.max(kernel=2.5, stride=3.3)
+    fullyConnected(units=3/2)
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

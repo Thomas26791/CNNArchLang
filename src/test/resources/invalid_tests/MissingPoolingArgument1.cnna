@@ -1,0 +1,12 @@
+architecture MissingPoolingArgument1{
+    def input in
+    def output out
+    
+    in ->
+    convolution(filters=64, kernel=5)
+    pooling.max()
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

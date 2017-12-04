@@ -1,0 +1,12 @@
+architecture InvalidOutput2{
+    def input in
+    def output out
+    
+    in ->
+    fullyConnected(units=64)
+    activation.tanh()
+    fullyConnected(units=4)
+    output {
+        activation.softmax()
+    } -> out
+}

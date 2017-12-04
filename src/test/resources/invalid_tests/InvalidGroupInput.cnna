@@ -1,0 +1,13 @@
+architecture InvalidGroupInput{
+    def input in
+    def output out
+    
+    group 2{
+        in ->
+        fullyConnected(units=64)
+    } merge add()
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

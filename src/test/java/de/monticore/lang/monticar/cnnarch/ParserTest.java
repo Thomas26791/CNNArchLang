@@ -42,13 +42,15 @@ public class ParserTest {
     public static final boolean ENABLE_FAIL_QUICK = false;
     private static List<String> expectedParseErrorModels = Arrays.asList(
             // incorrect argument name for a layer
-            "src/test/resources/WrongArgument.cnna",
+            "src/test/resources/invalid_tests/WrongArgument.cnna",
 
-            "src/test/resources/MissingOutputLayer.cnna",
+            "src/test/resources/invalid_tests/InvalidRepeatInput.cnna",
 
-            "src/test/resources/WrongOutputLayerPosition.cnna",
+            "src/test/resources/invalid_tests/MissingInput.cnna",
 
-            "src/test/resources/WrongActivationType.cnna")
+            "src/test/resources/invalid_tests/WrongInputPosition.cnna",
+
+            "src/test/resources/invalid_tests/WrongActivationType.cnna")
 
             .stream().map(s -> Paths.get(s).toString())
             .collect(Collectors.toList());

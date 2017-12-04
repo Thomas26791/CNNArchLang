@@ -20,21 +20,20 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.*;
+import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
+import de.monticore.lang.monticar.cnnarch._ast.ASTArchitectureElement;
 
 import java.util.List;
 
 public class ArchitectureCheck implements CNNArchASTArchitectureCoCo {
 
-    //private static final ASTFlattenMethod.Builder flattenMethodBuilder = new ASTFlattenMethod.Builder().name("Flatten");
-
     @Override
     public void check(ASTArchitecture node) {
-            completeArchitecture(node.getMainLayers());
+            completeArchitecture(node.getElements());
     }
 
     //set position for each layer and insert flatten layer if necessary
-    private void completeArchitecture(List<ASTMainLayer> layers) {
+    private void completeArchitecture(List<ASTArchitectureElement> layers) {
         /*int pos = 0;
         boolean isConvNet = false;
         int flattenPos = -1;

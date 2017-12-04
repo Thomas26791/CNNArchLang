@@ -1,5 +1,0 @@
-Architecture InvalidLayerDimension{
-    FullyConnected(units=128)
-    Convolution(num_filter=4, kernel=(2,2))
-    Output(type=softmax)
-}

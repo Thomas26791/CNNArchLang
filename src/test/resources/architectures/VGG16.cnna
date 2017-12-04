@@ -1,0 +1,46 @@
+architecture VGG16{
+    def input image
+    def output out
+
+    image ->
+    repeat 2{
+        convolution(kernel=3, filters=64)
+        activation.relu()
+    }
+    pooling.max(kernel=2, stride=2)
+    
+    repeat 2{
+        convolution(kernel=3, filters=128)
+        activation.relu()
+    }
+    pooling.max(kernel=2, stride=2)
+    
+    repeat 3{
+        convolution(kernel=3, filters=256)
+        activation.relu()
+    }
+    pooling.max(kernel=2, stride=2)
+    
+    repeat 3{
+        convolution(kernel=3, filters=512)
+        activation.relu()
+    }
+    pooling.max(kernel=2, stride=2)
+    
+    repeat 3{
+        convolution(kernel=3, filters=512)
+        activation.relu()
+    }
+    pooling.max(kernel=2, stride=2)  
+    
+    repeat 2{
+        fullyConnected(units=4096)
+        activation.relu()
+        dropout(p=0.5)
+    }
+    
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

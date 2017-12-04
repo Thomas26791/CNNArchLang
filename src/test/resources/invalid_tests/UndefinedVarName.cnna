@@ -1,0 +1,9 @@
+architecture UndefinedVarName{
+    in ->
+    fullyConnected(units=64, no_bias=true)
+    activation.tanh()
+    output {
+        fullyConnected(no_bias=true)
+        activation.softmax()
+    } -> out
+}

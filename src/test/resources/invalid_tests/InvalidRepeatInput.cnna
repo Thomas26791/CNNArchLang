@@ -1,0 +1,13 @@
+architecture InvalidRepeatInput{
+    def input in
+    def output out
+    
+    repeat 3{
+        in ->
+        fullyConnected(units=64
+    }
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

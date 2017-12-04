@@ -1,0 +1,11 @@
+architecture MissingConvolutionArgument2{
+    def input in
+    def output out
+    
+    in ->
+    convolution(filters=64, no_bias=true)
+    output {
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

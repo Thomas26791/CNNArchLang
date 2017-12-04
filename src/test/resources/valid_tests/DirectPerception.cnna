@@ -1,0 +1,48 @@
+architecture DirectPerception{
+    def input image
+    def output predictions
+
+    image ->
+    convolution(filters=96, kernel=11, stride=4)
+    activation.relu()
+    pooling.max(kernel=3, stride=2)
+    lrn(nsize=5, alpha=0.0001, beta=0.75)
+    
+    group 1..2{
+        split()
+        convolution(filters=128, kernel=5)
+        activation.relu()
+        pooling.max(kernel=3, stride=2)
+        lrn(nsize=5, alpha=0.0001, beta=0.75)
+    } merge concatenate()
+    
+    convolution(filters=384, kernel=3)
+    activation.relu()
+    
+    group 1..2{
+        split()
+        convolution(filters=192, kernel=3)
+        activation.relu()
+        
+        convolution(filters=128, kernel=3)
+        activation.relu()
+        pooling.max(kernel=3, stride=2)
+    } merge concatenate()
+    
+    fullyConnected(units=4096)
+    activation.relu()
+    dropout(p=0.5)
+    
+    fullyConnected(units=4096)
+    activation.relu()
+    dropout(p=0.5)
+    
+    fullyConnected(units=256)
+    activation.relu()
+    dropout(p=0.5)
+    
+    output {
+        fullyConnected()
+        activation.sigmoid()
+    } -> predictions
+}

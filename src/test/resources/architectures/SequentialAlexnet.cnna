@@ -1,0 +1,38 @@
+architecture SequentialAlexnet {
+    def input image
+    def output predictions
+
+    image ->
+    convolution(filters=96, kernel=11, stride=4)
+    activation.relu()
+    lrn(nsize=5, alpha=0.0001, beta=0.75)
+    pooling.max(kernel=3, stride=2)
+
+    convolution(filters=256, kernel=5)
+    activation.relu()
+    lrn(nsize=5, alpha=0.0001, beta=0.75)
+    pooling.max(kernel=3, stride=2)
+
+    convolution(filters=384, kernel=3)
+    activation.relu()
+
+    convolution(filters=384, kernel=3)
+    activation.relu()
+
+    convolution(filters=256, kernel=3)
+    activation.relu()
+    pooling.max(kernel=3, stride=2)
+
+    fullyConnected(units=4096)
+    activation.relu()
+    dropout(p=0.5)
+
+    fullyConnected(units=4096)
+    activation.relu()
+    dropout(p=0.5)
+
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> predictions
+}

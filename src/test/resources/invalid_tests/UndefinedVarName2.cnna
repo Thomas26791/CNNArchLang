@@ -1,0 +1,12 @@
+architecture UndefinedVarName2{
+    def input in2
+    def output out2
+
+    in ->
+    fullyConnected(units=64, no_bias=true)
+    activation.tanh()
+    output {
+        fullyConnected(no_bias=true)
+        activation.softmax()
+    } -> out
+}

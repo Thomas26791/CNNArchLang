@@ -1,0 +1,11 @@
+architecture WrongArgument {
+    def input in
+    def output out
+    
+    in ->
+    fullyConnected(units=64, no_bis=true)
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

@@ -20,10 +20,14 @@
  */
 package de.monticore.lang.monticar.cnnarch.cocos;
 
+import de.monticore.lang.monticar.cnnarch.ParserTest;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCocos;
+import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchLanguage;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.assertTrue;
 
@@ -31,9 +35,23 @@ public class AllCoCoTest extends AbstractCoCoTest {
     String baseDir="src/test/resources";
     @Test
     public void testCoCosSimulator() throws IOException {
-        testModel("SimpleNetwork");
-        testModel("SimpleNetwork2");
-        testModel("Alexnet");
+
+        checkValid("architectures", "Alexnet");
+        checkValid("architectures", "Resnet34");
+        checkValid("architectures", "ResNeXt50");
+        checkValid("architectures", "SequentialAlexnet");
+        checkValid("architectures", "ThreeInputCNN_M14");
+        checkValid("architectures", "ThreeInputCNN_M14_alternative");
+        checkValid("architectures", "VGG16");
+
+        checkValid("valid_tests", "SimpleNetworkSoftmax");
+        checkValid("valid_tests", "SimpleNetworkSigmoid");
+        checkValid("valid_tests", "SimpleNetworkLinear");
+        checkValid("valid_tests", "SimpleNetworkRelu");
+        checkValid("valid_tests", "SimpleNetworkTanh");
+        checkValid("valid_tests", "VGG16_alternative");
+        checkValid("valid_tests", "DirectPerception");
+        checkValid("valid_tests", "SafetyNetwork");
 
         /*testInvalidModel("DuplicateArgument",1,"x03011");
         testInvalidModel("IntegerArgumentTypeTest",9,"x03012");

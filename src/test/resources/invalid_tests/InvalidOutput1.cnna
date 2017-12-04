@@ -1,0 +1,11 @@
+architecture InvalidOutput1{
+    def input in
+    def output out
+    
+    in ->
+    fullyConnected(units=64)
+    activation.tanh()
+    fullyConnected(units=4)
+    output {  
+    } -> out
+}

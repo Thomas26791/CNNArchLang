@@ -20,11 +20,6 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.symboltable.MutableScope;
-import de.monticore.symboltable.ResolvingConfiguration;
-import de.monticore.symboltable.SymbolTableCreator;
-
-import java.util.Optional;
 
 public class CNNArchLanguage extends CNNArchLanguageTOP {
 

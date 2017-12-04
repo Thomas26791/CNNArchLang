@@ -1,0 +1,13 @@
+architecture MissingLRNArgument{
+    def input in
+    def output out
+    
+    in ->
+    convolution(filters=64, kernel=4)
+    lrn()
+    fullyConnected(units=64, no_bias=true)
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

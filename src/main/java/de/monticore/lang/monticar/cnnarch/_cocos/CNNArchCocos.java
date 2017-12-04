@@ -20,6 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
+
 public class CNNArchCocos {
 
     public static CNNArchCoCoChecker createChecker() {
