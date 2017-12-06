@@ -1,0 +1,18 @@
+architecture InvalidLayerDimension2{
+    def input in
+    def output out
+
+    in ->
+    group 1..2{
+        fullyConnected(units=64)
+    }
+    group 3{
+        fullyConnected(units=8)
+        activation.relu()
+    }
+    merge add()
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

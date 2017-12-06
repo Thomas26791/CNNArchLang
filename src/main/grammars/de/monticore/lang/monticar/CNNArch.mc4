@@ -10,12 +10,12 @@ grammar CNNArch extends de.monticore.lang.monticar.Common2 {
     symbol InputDef implements VarDef = "def" "input" Name& (ArrayDeclaration)?;
     symbol OutputDef implements VarDef = "def" "output" Name& (ArrayDeclaration)?;
 
-    interface ArchitectureElement extends GroupElement;
+    interface ArchitectureElement;
     interface GroupElement;
     interface Method;
     interface GroupMethod extends Method,GroupElement;
     interface MergeMethod extends Method;
-    interface LayerMethod extends Method,ArchitectureElement;
+    interface LayerMethod extends Method,ArchitectureElement,GroupElement;
     interface InputStructure;
     interface InputElement;
     interface ArgumentListing;
@@ -34,12 +34,12 @@ grammar CNNArch extends de.monticore.lang.monticar.Common2 {
                                                      elements:ArchitectureElement* "}" "->"
                                                      output:Name@OutputDef;
 
-    RepeatStructure implements ArchitectureElement = "repeat"
-                                                     intLiteral:UnitNumberResolution "{"
-                                                     ArchitectureElement* "}";
+    RepeatStructure implements ArchitectureElement,GroupElement = "repeat"
+                                                                   intLiteral:UnitNumberResolution "{"
+                                                                   ArchitectureElement* "}";
 
-    StandardGroupStructure implements ArchitectureElement,GroupStructure = groups:StandardGroup+
-                                                                           MergeStructure;
+    StandardGroupStructure implements ArchitectureElement,GroupElement,GroupStructure = groups:StandardGroup+
+                                                                                        MergeStructure;
 
 
 
@@ -88,19 +88,19 @@ grammar CNNArch extends de.monticore.lang.monticar.Common2 {
     ConcatenateMethod implements MergeMethod = type:ConcatenateType "(" argumentListing:ConcatenateArgumentListing ")";
     ConcatenateArgumentListing implements ArgumentListing = arguments:(ConcatenateArgumentAssignment || ",")*;
     ConcatenateArgumentAssignment implements ArgumentAssignment = lhs:ConcatenateArgument "=" rhs:ArgumentRhs;
-    enum ConcatenateArgument = "placeholder";
+    enum ConcatenateArgument = XPLACEHOLDERX:"_placeholder";
     enum ConcatenateType = "concatenate";
 
     AddMethod implements MergeMethod = type:AddType "(" argumentListing:AddArgumentListing ")";
     AddArgumentListing implements ArgumentListing = arguments:(AddArgumentAssignment|| ",")*;
     AddArgumentAssignment implements ArgumentAssignment = lhs:AddArgument "=" rhs:ArgumentRhs;
-    enum AddArgument = "placeholder";
+    enum AddArgument = XPLACEHOLDERX:"_placeholder";
     enum AddType = "add";
 
     SplitMethod implements GroupMethod = type:SplitType "(" argumentListing:SplitArgumentListing ")";
     SplitArgumentListing implements ArgumentListing = arguments:(SplitArgumentAssignment || ",")*;
     SplitArgumentAssignment implements ArgumentAssignment = lhs:SplitArgument "=" rhs:ArgumentRhs;
-    enum SplitArgument = "placeholder";
+    enum SplitArgument = XPLACEHOLDERX:"_placeholder";
     enum SplitType = "split";
 
 
@@ -124,7 +124,7 @@ grammar CNNArch extends de.monticore.lang.monticar.Common2 {
     ActivationMethod implements LayerMethod = "activation."type:ActivationType "(" argumentListing:ActivationArgumentListing ")";
     ActivationArgumentListing implements ArgumentListing = arguments:(ActivationArgumentAssignment || ",")*;
     ActivationArgumentAssignment implements ArgumentAssignment = lhs:ActivationArgument "=" rhs:ArgumentRhs;
-    enum ActivationArgument = "placeholder";
+    enum ActivationArgument = XPLACEHOLDERX:"_placeholder";
     enum ActivationType = "relu"
                         | "sigmoid"
                         | "tanh"
@@ -151,7 +151,7 @@ grammar CNNArch extends de.monticore.lang.monticar.Common2 {
     BatchNormMethod implements LayerMethod = type:BatchNormType "(" argumentListing:BatchNormArgumentListing ")";
     BatchNormArgumentListing implements ArgumentListing = arguments:(BatchNormArgumentAssignment || ",")*;
     BatchNormArgumentAssignment implements ArgumentAssignment = lhs:BatchNormArgument "=" rhs:ArgumentRhs;
-    enum BatchNormArgument = "placeholder";
+    enum BatchNormArgument = XPLACEHOLDERX:"_placeholder";
     enum BatchNormType = "batchNorm";
 
     LrnMethod implements LayerMethod = type:LrnType "(" argumentListing:LrnArgumentListing ")";

@@ -23,9 +23,22 @@ package de.monticore.lang.monticar.cnnarch._ast;
 import de.monticore.lang.monticar.cnnarch._ast.ASTArgumentAssignment;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ASTArgumentListing extends ASTArgumentListingTOP {
 
     List<? extends ASTArgumentAssignment> getArguments();
+
+    default Optional<ASTArgumentRhs> getArgument(Enum lhs){
+        Optional<ASTArgumentRhs> rhs = Optional.empty();
+
+        for(ASTArgumentAssignment assignment: getArguments()){
+            if (assignment.getLhs() == lhs){
+                rhs = Optional.of(assignment.getRhs());
+            }
+        }
+
+        return rhs;
+    }
 
 }

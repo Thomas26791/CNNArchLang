@@ -1,0 +1,12 @@
+architecture BooleanArgumentTypeTest{
+    def input in
+    def output out
+
+    in ->
+    convolution(filters=true, kernel=false)
+    pooling.max(global=3)
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

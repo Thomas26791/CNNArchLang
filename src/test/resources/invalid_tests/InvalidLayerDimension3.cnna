@@ -1,0 +1,19 @@
+architecture InvalidLayerDimension3{
+    def input in
+    def output out
+
+    in ->
+    group 1..2{
+        convolution(filters=16, kernel=(3,3))
+        activation.relu()
+    }
+    group 3{
+        convolution(filters=8, kernel=(3,3), stride=2)
+        activation.relu()
+    }
+    merge concatenate()
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

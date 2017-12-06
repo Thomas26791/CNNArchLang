@@ -4,7 +4,7 @@ architecture InvalidRepeatInput{
     
     repeat 3{
         in ->
-        fullyConnected(units=64
+        fullyConnected(units=64)
     }
     output{
         fullyConnected()

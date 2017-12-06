@@ -1,6 +1,7 @@
 architecture SimpleNetworkSoftmax{
     def input in
     def output out
+    //comment
     
     in ->
     fullyConnected(units=64, no_bias=true)

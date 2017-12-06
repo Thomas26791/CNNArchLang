@@ -1,0 +1,12 @@
+architecture MultiOutputArrayTest{
+    def input in
+    def output out[3]
+
+    in ->
+    convolution(kernel=(7,7), filters=64)
+
+    output 1..3 {
+        fullyConnected()
+        activation.softmax()
+    } -> out
+}

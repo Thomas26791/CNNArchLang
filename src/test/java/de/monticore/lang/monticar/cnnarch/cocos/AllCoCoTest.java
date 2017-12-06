@@ -21,8 +21,12 @@
 package de.monticore.lang.monticar.cnnarch.cocos;
 
 import de.monticore.lang.monticar.cnnarch.ParserTest;
+import de.monticore.lang.monticar.cnnarch._cocos.ArgumentCheck;
+import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCocos;
+import de.monticore.lang.monticar.cnnarch._cocos.OutputCheck;
 import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchLanguage;
+import de.se_rwth.commons.logging.Log;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -33,8 +37,13 @@ import static org.junit.Assert.assertTrue;
 
 public class AllCoCoTest extends AbstractCoCoTest {
     String baseDir="src/test/resources";
+
+    public AllCoCoTest() {
+        Log.enableFailQuick(false);
+    }
+
     @Test
-    public void testCoCosSimulator() throws IOException {
+    public void testValidCoCos() throws IOException {
 
         checkValid("architectures", "Alexnet");
         checkValid("architectures", "Resnet34");
@@ -49,11 +58,31 @@ public class AllCoCoTest extends AbstractCoCoTest {
         checkValid("valid_tests", "SimpleNetworkLinear");
         checkValid("valid_tests", "SimpleNetworkRelu");
         checkValid("valid_tests", "SimpleNetworkTanh");
+        checkValid("valid_tests", "GroupTest");
+        checkValid("valid_tests", "MultiOutputTest");
+        checkValid("valid_tests", "MultiOutputArrayTest");
         checkValid("valid_tests", "VGG16_alternative");
         checkValid("valid_tests", "DirectPerception");
         checkValid("valid_tests", "SafetyNetwork");
 
-        /*testInvalidModel("DuplicateArgument",1,"x03011");
+    }
+
+    @Test
+    public void testArgumentCoCos() throws IOException{
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentCheck())
+                , getAstNode("invalid_tests", "DuplicateArgument")
+                , new ExpectedErrorInfo(1,"x03011"));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentCheck())
+                , getAstNode("invalid_tests", "BooleanArgumentTypeTest")
+                , new ExpectedErrorInfo(3,"x03424"));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentCheck())
+                , getAstNode("invalid_tests", "IntegerArgumentTypeTest")
+                , new ExpectedErrorInfo(7,"x03424"));
+
+        /*
         testInvalidModel("IntegerArgumentTypeTest",9,"x03012");
         testInvalidModel("InvalidActivationBeforeOutput1",1,"x03015");
         testInvalidModel("InvalidLayerDimension",1,"x03018");
@@ -63,17 +92,25 @@ public class AllCoCoTest extends AbstractCoCoTest {
         testInvalidModel("MissingLRNArgument",1,"x0301A");
         testInvalidModel("MissingPoolingArgument1",1,"x0301A");
         testInvalidModel("MissingPoolingArgument2",1,"x0301A");*/
-
-
     }
 
-    private void testModel(String modelName) {
-        checkValid("",modelName);
-    }
+    @Test
+    public void testOutputCoCos() throws IOException{
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
+                , getAstNode("invalid_tests", "InvalidFixedOutputUnits")
+                , new ExpectedErrorInfo(1,"x06028"));
 
-    private void testInvalidModel(String modelName, int numExpectedFindings, String... expectedErrorCodes) {
-        ExpectedErrorInfo errorInfo = new ExpectedErrorInfo(numExpectedFindings, expectedErrorCodes);
-        checkInvalid(CNNArchCocos.createChecker(), getAstNode("", modelName), errorInfo);
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
+                , getAstNode("invalid_tests", "InvalidFixedOutputUnitsAndMissingArgument")
+                , new ExpectedErrorInfo(2,"x06021", "x06028"));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
+                , getAstNode("invalid_tests", "InvalidOutput1")
+                , new ExpectedErrorInfo(1,"x06028"));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
+                , getAstNode("invalid_tests", "InvalidOutput2")
+                , new ExpectedErrorInfo(1,"x06028"));
     }
 
 }

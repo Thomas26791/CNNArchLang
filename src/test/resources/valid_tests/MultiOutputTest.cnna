@@ -1,0 +1,22 @@
+architecture MultiOutputTest{
+    def input in
+    def output out1
+    def output out2
+    def output out3
+
+    in ->
+    convolution(kernel=(7,7), filters=64)
+
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out1
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out2
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> out3
+}

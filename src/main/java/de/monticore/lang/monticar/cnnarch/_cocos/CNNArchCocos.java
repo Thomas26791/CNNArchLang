@@ -25,7 +25,7 @@ public class CNNArchCocos {
 
     public static CNNArchCoCoChecker createChecker() {
         return new CNNArchCoCoChecker()
-                .addCoCo(new DuplicateArgumentCheck())
-                .addCoCo(new ArchitectureCheck());
+                .addCoCo(new ArgumentCheck())
+                .addCoCo(new OutputCheck());
     }
 }
