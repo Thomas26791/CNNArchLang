@@ -3,7 +3,7 @@ architecture MissingConvolutionArgument2{
     def output out
     
     in ->
-    convolution(filters=64, no_bias=true)
+    convolution(no_bias=true)
     output {
         fullyConnected()
         activation.softmax()

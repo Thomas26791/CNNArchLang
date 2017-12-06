@@ -20,52 +20,24 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.*;
+import de.monticore.lang.monticar.cnnarch._ast.ASTArgumentAssignment;
+import de.monticore.lang.monticar.cnnarch._ast.ASTArgumentRhs;
+import de.monticore.lang.monticar.cnnarch._ast.ASTMethod;
+import de.monticore.lang.monticar.cnnarch._ast.ASTTuple;
 import de.se_rwth.commons.logging.Log;
 import org.jscience.mathematics.number.Rational;
 import siunit.monticoresiunit.si._ast.ASTNumber;
 import siunit.monticoresiunit.si._ast.ASTUnitNumber;
 
 import javax.measure.unit.Unit;
-import java.util.*;
 
-public class ArgumentCheck implements CNNArchASTMethodCoCo {
+public class ArgumentTypeCheck implements CNNArchASTMethodCoCo {
 
-    @Override
-    public void check(ASTMethod node) {
-        checkDuplicateArgument(node);
-        checkPlaceholderArgument(node);
-        checkArgumentType(node);
-    }
+    public static final String INCORRECT_ARG_TYPE_CODE = "x03444";
+    public static final String INCORRECT_ARG_TYPE_MSG = "0"+INCORRECT_ARG_TYPE_CODE+" Incorrect argument type. ";
 
-    public void checkDuplicateArgument(ASTMethod node){
-        Set<Enum> set = new HashSet<>();
-        for (ASTArgumentAssignment assignment : node.getArgumentListing().getArguments()) {
-            if (set.contains(assignment.getLhs())) {
-                Log.error("0x03011 Multiple assignments of the same argument are not allowed",
-                        assignment.get_SourcePositionStart());
-            }
-            else {
-                set.add(assignment.getLhs());
-            }
-        }
-    }
 
-    public void checkPlaceholderArgument(ASTMethod node){
-        for(ASTArgumentAssignment assignment:node.getArgumentListing().getArguments()){
-            if (assignment.getLhs().name().equals("_placeholder")){
-                Log.error("0x0301B \"_placeholder\" is not an argument",
-                        assignment.get_SourcePositionStart());
-            }
-        }
-    }
-
-    public void checkRequiredArguments(ASTMethod node){
-
-    }
-
-    public void checkArgumentType(ASTMethod node){
-        final String msg = "0x03424 Incorrect argument type. ";
+    public void check(ASTMethod node){
         String msgAddon;
 
         for(ASTArgumentAssignment assignment:node.getArgumentListing().getArguments()){
@@ -122,7 +94,7 @@ public class ArgumentCheck implements CNNArchASTMethodCoCo {
             }
 
             if (!isValid){
-                Log.error(msg + msgAddon);
+                Log.error(INCORRECT_ARG_TYPE_MSG + msgAddon, rhs.get_SourcePositionStart());
             }
         }
     }

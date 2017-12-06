@@ -1,4 +1,6 @@
-architecture UndefinedVarName{
+architecture UndefinedOutput{
+    def input in
+
     in ->
     fullyConnected(units=64, no_bias=true)
     activation.tanh()

@@ -46,7 +46,6 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
     private static final String MODEL_PATH = "src/test/resources/";
 
     protected static ASTCNNArchNode getAstNode(String modelPath, String model) {
-
         Scope symTab = createSymTab(MODEL_PATH + modelPath);
         CNNArchCompilationUnitSymbol comp = symTab.<CNNArchCompilationUnitSymbol> resolve(
                 model, CNNArchCompilationUnitSymbol.KIND).orElse(null);

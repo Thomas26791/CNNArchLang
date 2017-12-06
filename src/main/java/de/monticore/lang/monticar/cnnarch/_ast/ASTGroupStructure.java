@@ -18,17 +18,13 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch._ast;
 
+import java.util.List;
 
-public class CNNArchCocos {
+public interface ASTGroupStructure extends ASTGroupStructureTOP {
 
-    public static CNNArchCoCoChecker createChecker() {
-        return new CNNArchCoCoChecker()
-                .addCoCo(new OutputCheck())
-                .addCoCo(new ArgumentNameCheck())
-                .addCoCo(new ArgumentTypeCheck())
-                .addCoCo(new ArgumentMissingCheck())
-                .addCoCo(new ArchitectureCheck());
-    }
+    List<? extends ASTGroup> getGroups();
+
+    ASTMergeStructure getMergeStructure();
 }

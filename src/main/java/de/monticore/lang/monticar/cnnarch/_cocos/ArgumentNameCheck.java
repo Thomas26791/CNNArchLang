@@ -20,7 +20,6 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-
 import de.monticore.lang.monticar.cnnarch._ast.ASTArgumentAssignment;
 import de.monticore.lang.monticar.cnnarch._ast.ASTMethod;
 import de.se_rwth.commons.logging.Log;
@@ -28,14 +27,25 @@ import de.se_rwth.commons.logging.Log;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DuplicateArgumentCheck implements CNNArchASTMethodCoCo {
+public class ArgumentNameCheck implements CNNArchASTMethodCoCo {
+
+    public static final String PLACEHOLDER_ARG_CODE = "x0303B";
+    public static final String DUPLICATE_ARG_CODE = "x03031";
+    public static final String PLACEHOLDER_ARG_MSG = "0"+PLACEHOLDER_ARG_CODE+" \"_placeholder\" is not an argument. ";
+    public static final String DUPLICATE_ARG_MSG = "0"+DUPLICATE_ARG_CODE+" Multiple assignments of the same argument are not allowed. ";
+
 
     @Override
     public void check(ASTMethod node) {
+        checkDuplicateArgument(node);
+        checkPlaceholderArgument(node);
+    }
+
+    public void checkDuplicateArgument(ASTMethod node){
         Set<Enum> set = new HashSet<>();
         for (ASTArgumentAssignment assignment : node.getArgumentListing().getArguments()) {
             if (set.contains(assignment.getLhs())) {
-                Log.error("0x03011 Multiple assignments of the same argument are not allowed",
+                Log.error(DUPLICATE_ARG_MSG,
                         assignment.get_SourcePositionStart());
             }
             else {
@@ -43,4 +53,14 @@ public class DuplicateArgumentCheck implements CNNArchASTMethodCoCo {
             }
         }
     }
+
+    public void checkPlaceholderArgument(ASTMethod node){
+        for(ASTArgumentAssignment assignment:node.getArgumentListing().getArguments()){
+            if (assignment.getLhs().name().equals("_placeholder")){
+                Log.error(PLACEHOLDER_ARG_MSG,
+                        assignment.get_SourcePositionStart());
+            }
+        }
+    }
+
 }

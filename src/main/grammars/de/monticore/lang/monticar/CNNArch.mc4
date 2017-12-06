@@ -20,7 +20,7 @@ grammar CNNArch extends de.monticore.lang.monticar.Common2 {
     interface InputElement;
     interface ArgumentListing;
     interface ArgumentAssignment;
-    interface GroupStructure;
+    interface scope GroupStructure;
     interface Group;
 
     SingleInput implements InputStructure,InputElement = input:Name@InputDef "->";
@@ -30,13 +30,13 @@ grammar CNNArch extends de.monticore.lang.monticar.Common2 {
                                                                    MergeStructure;
 
 
-    OutputStructure implements ArchitectureElement = "output" (GroupOrdinalRange)? "{"
-                                                     elements:ArchitectureElement* "}" "->"
-                                                     output:Name@OutputDef;
+    scope OutputStructure implements ArchitectureElement = "output" (GroupOrdinalRange)? "{"
+                                                            elements:ArchitectureElement* "}" "->"
+                                                            output:Name@OutputDef;
 
-    RepeatStructure implements ArchitectureElement,GroupElement = "repeat"
-                                                                   intLiteral:UnitNumberResolution "{"
-                                                                   ArchitectureElement* "}";
+    scope RepeatStructure implements ArchitectureElement,GroupElement = "repeat"
+                                                                        intLiteral:UnitNumberResolution "{"
+                                                                        ArchitectureElement* "}";
 
     StandardGroupStructure implements ArchitectureElement,GroupElement,GroupStructure = groups:StandardGroup+
                                                                                         MergeStructure;
@@ -81,6 +81,8 @@ grammar CNNArch extends de.monticore.lang.monticar.Common2 {
                        method Optional<de.monticore.lang.monticar.cnnarch._symboltable.InputDefSymbol> getInputSymbol(){};
     ast Group = method ASTGroupDeclaration getDeclaration(){}
                 method ASTGroupBody getBody(){};
+    //ast GroupStructure = method java.util.List<? extends ASTGroup> getGroups(){}
+    //                     methdod ASTMergeStructure getMergeStructure(){};
 
 
 

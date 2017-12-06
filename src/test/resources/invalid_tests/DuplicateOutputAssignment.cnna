@@ -1,0 +1,16 @@
+architecture DuplicateOutputAssignment{
+    def input inp
+    def output outp
+
+    inp ->
+    fullyConnected(units=128, no_bias=true)
+
+    output{
+        fullyConnected()
+        activation.softmax()
+    } -> outp
+
+    output{
+        fullyConnected()
+    } -> outp
+}

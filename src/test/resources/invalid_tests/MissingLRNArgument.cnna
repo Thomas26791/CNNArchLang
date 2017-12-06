@@ -4,7 +4,7 @@ architecture MissingLRNArgument{
     
     in ->
     convolution(filters=64, kernel=4)
-    lrn()
+    lrn(beta=0.75, alpha=0.0001, knorm=2)
     fullyConnected(units=64, no_bias=true)
     output{
         fullyConnected()

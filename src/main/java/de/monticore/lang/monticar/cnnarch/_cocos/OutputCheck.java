@@ -27,18 +27,25 @@ import java.util.Optional;
 
 public class OutputCheck implements CNNArchASTOutputStructureCoCo {
 
+    public static final String OUTPUT_MISSING_VAR_FC_CODE = "x06068";
+    public static final String OUTPUT_MISSING_VAR_FC_MSG = "0" + OUTPUT_MISSING_VAR_FC_CODE +
+            " The output structure has to contain a fullyConnected-Layer without the argument 'units'. " +
+            "This is because the number of outputs is variable for all architectures. " +
+            "Example: output{ fullyConnected() activation.softmax() } -> out";
+
     @Override
     public void check(ASTOutputStructure node) {
         checkFullyConnectedLayer(node);
     }
 
-    public void checkFullyConnectedLayer(ASTOutputStructure node){
+    private void checkFullyConnectedLayer(ASTOutputStructure node){
         ASTFullyConnectedMethod lastFullyConnectedLayer = null;
 
         for (ASTArchitectureElement element: node.getElements()){
             if (element instanceof ASTFullyConnectedMethod){
                 if (lastFullyConnectedLayer != null){
-                    Log.error("0x06021 The argument 'units' is required if the fullyConnected()-layer is not the last fc-layer"
+                    Log.error(ArgumentMissingCheck.MISSING_ARG_MSG +
+                                    "The argument 'units' is required if the fullyConnected()-layer is not the last fc-layer in a output structure."
                             , lastFullyConnectedLayer.get_SourcePositionStart());
                     lastFullyConnectedLayer = null;
                 }
@@ -55,10 +62,7 @@ public class OutputCheck implements CNNArchASTOutputStructureCoCo {
         }
 
         if (lastFullyConnectedLayer == null){
-            Log.error("0x06028 The output block has to contain a fullyConnectedLayer without the argument 'units'. " +
-                            "This is because the number of outputs is variable for all architectures. " +
-                            "Example: output{ fullyConnected() activation.softmax() } -> out"
-                    , node.get_SourcePositionEnd());
+            Log.error(OUTPUT_MISSING_VAR_FC_MSG, node.get_SourcePositionEnd());
         }
     }
 

@@ -23,10 +23,10 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchCompilationUnit;
-import de.monticore.symboltable.ArtifactScope;
-import de.monticore.symboltable.ImportStatement;
-import de.monticore.symboltable.MutableScope;
-import de.monticore.symboltable.ResolvingConfiguration;
+import de.monticore.lang.monticar.cnnarch._ast.ASTOutputDef;
+import de.monticore.lang.monticar.cnnarch._ast.ASTOutputStructure;
+import de.monticore.lang.monticar.cnnarch._cocos.ArchitectureCheck;
+import de.monticore.symboltable.*;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.ArrayList;
@@ -37,7 +37,6 @@ import java.util.Optional;
 public class CNNArchSymbolTableCreator extends CNNArchSymbolTableCreatorTOP {
 
     private String compilationUnitPackage = "";
-
 
 
     public CNNArchSymbolTableCreator(final ResolvingConfiguration resolvingConfig,
@@ -70,8 +69,34 @@ public class CNNArchSymbolTableCreator extends CNNArchSymbolTableCreatorTOP {
         );
 
         addToScopeAndLinkWithNode(compilationUnitSymbol, compilationUnit);
+
     }
 
+    /*@Override
+    public void visit(ASTOutputDef ast) {
+        Log.debug("Building Symboltable for Script: " + ast.getName(),
+                CNNArchSymbolTableCreator.class.getSimpleName());
+
+        OutputSymbol outputSymbol = new OutputSymbol(ast.getName());
+        addToScope(outputSymbol);
+    }
+
+    @Override
+    public void visit(ASTOutputStructure ast) {
+        Log.debug("Linking symbol " + ast.getOutput() + " to output: ",
+                CNNArchSymbolTableCreator.class.getSimpleName());
+
+        Optional<Symbol> optSymbol = compilationUnitScope.resolveDown(ast.getOutput(), OutputKind.KIND);
+
+        if (optSymbol.isPresent()){
+            OutputSymbol outSym = (OutputSymbol) optSymbol.get();
+            addToScopeAndLinkWithNode(outSym, ast);
+        }
+        else {
+            Log.error("0"+OUTPUT_UNDEFINED_CODE+" Output symbol with name "+ ast.getOutput() +" does not exist."
+                    , ast.get_SourcePositionEnd());
+        }
+    }*/
 
     public void endVisit(final ASTArchitecture architecture) {
         removeCurrentScope();

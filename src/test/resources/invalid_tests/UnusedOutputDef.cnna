@@ -1,4 +1,4 @@
-architecture UnusedVarName{
+architecture UnusedOutputDef{
     def input in
     def output out
     def output out2
