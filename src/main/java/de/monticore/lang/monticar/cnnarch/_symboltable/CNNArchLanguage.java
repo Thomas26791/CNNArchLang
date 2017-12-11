@@ -21,6 +21,9 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 
+import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
+import de.monticore.symboltable.resolving.CommonResolvingFilter;
+
 public class CNNArchLanguage extends CNNArchLanguageTOP {
 
     public static final String FILE_ENDING = "cnna";
@@ -37,6 +40,7 @@ public class CNNArchLanguage extends CNNArchLanguageTOP {
     @Override
     protected void initResolvingFilters() {
         super.initResolvingFilters();
+        addResolvingFilter(CommonResolvingFilter.create(MathExpressionSymbol.KIND));
         setModelNameCalculator(new CNNArchModelNameCalculator());
     }
 

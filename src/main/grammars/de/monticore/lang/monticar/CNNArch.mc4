@@ -1,168 +1,64 @@
 package de.monticore.lang.monticar;
 
-grammar CNNArch extends de.monticore.lang.monticar.Common2 {
+grammar CNNArch extends de.monticore.lang.math.Math {
 
-    symbol scope CNNArchCompilationUnit = "architecture" Name& "{" Architecture "}";
+    CNNArchCompilationUnit = Architecture;
 
-    Architecture = defs:VarDef* inputStructure:InputStructure elements:ArchitectureElement*;
+    symbol scope Architecture = "architecture"
+                                name:Name& "{"
+                                defs:ArchDeclaration*
+                                body:ArchBody "}";
 
-    interface VarDef;
-    symbol InputDef implements VarDef = "def" "input" Name& (ArrayDeclaration)?;
-    symbol OutputDef implements VarDef = "def" "output" Name& (ArrayDeclaration)?;
-
+    interface ArchDeclaration;
     interface ArchitectureElement;
-    interface GroupElement;
-    interface Method;
-    interface GroupMethod extends Method,GroupElement;
-    interface MergeMethod extends Method;
-    interface LayerMethod extends Method,ArchitectureElement,GroupElement;
-    interface InputStructure;
-    interface InputElement;
-    interface ArgumentListing;
-    interface ArgumentAssignment;
-    interface scope GroupStructure;
-    interface Group;
+    interface Variable;
 
-    SingleInput implements InputStructure,InputElement = input:Name@InputDef "->";
-    ArrayInput implements InputElement = input:Name@InputDef "[" (index:UnitNumberResolution)? "]" "->";
+    symbol IODeclaration implements ArchDeclaration = "def"
+                                                      (in:"input" | out:"output")
+                                                      type:ArchType
+                                                      Name&
+                                                      (ArrayDeclaration)?;
 
-    InputGroupStructure implements GroupStructure,InputStructure = groups:InputGroup+
-                                                                   MergeStructure;
+    ArchType implements Type = (ElementType ("^" "{" (IOVariable || ",")+ "}")?)?;
 
+    symbol IOVariable implements Variable = Name&;
 
-    scope OutputStructure implements ArchitectureElement = "output" (GroupOrdinalRange)? "{"
-                                                            elements:ArchitectureElement* "}" "->"
-                                                            output:Name@OutputDef;
+    symbol Constant implements Variable = "def" Name& "=" rhs:ArchRhs;
 
-    scope RepeatStructure implements ArchitectureElement,GroupElement = "repeat"
-                                                                        intLiteral:UnitNumberResolution "{"
-                                                                        ArchitectureElement* "}";
+    symbol scope MethodDeclaration implements ArchDeclaration = "def"
+                                                                Name& "("
+                                                                parameters:(Parameter || ",")* ")" "{"
+                                                                body:ArchBody "}";
 
-    StandardGroupStructure implements ArchitectureElement,GroupElement,GroupStructure = groups:StandardGroup+
-                                                                                        MergeStructure;
+    symbol Parameter implements Variable = Name& ("=" default:ArchRhs)?;
 
+    ArchBody = elements:(ArchitectureElement || "->")*;
 
+    IOLayer implements ArchitectureElement = Name& ("[" index:ArchExpression "]")?;
 
-    MergeStructure = "merge" method:MergeMethod;
+    MethodLayer implements ArchitectureElement = Name& "(" arguments:(Argument || ",")* ")";
 
-    StandardGroup implements Group = declaration:GroupDeclaration "{"
-                                     body:GroupBody "}";
+    Argument = Name "=" rhs:ArchRhs;
 
-    InputGroup implements Group = declaration:GroupDeclaration "{"
-                                  input:InputElement
-                                  body:GroupBody "}";
+    ArchRhs = (expression:ArchExpression | sequence:ArchValueSequence);
 
-    GroupDeclaration = "group" (GroupOrdinalRange|GroupOrdinal);
-    GroupOrdinal = intLiteral:UnitNumberResolution;
-    GroupOrdinalRange = startInt:UnitNumberResolution".."endInt:UnitNumberResolution;
+    ArchValueSequence = "[" parallelValues:(SerialValues || "|")* "]";
 
-    GroupBody = elements:GroupElement*;
+    SerialValues = (ArchExpression || "->")+;
 
+    ArchValueRange extends ArchValueSequence = "[" start:ArchExpression
+                                               (serial:"->" | parallel:"|")
+                                               (":" step:ArchExpression)?
+                                               ":" end:ArchExpression "]";
 
+    ParallelLayer implements ArchitectureElement = "(" groups:(ArchBody || "|")+ ")";
 
-    ArgumentRhs = number:Number
-                | tuple:Tuple
-                | booleanVal:BooleanLiteral;
-                //| type:ArgumentKeyword;
+    ArrayAccessLayer implements ArchitectureElement = "[" index:ArchExpression "]";
 
-    Tuple = "(" values:Number "," values:(Number || ",")+ ")";
-    //interface ArgumentKeyword;
-    //ast ArgumentKeyword = method Optional<String> getName(){};
+    ArchExpression = (arithmeticExpression:MathArithmeticExpression
+                   | booleanExpression:MathBooleanExpression
+                   | tupleExpression:TupleExpression);
 
-
-
-
-    ast Method = method ASTArgumentListing getArgumentListing(){}
-                 method Enum getType(){};
-    ast ArgumentAssignment = method Enum getLhs(){}
-                             method ASTArgumentRhs getRhs(){};
-    //ast ArgumentListing = method java.util.List<? extends ASTArgumentAssignment> getArguments(){};
-    ast InputElement = method String getInput(){}
-                       method Optional<de.monticore.lang.monticar.cnnarch._symboltable.InputDefSymbol> getInputSymbol(){};
-    ast Group = method ASTGroupDeclaration getDeclaration(){}
-                method ASTGroupBody getBody(){};
-    //ast GroupStructure = method java.util.List<? extends ASTGroup> getGroups(){}
-    //                     methdod ASTMergeStructure getMergeStructure(){};
-
-
-
-
-    ConcatenateMethod implements MergeMethod = type:ConcatenateType "(" argumentListing:ConcatenateArgumentListing ")";
-    ConcatenateArgumentListing implements ArgumentListing = arguments:(ConcatenateArgumentAssignment || ",")*;
-    ConcatenateArgumentAssignment implements ArgumentAssignment = lhs:ConcatenateArgument "=" rhs:ArgumentRhs;
-    enum ConcatenateArgument = XPLACEHOLDERX:"_placeholder";
-    enum ConcatenateType = "concatenate";
-
-    AddMethod implements MergeMethod = type:AddType "(" argumentListing:AddArgumentListing ")";
-    AddArgumentListing implements ArgumentListing = arguments:(AddArgumentAssignment|| ",")*;
-    AddArgumentAssignment implements ArgumentAssignment = lhs:AddArgument "=" rhs:ArgumentRhs;
-    enum AddArgument = XPLACEHOLDERX:"_placeholder";
-    enum AddType = "add";
-
-    SplitMethod implements GroupMethod = type:SplitType "(" argumentListing:SplitArgumentListing ")";
-    SplitArgumentListing implements ArgumentListing = arguments:(SplitArgumentAssignment || ",")*;
-    SplitArgumentAssignment implements ArgumentAssignment = lhs:SplitArgument "=" rhs:ArgumentRhs;
-    enum SplitArgument = XPLACEHOLDERX:"_placeholder";
-    enum SplitType = "split";
-
-
-    ConvolutionMethod implements LayerMethod = type:ConvolutionType "(" argumentListing:ConvolutionArgumentListing ")";
-    ConvolutionArgumentListing implements ArgumentListing = arguments:(ConvolutionArgumentAssignment || ",")*;
-    ConvolutionArgumentAssignment implements ArgumentAssignment = lhs:ConvolutionArgument "=" rhs:ArgumentRhs;
-    enum ConvolutionArgument = KERNEL:"kernel"               //required
-                             | FILTERS:"filters"             //required
-                             | STRIDE:"stride"
-                             | NOBIAS:"no_bias";
-    enum ConvolutionType = "convolution";
-
-    FullyConnectedMethod implements LayerMethod = type:FullyConnectedType "(" argumentListing:FullyConnectedArgumentListing ")";
-    FullyConnectedArgumentListing implements ArgumentListing = arguments:(FullyConnectedArgumentAssignment || ",")*;
-    FullyConnectedArgumentAssignment implements ArgumentAssignment = lhs:FullyConnectedArgument "=" rhs:ArgumentRhs;
-    enum FullyConnectedArgument = UNITS:"units"     //required
-                                | NOBIAS:"no_bias";
-    enum FullyConnectedType = "fullyConnected";
-
-
-    ActivationMethod implements LayerMethod = "activation."type:ActivationType "(" argumentListing:ActivationArgumentListing ")";
-    ActivationArgumentListing implements ArgumentListing = arguments:(ActivationArgumentAssignment || ",")*;
-    ActivationArgumentAssignment implements ArgumentAssignment = lhs:ActivationArgument "=" rhs:ArgumentRhs;
-    enum ActivationArgument = XPLACEHOLDERX:"_placeholder";
-    enum ActivationType = "relu"
-                        | "sigmoid"
-                        | "tanh"
-                        | "softmax";
-
-
-    PoolingMethod implements LayerMethod = "pooling."type:PoolingType "(" argumentListing:PoolingArgumentListing ")";
-    PoolingArgumentListing implements ArgumentListing = arguments:(PoolingArgumentAssignment || ",")*;
-    PoolingArgumentAssignment implements ArgumentAssignment = lhs:PoolingArgument "=" rhs:ArgumentRhs;
-    enum PoolingArgument = KERNEL:"kernel"                   //required
-                         | STRIDE:"stride"
-                         | Global:"global";
-    enum PoolingType = "max"
-                     | "avg";
-
-
-    DropoutMethod implements LayerMethod = type:DropoutType "(" argumentListing:DropoutArgumentListing ")";
-    DropoutArgumentListing implements ArgumentListing = arguments:(DropoutArgumentAssignment || ",")*;
-    DropoutArgumentAssignment implements ArgumentAssignment = lhs:DropoutArgument "=" rhs:ArgumentRhs;
-    enum DropoutArgument = P:"p";
-    enum DropoutType = "dropout";
-
-
-    BatchNormMethod implements LayerMethod = type:BatchNormType "(" argumentListing:BatchNormArgumentListing ")";
-    BatchNormArgumentListing implements ArgumentListing = arguments:(BatchNormArgumentAssignment || ",")*;
-    BatchNormArgumentAssignment implements ArgumentAssignment = lhs:BatchNormArgument "=" rhs:ArgumentRhs;
-    enum BatchNormArgument = XPLACEHOLDERX:"_placeholder";
-    enum BatchNormType = "batchNorm";
-
-    LrnMethod implements LayerMethod = type:LrnType "(" argumentListing:LrnArgumentListing ")";
-    LrnArgumentListing implements ArgumentListing = arguments:(LrnArgumentAssignment || ",")*;
-    LrnArgumentAssignment implements ArgumentAssignment = lhs:LrnArgument "=" rhs:ArgumentRhs;
-    enum LrnArgument = NSIZE:"nsize"              //required
-                     | ALPHA:"alpha"
-                     | BETA:"beta"
-                     | KNORM:"knorm";
-    enum LrnType = "lrn";
+    TupleExpression implements MathExpression = "(" expressions:MathArithmeticExpression "," expressions:(MathArithmeticExpression || ",")* ")";
 
 }

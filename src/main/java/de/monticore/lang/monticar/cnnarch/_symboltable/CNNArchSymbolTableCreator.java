@@ -21,11 +21,15 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 
+import de.monticore.lang.math.math._ast.ASTMathExpression;
+import de.monticore.lang.math.math._symboltable.MathSymbolTableCreator;
+import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchCompilationUnit;
-import de.monticore.lang.monticar.cnnarch._ast.ASTOutputDef;
-import de.monticore.lang.monticar.cnnarch._ast.ASTOutputStructure;
-import de.monticore.lang.monticar.cnnarch._cocos.ArchitectureCheck;
+import de.monticore.lang.monticar.cnnarch._ast.ASTMethodLayer;
+import de.monticore.lang.monticar.cnnarch._ast.ASTTupleExpression;
+import de.monticore.lang.monticar.cnnarch._symboltable.smi.TupleExpressionSymbol;
+import de.monticore.lang.monticar.cnnarch._visitor.CommonCNNArchDelegatorVisitor;
 import de.monticore.symboltable.*;
 import de.se_rwth.commons.logging.Log;
 
@@ -38,21 +42,35 @@ public class CNNArchSymbolTableCreator extends CNNArchSymbolTableCreatorTOP {
 
     private String compilationUnitPackage = "";
 
+    private MathSymbolTableCreator mathSTC;
+
 
     public CNNArchSymbolTableCreator(final ResolvingConfiguration resolvingConfig,
                                      final MutableScope enclosingScope) {
         super(resolvingConfig, enclosingScope);
+        initSuperSTC(resolvingConfig);
     }
 
     public CNNArchSymbolTableCreator(final ResolvingConfiguration resolvingConfig,
                                      final Deque<MutableScope> scopeStack) {
         super(resolvingConfig, scopeStack);
+        initSuperSTC(resolvingConfig);
+    }
+
+    private void initSuperSTC(final ResolvingConfiguration resolvingConfig) {
+        this.mathSTC = new MathSymbolTableCreator(resolvingConfig, scopeStack);
+        CommonCNNArchDelegatorVisitor visitor = new CommonCNNArchDelegatorVisitor();
+
+        visitor.set_de_monticore_lang_monticar_cnnarch__visitor_CNNArchVisitor(this);
+        visitor.set_de_monticore_lang_math_math__visitor_MathVisitor(mathSTC);
+
+        setRealThis(visitor);
     }
 
 
     @Override
     public void visit(final ASTCNNArchCompilationUnit compilationUnit) {
-        Log.debug("Building Symboltable for Script: " + compilationUnit.getName(),
+        Log.debug("Building Symboltable for Script: " + compilationUnit.getArchitecture().getName(),
                 CNNArchSymbolTableCreator.class.getSimpleName());
 
         List<ImportStatement> imports = new ArrayList<>();
@@ -63,43 +81,28 @@ public class CNNArchSymbolTableCreator extends CNNArchSymbolTableCreatorTOP {
                 imports);
 
         putOnStack(artifactScope);
+    }
 
-        CNNArchCompilationUnitSymbol compilationUnitSymbol = new CNNArchCompilationUnitSymbol(
-                compilationUnit.getName()
+    public void visit(final ASTArchitecture architecture) {
+        ArchitectureSymbol architectureSymbol = new ArchitectureSymbol(
+                architecture.getName()
         );
 
-        addToScopeAndLinkWithNode(compilationUnitSymbol, compilationUnit);
-
+        addToScopeAndLinkWithNode(architectureSymbol, architecture);
     }
-
-    /*@Override
-    public void visit(ASTOutputDef ast) {
-        Log.debug("Building Symboltable for Script: " + ast.getName(),
-                CNNArchSymbolTableCreator.class.getSimpleName());
-
-        OutputSymbol outputSymbol = new OutputSymbol(ast.getName());
-        addToScope(outputSymbol);
-    }
-
-    @Override
-    public void visit(ASTOutputStructure ast) {
-        Log.debug("Linking symbol " + ast.getOutput() + " to output: ",
-                CNNArchSymbolTableCreator.class.getSimpleName());
-
-        Optional<Symbol> optSymbol = compilationUnitScope.resolveDown(ast.getOutput(), OutputKind.KIND);
-
-        if (optSymbol.isPresent()){
-            OutputSymbol outSym = (OutputSymbol) optSymbol.get();
-            addToScopeAndLinkWithNode(outSym, ast);
-        }
-        else {
-            Log.error("0"+OUTPUT_UNDEFINED_CODE+" Output symbol with name "+ ast.getOutput() +" does not exist."
-                    , ast.get_SourcePositionEnd());
-        }
-    }*/
 
     public void endVisit(final ASTArchitecture architecture) {
         removeCurrentScope();
     }
-    
+
+    @Override
+    public void endVisit(ASTTupleExpression node) {
+        TupleExpressionSymbol symbol = new TupleExpressionSymbol();
+
+        for (ASTMathExpression expression : node.getExpressions()){
+            symbol.add((MathExpressionSymbol)expression.getSymbol().get());
+        }
+
+        addToScopeAndLinkWithNode(symbol, node);
+    }
 }

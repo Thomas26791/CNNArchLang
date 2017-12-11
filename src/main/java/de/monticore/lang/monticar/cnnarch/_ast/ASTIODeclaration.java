@@ -18,7 +18,26 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch.datamodel;
+package de.monticore.lang.monticar.cnnarch._ast;
 
-public class Pooling {
+import de.monticore.lang.monticar.common2._ast.ASTArrayDeclaration;
+
+import java.util.Optional;
+
+public class ASTIODeclaration extends ASTIODeclarationTOP {
+
+    public ASTIODeclaration() {
+    }
+
+    public ASTIODeclaration(ASTArchType type, String name, ASTArrayDeclaration arrayDeclaration, String in, String out) {
+        super(type, name, arrayDeclaration, in, out);
+    }
+
+    public boolean isInput(){
+        return in.isPresent();
+    }
+
+    public boolean isOutput(){
+        return out.isPresent();
+    }
 }

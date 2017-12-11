@@ -25,47 +25,30 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import de.monticore.lang.monticar.cnnarch._parser.CNNArchParser;
-import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.symboltable.Scope;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.Optional;
 
 public class SymtabTest extends AbstractSymtabTest {
 
     @Test
     public void testParsing() throws Exception {
         CNNArchParser parser = new CNNArchParser();
-        assertTrue(parser.parse("src/test/resources/valid_tests/SimpleNetworkSoftmax.cnna").isPresent());
+        assertTrue(parser.parse("src/test/resources/architectures/Alexnet.cnna").isPresent());
     }
 
     @Test
     public void testAlexnet(){
         Scope symTab = createSymTab("src/test/resources/architectures");
-        CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
                 "Alexnet",
-                CNNArchCompilationUnitSymbol.KIND).orElse(null);
+                ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
-
     }
 
-    @Test
-    public void testMultiInput(){
-        Scope symTab = createSymTab("src/test/resources/architectures");
-        CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
-                "ThreeInputCNN_M14",
-                CNNArchCompilationUnitSymbol.KIND).orElse(null);
-        assertNotNull(a);
 
-    }
-
-    @Test
-    public void testMultiInputArray(){
-        Scope symTab = createSymTab("src/test/resources/architectures");
-        CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
-                "ThreeInputCNN_M14_alternative",
-                CNNArchCompilationUnitSymbol.KIND).orElse(null);
-        assertNotNull(a);
-
-    }
 
 }

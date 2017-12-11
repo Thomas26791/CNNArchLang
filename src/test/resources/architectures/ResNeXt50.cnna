@@ -1,163 +1,45 @@
 architecture ResNeXt50{
-    def input image
-    def output out
+    def input Z(0:255)^{H,W,C} image
+    def output Q(0:1)^{NUM_CLASSES} predictions
+
+    def conv(filter, channels, stride=1, act=true){
+        Convolution(kernel=filter, channels=channels, stride=stride) ->
+        BatchNorm() ->
+        Relu(_if=act)
+    }
+    def resGroup(innerChannels, outChannels, stride=1){
+        conv(filter=(1,1), channels=innerChannels) ->
+        conv(filter=(3,3), channels=innerChannels, stride=stride) ->
+        conv(filter=(1,1), channels=outChannels, act=false)
+    }
+    def skip(outChannels=[], stride=[]){
+        Convolution(kernel=(1,1), channels=outChannels, stride=stride) ->
+        BatchNorm()
+    }
+    def resLayer(innerChannels, outChannels, stride=1, cardinality=32){
+        (
+            resGroup(innerChannels=innerChannels,
+                     outChannels=outChannels,
+                     stride=stride,
+                     _for=[1|:cardinality]) ->
+            Add()
+        |
+            skip(outChannels=outChannels, stride=stride, _if=(stride!=1))
+        ) ->
+        Add() ->
+        Relu()
+    }
+    def resStructure(innerChannels, outChannels, resLayers){
+        resLayer(innerChannels=innerChannels, outChannels=outChannels, stride=2) ->
+        resLayer(innerChannels=innerChannels, outChannels=outChannels, _for=[2->:resLayers])
+    }
 
     image ->
-    convolution(kernel=7, filters=64, stride=2)
-    batchNorm()
-    activation.relu()
-    pooling.max(kernel=3, stride=2)
-    
-    group 1{
-        group 1..32{
-            convolution(kernel=1, filters=4)
-            batchNorm()
-            activation.relu()
-            convolution(kernel=3, filters=4, stride=2)
-            activation.relu()
-            convolution(kernel=1, filters=256)
-            batchNorm()
-        } merge add()
-    }
-    group 2{
-        convolution(kernel=1, filters=256, stride=2)
-        batchNorm()
-    }
-    merge add()
-    activation.relu()
-    
-    repeat 2{
-        group 1{
-            group 1..32{
-                convolution(kernel=1, filters=4)
-                batchNorm()
-                activation.relu()
-                convolution(kernel=3, filters=4)
-                batchNorm()
-                activation.relu()
-                convolution(kernel=1, filters=256)
-                batchNorm()
-            } merge add()
-        }
-        group 2{}
-        merge add()
-        activation.relu()
-    }
-    
-    group 1{
-        group 1..32{
-            convolution(kernel=1, filters=8)
-            batchNorm()
-            activation.relu()
-            convolution(kernel=3, filters=8, stride=2)
-            batchNorm()
-            activation.relu()
-            convolution(kernel=1, filters=512)
-            batchNorm()
-        } merge add()
-    }
-    group 2{
-        convolution(kernel=1, filters=512, stride=2)
-        batchNorm()
-    }
-    merge add()
-    activation.relu()
-    
-    repeat 3{
-        group 1{
-            group 1..32{
-                convolution(kernel=1, filters=8)
-                batchNorm()
-                activation.relu()
-                convolution(kernel=3, filters=8)
-                batchNorm()
-                activation.relu()
-                convolution(kernel=1, filters=512)
-                batchNorm()
-            } merge add()
-        }
-        group 2{}
-        merge add()
-        activation.relu()
-    }
-    
-    group 1{
-        group 1..32{
-            convolution(kernel=1, filters=16)
-            batchNorm()
-            activation.relu()
-            convolution(kernel=3, filters=16, stride=2)
-            batchNorm()
-            activation.relu()
-            convolution(kernel=1, filters=1024)
-            batchNorm()
-        } merge add()
-    }
-    group 2{
-        convolution(kernel=1, filters=1024, stride=2)
-        batchNorm()
-    }
-    merge add()
-    activation.relu()
-    
-    repeat 5{
-        group 1{
-            group 1..32{
-                convolution(kernel=1, filters=16)
-                batchNorm()
-                activation.relu()
-                convolution(kernel=3, filters=16)
-                batchNorm()
-                activation.relu()
-                convolution(kernel=1, filters=1024)
-                batchNorm()
-            } merge add()
-        }
-        group 2{}
-        merge add()
-        activation.relu()
-    }
-    
-    group 1{
-        group 1..32{
-            convolution(kernel=1, filters=32)
-            batchNorm()
-            activation.relu()
-            convolution(kernel=3, filters=32, stride=2)
-            batchNorm()
-            activation.relu()
-            convolution(kernel=1, filters=2048)
-            batchNorm()
-        } merge add()
-    }
-    group 2{
-        convolution(kernel=1, filters=2048, stride=2)
-        batchNorm()
-    }
-    merge add()
-    activation.relu()
-    
-    repeat 2{
-        group 1{
-            group 1..32{
-                convolution(kernel=1, filters=32)
-                batchNorm()
-                activation.relu()
-                convolution(kernel=3, filters=32, stride=2)
-                batchNorm()
-                activation.relu()
-                convolution(kernel=1, filters=2048)
-                batchNorm()
-            } merge add()
-        }
-        group 2{}
-        merge add()
-        activation.relu()
-    }
-    
-    output{
-        pooling.avg(global=true)
-        fullyConnected()
-        activation.softmax()
-    } -> out
+    conv(filter=(7,7), channels=64, stride=2) ->
+    MaxPooling(kernel=(3,3), stride=2) ->
+    resStructure(innerChannels=[4->8->16->32], outChannels=[256->512->1024->2048], resLayers=[3->4->6->3]) ->
+    AvgPooling(global=true) ->
+    FullyConnected(units=NUM_CLASSES) ->
+    Softmax() ->
+    predictions
 }

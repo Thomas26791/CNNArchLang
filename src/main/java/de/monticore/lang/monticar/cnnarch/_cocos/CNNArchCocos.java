@@ -24,11 +24,6 @@ package de.monticore.lang.monticar.cnnarch._cocos;
 public class CNNArchCocos {
 
     public static CNNArchCoCoChecker createChecker() {
-        return new CNNArchCoCoChecker()
-                .addCoCo(new OutputCheck())
-                .addCoCo(new ArgumentNameCheck())
-                .addCoCo(new ArgumentTypeCheck())
-                .addCoCo(new ArgumentMissingCheck())
-                .addCoCo(new ArchitectureCheck());
+        return new CNNArchCoCoChecker();
     }
 }
