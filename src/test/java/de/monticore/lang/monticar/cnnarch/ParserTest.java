@@ -24,6 +24,7 @@ import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchCompilationUnit;
 import de.monticore.lang.monticar.cnnarch._parser.CNNArchParser;
 import de.se_rwth.commons.logging.Log;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -62,6 +63,7 @@ public class ParserTest {
         Log.enableFailQuick(ENABLE_FAIL_QUICK);
     }
 
+    @Ignore
     @Test
     public void testCNNArch() throws Exception {
         test("cnna");

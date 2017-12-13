@@ -1,6 +1,6 @@
 architecture ThreeInputCNN_M14{
-    def input Z(0:255)^{H,W,C} image[3]
-    def output Q(0:1)^{NUM_CLASSES} predictions
+    def input Z(0:255)^{h,w,c} image[3]
+    def output Q(0:1)^{classes} predictions
 
     def conv(filter, channels){
         Convolution(kernel=filter, channels=channels) ->
@@ -21,7 +21,7 @@ architecture ThreeInputCNN_M14{
 
     FullyConnected(units=32) ->
     Relu() ->
-    FullyConnected(units=NUM_CLASSES) ->
+    FullyConnected(units=classes) ->
     Softmax() ->
     predictions
 }

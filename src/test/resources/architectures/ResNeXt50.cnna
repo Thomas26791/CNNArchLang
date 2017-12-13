@@ -1,6 +1,6 @@
 architecture ResNeXt50{
-    def input Z(0:255)^{H,W,C} image
-    def output Q(0:1)^{NUM_CLASSES} predictions
+    def input Z(0:255)^{h,w,c} image
+    def output Q(0:1)^{classes} predictions
 
     def conv(filter, channels, stride=1, act=true){
         Convolution(kernel=filter, channels=channels, stride=stride) ->
@@ -39,7 +39,7 @@ architecture ResNeXt50{
     MaxPooling(kernel=(3,3), stride=2) ->
     resStructure(innerChannels=[4->8->16->32], outChannels=[256->512->1024->2048], resLayers=[3->4->6->3]) ->
     AvgPooling(global=true) ->
-    FullyConnected(units=NUM_CLASSES) ->
+    FullyConnected(units=classes) ->
     Softmax() ->
     predictions
 }

@@ -18,39 +18,25 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._symboltable.smi;
+package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
-
-import java.util.LinkedList;
-import java.util.List;
-
-public class TupleExpressionSymbol extends MathExpressionSymbol {
-
-    List<MathExpressionSymbol> symbols = new LinkedList<>();
-
-    public TupleExpressionSymbol() {
-    }
-
-    @Override
-    public String getTextualRepresentation() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("(");
-        for (int i = 0; i<symbols.size(); i++){
-            builder.append(symbols.get(i).getTextualRepresentation());
-            if (i != symbols.size()-1 || i==0){
-                builder.append(",");
-            }
+public enum VariableType {
+    PARAMETER{
+        @Override
+        public String toString(){
+            return "parameter";
         }
-        builder.append(")");
-        return builder.toString();
-    }
-
-    public void add(MathExpressionSymbol symbol){
-        symbols.add(symbol);
-    }
-
-    public List<MathExpressionSymbol> getSymbols() {
-        return symbols;
-    }
+    },
+    CONSTANT{
+        @Override
+        public String toString(){
+            return "constant";
+        }
+    },
+    IOVariable{
+        @Override
+        public String toString(){
+            return "ioVariable";
+        }
+    };
 }

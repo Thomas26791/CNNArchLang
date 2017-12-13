@@ -18,48 +18,39 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch.helper;
+package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
-import de.se_rwth.commons.logging.Log;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import java.util.LinkedList;
+import java.util.List;
 
-public class Calculator {
+public class TupleExpressionSymbol extends MathExpressionSymbol {
 
-    private static Calculator instance = null;
+    List<MathExpressionSymbol> symbols = new LinkedList<>();
 
-    private ScriptEngine engine;
-
-    private Calculator() {
-        ScriptEngineManager manager = new ScriptEngineManager();
-        engine = manager.getEngineByExtension("js");
+    public TupleExpressionSymbol() {
     }
 
-    public static Calculator getInstance(){
-        if (instance == null){
-            instance = new Calculator();
+    @Override
+    public String getTextualRepresentation() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(");
+        for (int i = 0; i<symbols.size(); i++){
+            builder.append(symbols.get(i).getTextualRepresentation());
+            if (i != symbols.size()-1 || i==0){
+                builder.append(",");
+            }
         }
-        return instance;
+        builder.append(")");
+        return builder.toString();
     }
 
-    public static void clear(){
-        instance = null;
+    public void add(MathExpressionSymbol symbol){
+        symbols.add(symbol);
     }
 
-
-    public Object calculate(MathExpressionSymbol expression){
-        Object obj = null;
-        try {
-            obj = engine.eval(expression.getTextualRepresentation());
-        }
-        catch (ScriptException e){
-            Log.error("Calculation error in the expression: " + expression.getTextualRepresentation()
-                    , expression.getSourcePosition());
-        }
-        return obj;
+    public List<MathExpressionSymbol> getSymbols() {
+        return symbols;
     }
-
 }

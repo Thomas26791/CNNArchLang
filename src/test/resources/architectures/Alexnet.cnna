@@ -1,10 +1,7 @@
 architecture Alexnet{
-    def input Z(0:255)^{H,W,C} image
-    def output Q(0:1)^{NUM_CLASSES} predictions
+    def input Z(0:255)^{h,w,c} image
+    def output Q(0:1)^{classes} predictions
 
-    def test(){
-        Convolution(kernel=filter, channels=3^(2*2)/2, stride=4+3*7, no_bias=(6==2*3), no_bias=((3,3)==(3,3)))
-    }
     def conv(filter, channels, hasPool=true, convStride=1){
         Convolution(kernel=filter, channels=channels, stride=convStride) ->
         Relu() ->
@@ -37,7 +34,7 @@ architecture Alexnet{
     split2(i=[0|1], groups=2) ->
 
     fc(_for=[1->2]) ->
-    FullyConnected(units=NUM_CLASSES) ->
+    FullyConnected(units=classes) ->
     Softmax() ->
     predictions
 }

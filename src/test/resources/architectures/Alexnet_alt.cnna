@@ -1,6 +1,6 @@
 architecture Alexnet_alt{
-    def input Z(0:255)^{H,W,C} image
-    def output Q(0:1)^{NUM_CLASSES} predictions
+    def input Z(0:255)^{h,w,c} image
+    def output Q(0:1)^{classes} predictions
 
     def conv(filter, channels, hasPool=true, convStride=1){
         Convolution(kernel=filter, channels=channels, stride=convStride) ->
@@ -41,7 +41,7 @@ architecture Alexnet_alt{
 
     fc() ->
     fc() ->
-    FullyConnected(units=NUM_CLASSES) ->
+    FullyConnected(units=classes) ->
     Softmax() ->
     predictions
 }

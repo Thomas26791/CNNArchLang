@@ -6,7 +6,7 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     symbol scope Architecture = "architecture"
                                 name:Name& "{"
-                                defs:ArchDeclaration*
+                                declarations:ArchDeclaration*
                                 body:ArchBody "}";
 
     interface ArchDeclaration;
@@ -19,45 +19,49 @@ grammar CNNArch extends de.monticore.lang.math.Math {
                                                       Name&
                                                       (ArrayDeclaration)?;
 
-    ArchType implements Type = (ElementType ("^" "{" (IOVariable || ",")+ "}")?)?;
+    ArchType implements Type = (ElementType ("^" "{" (Dimension || ",")+ "}")?)?;
 
-    symbol IOVariable implements Variable = Name&;
+    Dimension = IOVariable | intLiteral:UnitNumberResolution;
 
-    symbol Constant implements Variable = "def" Name& "=" rhs:ArchRhs;
+    IOVariable implements Variable = Name&;
+
+    Constant implements Variable = "def" Name& "=" rhs:ArchExpression;
 
     symbol scope MethodDeclaration implements ArchDeclaration = "def"
                                                                 Name& "("
                                                                 parameters:(Parameter || ",")* ")" "{"
                                                                 body:ArchBody "}";
 
-    symbol Parameter implements Variable = Name& ("=" default:ArchRhs)?;
+    Parameter implements Variable = Name& ("=" default:ArchExpression)?;
 
-    ArchBody = elements:(ArchitectureElement || "->")*;
+    scope ArchBody = elements:(ArchitectureElement || "->")*;
 
-    IOLayer implements ArchitectureElement = Name& ("[" index:ArchExpression "]")?;
+    IOLayer implements ArchitectureElement = Name& ("[" index:ArchSimpleExpression "]")?;
 
     MethodLayer implements ArchitectureElement = Name& "(" arguments:(Argument || ",")* ")";
 
-    Argument = Name "=" rhs:ArchRhs;
-
-    ArchRhs = (expression:ArchExpression | sequence:ArchValueSequence);
-
-    ArchValueSequence = "[" parallelValues:(SerialValues || "|")* "]";
-
-    SerialValues = (ArchExpression || "->")+;
-
-    ArchValueRange extends ArchValueSequence = "[" start:ArchExpression
-                                               (serial:"->" | parallel:"|")
-                                               (":" step:ArchExpression)?
-                                               ":" end:ArchExpression "]";
+    Argument = Name "=" rhs:ArchExpression;
 
     ParallelLayer implements ArchitectureElement = "(" groups:(ArchBody || "|")+ ")";
 
-    ArrayAccessLayer implements ArchitectureElement = "[" index:ArchExpression "]";
+    ArrayAccessLayer implements ArchitectureElement = "[" index:ArchSimpleExpression "]";
 
-    ArchExpression = (arithmeticExpression:MathArithmeticExpression
-                   | booleanExpression:MathBooleanExpression
-                   | tupleExpression:TupleExpression);
+
+    ArchExpression = (expression:ArchSimpleExpression | sequence:ArchValueSequence);
+
+    ArchValueSequence = "[" parallelValues:(ArchSerialSequence || "|")* "]";
+
+    ArchSerialSequence = serialValues:(ArchSimpleExpression || "->")+;
+
+    ArchValueRange extends ArchValueSequence = "[" start:ArchSimpleExpression
+                                               (serial:"->" | parallel:"|")
+                                               (":" step:ArchSimpleExpression)?
+                                               ":" end:ArchSimpleExpression "]";
+
+
+    ArchSimpleExpression = (arithmeticExpression:MathArithmeticExpression
+                         | booleanExpression:MathBooleanExpression
+                         | tupleExpression:TupleExpression);
 
     TupleExpression implements MathExpression = "(" expressions:MathArithmeticExpression "," expressions:(MathArithmeticExpression || ",")* ")";
 

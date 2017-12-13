@@ -42,7 +42,7 @@
  |
  | The sections in this sample file are intended to give you a running start at
  | getting the most out of your Maven installation. Where appropriate, the default
- | values (values used when the setting is not specified) are provided.
+ | elements (elements used when the setting is not specified) are provided.
  |
  |-->
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
