@@ -41,6 +41,13 @@ public class CNNArchLanguage extends CNNArchLanguageTOP {
     protected void initResolvingFilters() {
         super.initResolvingFilters();
         addResolvingFilter(CommonResolvingFilter.create(MathExpressionSymbol.KIND));
+        addResolvingFilter(CommonResolvingFilter.create(ArchitectureSymbol.KIND));
+        addResolvingFilter(CommonResolvingFilter.create(MethodDeclarationSymbol.KIND));
+        addResolvingFilter(CommonResolvingFilter.create(LayerSymbol.KIND));
+        addResolvingFilter(CommonResolvingFilter.create(VariableSymbol.KIND));
+        addResolvingFilter(CommonResolvingFilter.create(IODeclarationSymbol.KIND));
+        addResolvingFilter(CommonResolvingFilter.create(ArgumentSymbol.KIND));
+        addResolvingFilter(CommonResolvingFilter.create(ArchExpressionSymbol.KIND));
         setModelNameCalculator(new CNNArchModelNameCalculator());
     }
 

@@ -20,20 +20,41 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.symboltable.SymbolKind;
+import java.util.Optional;
+import java.util.Set;
 
-public class ArchValueKind implements SymbolKind {
+public class IOLayerSymbol extends LayerSymbol {
 
-    private static final String NAME = "de.monticore.lang.monticar.cnnarch._symboltable.ArchValueKind";
+    private ArchSimpleExpressionSymbol arrayAccess = null;
+    private IODeclarationSymbol definition;
 
-    @Override
-    public String getName() {
-        return NAME;
+    public IOLayerSymbol(String name) {
+        super(name);
+    }
+
+    public Optional<ArchSimpleExpressionSymbol> getArrayAccess() {
+        return Optional.ofNullable(arrayAccess);
+    }
+
+    public void setArrayAccess(ArchSimpleExpressionSymbol arrayAccess) {
+        this.arrayAccess = arrayAccess;
+    }
+
+    public IODeclarationSymbol getDefinition() {
+        return definition;
+    }
+
+    public void setDefinition(IODeclarationSymbol definition) {
+        this.definition = definition;
     }
 
     @Override
-    public boolean isKindOf(SymbolKind kind) {
-        return NAME.equals(kind.getName()) || SymbolKind.super.isKindOf(kind);
+    public Set<String> resolve() {
+        return null;
     }
 
+    @Override
+    protected void checkIfResolved() {
+
+    }
 }

@@ -18,8 +18,25 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch.helper;
+package de.monticore.lang.monticar.cnnarch._symboltable;
 
-public class ExpressionTranslationHelper {
+import java.util.List;
+import java.util.Optional;
+
+abstract public class ArchAbstractSequenceExpression extends ArchExpressionSymbol {
+
+
+    public ArchAbstractSequenceExpression() {
+        super();
+    }
+
+
+    abstract public boolean isParallelSequence();
+
+    abstract public boolean isSerialSequence();
+
+    abstract public Optional<Integer> getParallelLength();
+
+    abstract public Optional<Integer> getSerialLength();
 
 }

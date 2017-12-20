@@ -20,32 +20,29 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-public class ArchSequenceValueSymbol extends ArchAbstractSequenceValue {
+public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression {
 
-    private List<List<ArchSimpleValueSymbol>> elements;
+    private List<List<ArchSimpleExpressionSymbol>> elements;
 
-    public ArchSequenceValueSymbol(List<List<ArchSimpleValueSymbol>> elements) {
-        this.elements = elements;
+    public ArchSequenceExpressionSymbol() {
+        super();
     }
 
 
-
-    public List<List<ArchSimpleValueSymbol>> getElements() {
+    public List<List<ArchSimpleExpressionSymbol>> getElements() {
         return elements;
     }
 
-    public void setElements(List<List<ArchSimpleValueSymbol>> elements) {
+    public void setElements(List<List<ArchSimpleExpressionSymbol>> elements) {
         this.elements = elements;
     }
 
     @Override
     public boolean isSerialSequence(){
         boolean isSerial = !isParallelSequence();
-        for (List<ArchSimpleValueSymbol> serialElement : getElements()){
+        for (List<ArchSimpleExpressionSymbol> serialElement : getElements()){
             if (serialElement.size() >= 2){
                 isSerial = true;
             }
@@ -67,7 +64,7 @@ public class ArchSequenceValueSymbol extends ArchAbstractSequenceValue {
     public Optional<Integer> getSerialLength() {
         if (!elements.isEmpty()){
             int maxLenght = 0;
-            for (List<ArchSimpleValueSymbol> element : getElements()){
+            for (List<ArchSimpleExpressionSymbol> element : getElements()){
                 if (maxLenght < element.size()){
                     maxLenght = element.size();
                 }
@@ -81,26 +78,23 @@ public class ArchSequenceValueSymbol extends ArchAbstractSequenceValue {
 
     @Override
     public Optional<Object> getValue() {
-        ArchSequenceValueSymbol resolvedSymbol = resolve();
-        if (resolvedSymbol.isFullyResolved()){
+        if (isFullyResolved()){
             List<List<Object>> valueLists = new ArrayList<>(4);
 
-            for (List<ArchSimpleValueSymbol> serialList : resolvedSymbol.getElements()) {
+            for (List<ArchSimpleExpressionSymbol> serialList : getElements()) {
 
                 List<Object> values = new ArrayList<>(4);
-                for (ArchSimpleValueSymbol element : serialList) {
+                for (ArchSimpleExpressionSymbol element : serialList) {
                     values.add(element.getValue().get());
                 }
                 valueLists.add(values);
             }
 
+            if (valueLists.isEmpty()) {
+                valueLists.add(new ArrayList<Object>(2));
+            }
 
-            if (isParallelSequence() || valueLists.isEmpty()) {
-                return Optional.of(valueLists);
-            }
-            else {
-                return Optional.of(valueLists.get(0));
-            }
+            return Optional.of(valueLists);
         }
         else{
             return Optional.empty();
@@ -108,32 +102,35 @@ public class ArchSequenceValueSymbol extends ArchAbstractSequenceValue {
     }
 
     @Override
-    public ArchSequenceValueSymbol resolve() {
-        if (isFullyResolved()){
-            return this;
-        }
-        else {
-            boolean isFullyResolved = true;
+    public Set<String> resolve() {
+        Set<String> unresolvableSet = new HashSet<>();
+        if (!isFullyResolved()){
 
-            List<List<ArchSimpleValueSymbol>> resolvedElements = new ArrayList<>(4);
-            for (List<ArchSimpleValueSymbol> serialList : getElements()) {
-
-                List<ArchSimpleValueSymbol> resolvedSerialList = new ArrayList<>(4);
-                for (ArchSimpleValueSymbol element : serialList) {
-
-                    ArchSimpleValueSymbol resolvedElement = element.resolve();
-                    if (!resolvedElement.isFullyResolved()) {
-                        isFullyResolved = false;
-                    }
-                    resolvedSerialList.add(element.resolve());
+            for (List<ArchSimpleExpressionSymbol> serialList : getElements()) {
+                for (ArchSimpleExpressionSymbol element : serialList) {
+                    unresolvableSet.addAll(element.resolve());
                 }
-                resolvedElements.add(resolvedSerialList);
             }
 
-            ArchSequenceValueSymbol resolvedCopy = new ArchSequenceValueSymbol(resolvedElements);
-            resolvedCopy.setFullyResolved(isFullyResolved);
-            return resolvedCopy;
+            if (unresolvableSet.isEmpty()) {
+                setFullyResolved(true);
+            }
         }
+        return unresolvableSet;
+    }
+
+    @Override
+    protected void checkIfResolved() {
+        boolean isResolved = true;
+        for (List<ArchSimpleExpressionSymbol> serialList : getElements()) {
+            for (ArchSimpleExpressionSymbol element : serialList) {
+                element.checkIfResolved();
+                if (!element.isFullyResolved()){
+                    isResolved = false;
+                }
+            }
+        }
+        setFullyResolved(isResolved);
     }
 
 }

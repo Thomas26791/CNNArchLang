@@ -27,18 +27,22 @@ import java.util.List;
 
 public class TupleExpressionSymbol extends MathExpressionSymbol {
 
-    List<MathExpressionSymbol> symbols = new LinkedList<>();
+    List<MathExpressionSymbol> expressions = new LinkedList<>();
 
     public TupleExpressionSymbol() {
+    }
+
+    public TupleExpressionSymbol(List<MathExpressionSymbol> expressions) {
+        this.expressions = expressions;
     }
 
     @Override
     public String getTextualRepresentation() {
         StringBuilder builder = new StringBuilder();
         builder.append("(");
-        for (int i = 0; i<symbols.size(); i++){
-            builder.append(symbols.get(i).getTextualRepresentation());
-            if (i != symbols.size()-1 || i==0){
+        for (int i = 0; i< expressions.size(); i++){
+            builder.append(expressions.get(i).getTextualRepresentation());
+            if (i != expressions.size()-1 || i==0){
                 builder.append(",");
             }
         }
@@ -47,10 +51,10 @@ public class TupleExpressionSymbol extends MathExpressionSymbol {
     }
 
     public void add(MathExpressionSymbol symbol){
-        symbols.add(symbol);
+        expressions.add(symbol);
     }
 
-    public List<MathExpressionSymbol> getSymbols() {
-        return symbols;
+    public List<MathExpressionSymbol> getExpressions() {
+        return expressions;
     }
 }

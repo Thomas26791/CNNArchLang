@@ -21,33 +21,36 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
-import de.monticore.symboltable.SymbolKind;
 
 import java.util.Optional;
+import java.util.Set;
 
-abstract public class ArchValueSymbol extends CommonSymbol {
+abstract public class ArchExpressionSymbol extends CommonSymbol {
 
-    public static final ArchValueKind KIND = new ArchValueKind();
+    public static final ArchExpressionKind KIND = new ArchExpressionKind();
 
     private boolean fullyResolved = false;
 
 
-    public ArchValueSymbol() {
+    public ArchExpressionSymbol() {
         super("", KIND);
     }
 
     /**
      * Getter for the fullyResolved attribute.
      * If it is still false for the return of resolve()
-     * then the value contains a dimension variable for input and output which has to be set.
+     * then the value contains a dimension variable for input
+     * and output which has to be set to succesfully resolve thr expression.
      *
-     * @return returns true if the value contains no variables.
+     * @return returns true iff the expression is resolved.
      */
     public boolean isFullyResolved() {
         return fullyResolved;
     }
 
-    public void setFullyResolved(boolean fullyResolved) {
+    //todo: change to isResolvable()
+
+    protected void setFullyResolved(boolean fullyResolved) {
         this.fullyResolved = fullyResolved;
     }
 
@@ -97,6 +100,7 @@ abstract public class ArchValueSymbol extends CommonSymbol {
      * If true, getValue() will return (if present) a List of Lists of Objects.
      * These Objects can either be Integer, Double or Boolean.
      * If isSerialSequence() returns false, the second List will always have a size smaller than 2.
+     * Sequences of size 1 or 0 cannot be parallel sequences.
      *
      * @return returns true iff the value contains a parallel sequence.
      */
@@ -106,8 +110,8 @@ abstract public class ArchValueSymbol extends CommonSymbol {
 
     /**
      * Checks whether the value is a serial Sequence.
-     * If true, getValue() will either return (if present) a List of Objects
-     * or a List(parallel) of Lists(serial) of Objects if isParallelSequence() is also true.
+     * If true, getValue() will return (if present) a List(parallel) of Lists(serial) of Objects.
+     * If isParallelSequence() is false, the first list will be of size 1.
      * These Objects can either be Integer, Double or Boolean.
      * Sequences of size 1 or 0 are counted as serial sequences.
      * Therefore, this returns always true if isParallelSequence() returns false.
@@ -120,7 +124,7 @@ abstract public class ArchValueSymbol extends CommonSymbol {
 
     /**
      *
-     * @return returns true if this object is instance of ArchRangeValueSymbol
+     * @return returns true if this object is instance of ArchRangeExpressionSymbol
      */
     public boolean isRange(){
         return false;
@@ -128,7 +132,7 @@ abstract public class ArchValueSymbol extends CommonSymbol {
 
     /**
      *
-     * @return returns true if this object is instance of ArchSimpleValueSymbol
+     * @return returns true if this object is instance of ArchSimpleExpressionSymbol
      */
     public boolean isSimpleValue(){
         return false;
@@ -139,7 +143,6 @@ abstract public class ArchValueSymbol extends CommonSymbol {
     /**
      * This method returns the result of the expression.
      * This can be a primitive object (Integer, Double or Boolean)
-     * or List of primitive objects
      * or a list of lists of primitive objects. (See other methods for more information)
      *
      * @return returns the value as Object or Optional.empty if the expression cannot be completely resolved yet.
@@ -148,14 +151,13 @@ abstract public class ArchValueSymbol extends CommonSymbol {
     abstract public Optional<Object> getValue();
 
     /**
-     * Creates a copy of this symbol where all Variables are replaced by expressions without variables.
+     * Replaces all variable names in this values expression.
      * If the expression contains an IOVariable which has not yet been set
-     * then the expression is resolved as much as possible and the attribute fullyResolved of the return object remains false.
+     * then the expression is resolved as much as possible and the attribute fullyResolved of this object remains false.
      *
-     * @return returns a copy of this object where the expression is resolved as much as possible
-     *         or itself if attribute fullyResolved is true.
+     * @return returns a set of all names which could not be resolved.
      */
-    abstract public ArchValueSymbol resolve();
+    abstract public Set<String> resolve();
 
-    //abstract public ArchValueSymbol resolveCopy()
+    abstract protected void checkIfResolved();
 }

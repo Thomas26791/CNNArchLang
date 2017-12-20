@@ -23,6 +23,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.SymbolKind;
 import de.se_rwth.commons.logging.Log;
+import org.jscience.mathematics.number.Rational;
 
 import java.util.Optional;
 
@@ -33,33 +34,32 @@ public class VariableSymbol extends CommonSymbol {
     public static final VariableKind KIND = new VariableKind();
 
     private VariableType type;
-    private ArchValueSymbol defaultValue = null; //Optional
-    private ArchValueSymbol currentValue = null; //Optional
+    private ArchSimpleExpressionSymbol defaultValueSymbol = null; //Optional
+    private ArchSimpleExpressionSymbol currentValueSymbol = null; //Optional
 
 
-    public VariableSymbol(String name) {
+    protected VariableSymbol(String name) {
         super(name, KIND);
     }
-
 
     public VariableType getType() {
         return type;
     }
 
-    public void setType(VariableType type) {
+    protected void setType(VariableType type) {
         this.type = type;
     }
 
-    public Optional<ArchValueSymbol> getDefaultValue() {
-        return Optional.ofNullable(defaultValue);
+    public Optional<ArchSimpleExpressionSymbol> getDefaultValueSymbol() {
+        return Optional.ofNullable(defaultValueSymbol);
     }
 
-    public void setDefaultValue(ArchValueSymbol defaultValue) {
-        this.defaultValue = defaultValue;
+    protected void setDefaultValueSymbol(ArchSimpleExpressionSymbol defaultValueSymbol) {
+        this.defaultValueSymbol = defaultValueSymbol;
     }
 
-    protected Optional<ArchValueSymbol> getCurrentValue() {
-        return Optional.ofNullable(currentValue);
+    protected Optional<ArchSimpleExpressionSymbol> getCurrentValueSymbol() {
+        return Optional.ofNullable(currentValueSymbol);
     }
 
     public boolean isConstant(){
@@ -76,17 +76,17 @@ public class VariableSymbol extends CommonSymbol {
 
 
     public boolean hasValueSymbol(){
-        return getCurrentValue().isPresent() || getDefaultValue().isPresent();
+        return getCurrentValueSymbol().isPresent() || getDefaultValueSymbol().isPresent();
     }
 
-    public ArchValueSymbol getValueSymbol(){
-        ArchValueSymbol value = null;
+    public ArchSimpleExpressionSymbol getValueSymbol(){
+        ArchSimpleExpressionSymbol value = null;
         if (hasValueSymbol()){
-            if (getCurrentValue().isPresent()){
-                value = getCurrentValue().get();
+            if (getCurrentValueSymbol().isPresent()){
+                value = getCurrentValueSymbol().get();
             }
             else {
-                value = getDefaultValue().get();
+                value = getDefaultValueSymbol().get();
             }
         }
         else {
@@ -101,12 +101,63 @@ public class VariableSymbol extends CommonSymbol {
         return value;
     }
 
-    public void setValueSymbol(ArchValueSymbol value){
-        currentValue = value;
+    public void setValueSymbol(ArchSimpleExpressionSymbol value){
+        currentValueSymbol = value;
     }
 
     public void reset(){
-        currentValue = null;
+        currentValueSymbol = null;
     }
 
+
+    public static class Builder{
+        private VariableType type = VariableType.PARAMETER;
+        private ArchSimpleExpressionSymbol defaultValue = null;
+        private String name = null;
+
+        public Builder type(VariableType type){
+            this.type = type;
+            return this;
+        }
+
+        public Builder name(String name){
+            this.name = name;
+            return this;
+        }
+
+        public Builder defaultValue(ArchSimpleExpressionSymbol defaultValue){
+            this.defaultValue = defaultValue;
+            return this;
+        }
+
+        public Builder defaultValue(int defaultValue){
+            this.defaultValue = ArchSimpleExpressionSymbol.of(defaultValue);
+            return this;
+        }
+
+        public Builder defaultValue(Rational defaultValue){
+            this.defaultValue = ArchSimpleExpressionSymbol.of(defaultValue);
+            return this;
+        }
+
+        public Builder defaultValue(boolean defaultValue){
+            this.defaultValue = ArchSimpleExpressionSymbol.of(defaultValue);
+            return this;
+        }
+
+        public Builder defaultValue(int... tupleValues){
+            this.defaultValue = ArchSimpleExpressionSymbol.of(tupleValues);
+            return this;
+        }
+
+        public VariableSymbol build(){
+            if (name == null || name.equals("")){
+                throw new IllegalStateException("Missing name for VariableSymbol");
+            }
+            VariableSymbol sym = new VariableSymbol(name);
+            sym.setType(type);
+            sym.setDefaultValueSymbol(defaultValue);
+            return sym;
+        }
+    }
 }

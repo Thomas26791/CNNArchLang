@@ -20,22 +20,20 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import java.util.Optional;
+import de.monticore.symboltable.SymbolKind;
 
-abstract public class ArchAbstractSequenceValue extends ArchValueSymbol {
+public class IODeclarationKind implements SymbolKind {
 
+    private static final String NAME = "de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationKind";
 
-    public ArchAbstractSequenceValue() {
-        super();
+    @Override
+    public String getName() {
+        return NAME;
     }
 
-
-    abstract public boolean isParallelSequence();
-
-    abstract public boolean isSerialSequence();
-
-    abstract public Optional<Integer> getParallelLength();
-
-    abstract public Optional<Integer> getSerialLength();
+    @Override
+    public boolean isKindOf(SymbolKind kind) {
+        return NAME.equals(kind.getName()) || SymbolKind.super.isKindOf(kind);
+    }
 
 }

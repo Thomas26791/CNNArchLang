@@ -12,7 +12,7 @@ architecture ResNeXt50{
         conv(filter=(3,3), channels=innerChannels, stride=stride) ->
         conv(filter=(1,1), channels=outChannels, act=false)
     }
-    def skip(outChannels=[], stride=[]){
+    def skip(outChannels, stride){
         Convolution(kernel=(1,1), channels=outChannels, stride=stride) ->
         BatchNorm()
     }
@@ -38,7 +38,7 @@ architecture ResNeXt50{
     conv(filter=(7,7), channels=64, stride=2) ->
     MaxPooling(kernel=(3,3), stride=2) ->
     resStructure(innerChannels=[4->8->16->32], outChannels=[256->512->1024->2048], resLayers=[3->4->6->3]) ->
-    AvgPooling(global=true) ->
+    AveragePooling(global=true) ->
     FullyConnected(units=classes) ->
     Softmax() ->
     predictions

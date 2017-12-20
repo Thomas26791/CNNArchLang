@@ -13,11 +13,11 @@ grammar CNNArch extends de.monticore.lang.math.Math {
     interface ArchitectureElement;
     interface Variable;
 
-    symbol IODeclaration implements ArchDeclaration = "def"
-                                                      (in:"input" | out:"output")
-                                                      type:ArchType
-                                                      Name&
-                                                      (ArrayDeclaration)?;
+    IODeclaration implements ArchDeclaration = "def"
+                                               (in:"input" | out:"output")
+                                               type:ArchType
+                                               Name&
+                                               (ArrayDeclaration)?;
 
     ArchType implements Type = (ElementType ("^" "{" (Dimension || ",")+ "}")?)?;
 
@@ -25,14 +25,14 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     IOVariable implements Variable = Name&;
 
-    Constant implements Variable = "def" Name& "=" rhs:ArchExpression;
+    Constant implements Variable = Name& "=" rhs:ArchSimpleExpression;
 
-    symbol scope MethodDeclaration implements ArchDeclaration = "def"
-                                                                Name& "("
-                                                                parameters:(Parameter || ",")* ")" "{"
-                                                                body:ArchBody "}";
+    MethodDeclaration implements ArchDeclaration = "def"
+                                                   Name& "("
+                                                   parameters:(Parameter || ",")* ")" "{"
+                                                   body:ArchBody "}";
 
-    Parameter implements Variable = Name& ("=" default:ArchExpression)?;
+    Parameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
 
     scope ArchBody = elements:(ArchitectureElement || "->")*;
 
@@ -42,21 +42,22 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     Argument = Name "=" rhs:ArchExpression;
 
-    ParallelLayer implements ArchitectureElement = "(" groups:(ArchBody || "|")+ ")";
+    ParallelLayer implements ArchitectureElement = "(" groups:ArchBody "|" groups:(ArchBody || "|")+ ")";
 
     ArrayAccessLayer implements ArchitectureElement = "[" index:ArchSimpleExpression "]";
 
 
     ArchExpression = (expression:ArchSimpleExpression | sequence:ArchValueSequence);
 
-    ArchValueSequence = "[" parallelValues:(ArchSerialSequence || "|")* "]";
+    interface ArchValueSequence;
+
+    ArchParallelSequence implements ArchValueSequence = "[" parallelValues:(ArchSerialSequence || "|")* "]";
 
     ArchSerialSequence = serialValues:(ArchSimpleExpression || "->")+;
 
-    ArchValueRange extends ArchValueSequence = "[" start:ArchSimpleExpression
-                                               (serial:"->" | parallel:"|")
-                                               (":" step:ArchSimpleExpression)?
-                                               ":" end:ArchSimpleExpression "]";
+    ArchValueRange implements ArchValueSequence = "[" start:ArchSimpleExpression
+                                                  (serial:"->" | parallel:"|")
+                                                  ":" end:ArchSimpleExpression "]";
 
 
     ArchSimpleExpression = (arithmeticExpression:MathArithmeticExpression
