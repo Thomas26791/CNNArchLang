@@ -21,16 +21,19 @@
 package de.monticore.lang.monticar.cnnarch;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodDeclarationSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 import org.jscience.mathematics.number.Rational;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class PredefinedMethods {
 
     public static MethodDeclarationSymbol createFullyConnected(){
-        return  new MethodDeclarationSymbol.Builder()
+        return new MethodDeclarationSymbol.Builder()
                 .name("FullyConnected")
                 .parameters(
                         new VariableSymbol.Builder()
@@ -41,7 +44,11 @@ public class PredefinedMethods {
                                 .defaultValue(false)
                                 .build()
                 )
-                .predefined(true)
+                .shapeFunction((inputShapes, method) -> Collections.singletonList(new ShapeSymbol.Builder()
+                        .height(1)
+                        .width(1)
+                        .channels(method.getIntValue("units").get())
+                        .build()))
                 .build();
     }
 
@@ -64,35 +71,53 @@ public class PredefinedMethods {
                                 .defaultValue(false)
                                 .build()
                 )
-                .predefined(true)
+                .shapeFunction((inputShapes, method) ->
+                        strideShapeFunction(inputShapes.get(0),
+                                method,
+                                method.getIntValue("channels").get()))
                 .build();
+    }
+
+    private static List<ShapeSymbol> strideShapeFunction(ShapeSymbol inputShape, MethodLayerSymbol method, int channels){
+        int strideHeight = method.getIntTupleValue("stride").get().get(0);
+        int strideWidth = method.getIntTupleValue("stride").get().get(1);
+        int kernelHeight = method.getIntTupleValue("kernel").get().get(0);
+        int kernelWidth = method.getIntTupleValue("kernel").get().get(1);
+        int inputHeight = inputShape.getHeight().get();
+        int inputWidth = inputShape.getWidth().get();
+
+        //assume padding with border_mode='same'
+        int outputWidth = 1 + ((inputWidth - kernelWidth + strideWidth - 1) / strideWidth);
+        int outputHeight = 1 + ((inputHeight - kernelHeight + strideHeight - 1) / strideHeight);
+
+        return Collections.singletonList(new ShapeSymbol.Builder()
+                .height(outputHeight)
+                .width(outputWidth)
+                .channels(channels)
+                .build());
     }
 
     public static MethodDeclarationSymbol createSoftmax(){
         return new MethodDeclarationSymbol.Builder()
                 .name("Softmax")
-                .predefined(true)
                 .build();
     }
 
     public static MethodDeclarationSymbol createSigmoid(){
         return new MethodDeclarationSymbol.Builder()
                 .name("Sigmoid")
-                .predefined(true)
                 .build();
     }
 
     public static MethodDeclarationSymbol createTanh(){
         return new MethodDeclarationSymbol.Builder()
                 .name("Tanh")
-                .predefined(true)
                 .build();
     }
 
     public static MethodDeclarationSymbol createRelu(){
         return new MethodDeclarationSymbol.Builder()
                 .name("Relu")
-                .predefined(true)
                 .build();
     }
 
@@ -105,7 +130,6 @@ public class PredefinedMethods {
                                 .defaultValue(Rational.valueOf(1,2))//0.5
                                 .build()
                 )
-                .predefined(true)
                 .build();
     }
 
@@ -125,7 +149,10 @@ public class PredefinedMethods {
                                 .defaultValue(false)
                                 .build()
                 )
-                .predefined(true)
+                .shapeFunction((inputShapes, method) ->
+                        strideShapeFunction(inputShapes.get(0),
+                                method,
+                                inputShapes.get(0).getChannels().get()))
                 .build();
     }
 
@@ -145,7 +172,10 @@ public class PredefinedMethods {
                                 .defaultValue(false)
                                 .build()
                 )
-                .predefined(true)
+                .shapeFunction((inputShapes, method) ->
+                        strideShapeFunction(inputShapes.get(0),
+                                method,
+                                inputShapes.get(0).getChannels().get()))
                 .build();
     }
 
@@ -169,7 +199,6 @@ public class PredefinedMethods {
                                 .defaultValue(Rational.valueOf(3,4))//0.75
                                 .build()
                 )
-                .predefined(true)
                 .build();
     }
 
@@ -179,7 +208,6 @@ public class PredefinedMethods {
                 .parameters(
                         //todo
                 )
-                .predefined(true)
                 .build();
     }
 
@@ -194,8 +222,32 @@ public class PredefinedMethods {
                                 .name("n")
                                 .build()
                 )
-                .predefined(true)
+                .shapeFunction((inputShapes, method) -> splitShapeFunction(inputShapes.get(0), method))
                 .build();
+    }
+
+    private static List<ShapeSymbol> splitShapeFunction(ShapeSymbol inputShape, MethodLayerSymbol method){
+        int numberOfSplits = method.getIntValue("n").get();
+        int groupIndex = method.getIntValue("index").get();
+        int inputChannels = inputShape.getChannels().get();
+
+        int outputChannels = inputChannels / numberOfSplits;
+        int outputChannelsLast = inputChannels - numberOfSplits*outputChannels;
+
+        if (groupIndex == numberOfSplits - 1){
+            return Collections.singletonList(new ShapeSymbol.Builder()
+                    .height(1)
+                    .width(1)
+                    .channels(outputChannelsLast)
+                    .build());
+        }
+        else {
+            return Collections.singletonList(new ShapeSymbol.Builder()
+                    .height(1)
+                    .width(1)
+                    .channels(outputChannels)
+                    .build());
+        }
     }
 
     public static MethodDeclarationSymbol createGet(){
@@ -206,28 +258,35 @@ public class PredefinedMethods {
                                 .name("index")
                                 .build()
                 )
-                .predefined(true)
+                .shapeFunction((inputShapes, method) ->
+                        Collections.singletonList(inputShapes.get(method.getIntValue("index").get())))
                 .build();
     }
 
     public static MethodDeclarationSymbol createAdd(){
         return new MethodDeclarationSymbol.Builder()
                 .name("Add")
-                .parameters(
-
-                )
-                .predefined(true)
+                .shapeFunction((inputShapes, method) -> Collections.singletonList(inputShapes.get(0)))
                 .build();
     }
 
     public static MethodDeclarationSymbol createConcatenate(){
         return new MethodDeclarationSymbol.Builder()
                 .name("Concatenate")
-                .parameters(
-
-                )
-                .predefined(true)
+                .shapeFunction(PredefinedMethods::concatenateShapeFunction)
                 .build();
+    }
+
+    private static List<ShapeSymbol> concatenateShapeFunction(List<ShapeSymbol> inputShapes, MethodLayerSymbol method){
+        int channels = 0;
+        for (ShapeSymbol inputShape : inputShapes){
+            channels += inputShape.getChannels().get();
+        }
+        return Collections.singletonList(new ShapeSymbol.Builder()
+                .height(inputShapes.get(0).getHeight().get())
+                .width(inputShapes.get(0).getWidth().get())
+                .channels(channels)
+                .build());
     }
 
 

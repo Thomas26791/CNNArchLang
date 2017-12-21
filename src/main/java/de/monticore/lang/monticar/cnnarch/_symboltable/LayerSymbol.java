@@ -21,55 +21,48 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
-import de.monticore.symboltable.CommonSymbol;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     public static final LayerKind KIND = new LayerKind();
 
-    private List<LayerSymbol> inputLayers = new ArrayList<>(4);
-    private List<LayerSymbol> outputLayers = new ArrayList<>(4);
-    private ShapeSymbol outputShape;
-    private boolean fullyResolved;
+    private LayerSymbol inputLayer;
+    private List<ShapeSymbol> outputShapes = null;
+    private LayerSymbol resolvedThis = null;
 
-    public LayerSymbol(String name) {
+    protected LayerSymbol(String name) {
         super(name, KIND);
     }
 
-    public List<LayerSymbol> getInputLayers() {
-        return inputLayers;
+    public LayerSymbol getInputLayer() {
+        return inputLayer;
     }
 
-    public void setInputLayers(List<LayerSymbol> inputLayers) {
-        this.inputLayers = inputLayers;
+    public void setInputLayer(LayerSymbol inputLayer) {
+        this.inputLayer = inputLayer;
     }
 
-    public List<LayerSymbol> getOutputLayers() {
-        return outputLayers;
+    public List<ShapeSymbol> getOutputShapes() {
+        if (outputShapes == null){
+            outputShapes = computeOutputShape();
+        }
+        return outputShapes;
     }
 
-    public void setOutputLayers(List<LayerSymbol> outputLayers) {
-        this.outputLayers = outputLayers;
+    protected void setOutputShapes(List<ShapeSymbol> outputShapes) {
+        this.outputShapes = outputShapes;
     }
 
-    public ShapeSymbol getOutputShape() {
-        return outputShape;
+    public Optional<LayerSymbol> getResolvedThis() {
+        return Optional.ofNullable(resolvedThis);
     }
 
-    public void setOutputShape(ShapeSymbol outputShape) {
-        this.outputShape = outputShape;
-    }
-
-    public boolean isFullyResolved() {
-        return fullyResolved;
-    }
-
-    public void setFullyResolved(boolean fullyResolved) {
-        this.fullyResolved = fullyResolved;
+    protected void setResolvedThis(LayerSymbol resolvedThis) {
+        this.resolvedThis = resolvedThis;
     }
 
     public boolean isInput(){
@@ -88,7 +81,16 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         return false;
     }
 
+    public boolean isResolved(){
+        return getResolvedThis().isPresent();
+    }
+
     abstract public Set<String> resolve();
 
     abstract protected void checkIfResolved();
+
+    //todo: add argument inputShape
+    abstract protected List<ShapeSymbol> computeOutputShape();
+
+    abstract public boolean isResolvable();
 }

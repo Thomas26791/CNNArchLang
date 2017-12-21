@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
 
@@ -38,7 +40,7 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
 
     private List<VariableSymbol> parameters;
     private CompositeLayerSymbol body;
-    private boolean isPredefined;
+    private BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction = null;
 
     protected MethodDeclarationSymbol(String name) {
         super(name, KIND);
@@ -61,11 +63,15 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
     }
 
     public boolean isPredefined() {
-        return isPredefined;
+        return shapeFunction != null;
     }
 
-    protected void setPredefined(boolean predefined) {
-        isPredefined = predefined;
+    public BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> getShapeFunction() {
+        return shapeFunction;
+    }
+
+    protected void setShapeFunction(BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction) {
+        this.shapeFunction = shapeFunction;
     }
 
     public Optional<LayerSymbol> call(MethodLayerSymbol layer) {
@@ -95,7 +101,7 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         private List<VariableSymbol> parameters = new ArrayList<>();
         private CompositeLayerSymbol body;
         private String name = "";
-        private boolean predefined = false;
+        private BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction = (inputShape, method) -> inputShape;
 
         public Builder parameters(List<VariableSymbol> parameters) {
             this.parameters = parameters;
@@ -117,8 +123,8 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
             return this;
         }
 
-        public Builder predefined(boolean isPredefined){
-            predefined = isPredefined;
+        public Builder shapeFunction(BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction){
+            this.shapeFunction = shapeFunction;
             return this;
         }
 
@@ -129,7 +135,7 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
             MethodDeclarationSymbol sym = new MethodDeclarationSymbol(name);
             sym.setBody(body);
             sym.setParameters(parameters);
-            sym.setPredefined(predefined);
+            sym.setShapeFunction(shapeFunction);
             return sym;
         }
     }

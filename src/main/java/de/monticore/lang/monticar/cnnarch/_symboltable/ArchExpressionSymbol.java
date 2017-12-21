@@ -55,7 +55,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
     }
 
     /**
-     * Checks whether the value is a boolean. If true getValue() will return a Boolean if present.
+     * Checks whether the value is a boolean. If true getRhs() will return a Boolean if present.
      *
      * @return returns true iff the value of the resolved expression will be a boolean.
      */
@@ -65,7 +65,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     /**
      * Checks whether the value is a number.
-     * Note that the return of getValue() can be either a Double or an Integer if present.
+     * Note that the return of getRhs() can be either a Double or an Integer if present.
      *
      * @return returns true iff the value of the resolved expression will be a number.
      */
@@ -75,7 +75,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     /**
      * Checks whether the value is a Tuple.
-     * If true getValue() will return (if present) a List of Objects.
+     * If true getRhs() will return (if present) a List of Objects.
      * These Objects can either be Integer, Double or Boolean.
      *
      * @return returns true iff the value of the expression will be a tuple.
@@ -86,7 +86,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     /**
      * Checks whether the value is an integer. This can only be checked if the expression is resolvable.
-     * If true getValue() will return an Integer.
+     * If true getRhs() will return an Integer.
      *
      * @return returns Optional.of(true) iff the value of the expression is an integer.
      *         The Optional is present if the expression can be resolved.
@@ -97,7 +97,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     /**
      * Checks whether the value is a parallel Sequence.
-     * If true, getValue() will return (if present) a List of Lists of Objects.
+     * If true, getRhs() will return (if present) a List of Lists of Objects.
      * These Objects can either be Integer, Double or Boolean.
      * If isSerialSequence() returns false, the second List will always have a size smaller than 2.
      * Sequences of size 1 or 0 cannot be parallel sequences.
@@ -110,7 +110,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     /**
      * Checks whether the value is a serial Sequence.
-     * If true, getValue() will return (if present) a List(parallel) of Lists(serial) of Objects.
+     * If true, getRhs() will return (if present) a List(parallel) of Lists(serial) of Objects.
      * If isParallelSequence() is false, the first list will be of size 1.
      * These Objects can either be Integer, Double or Boolean.
      * Sequences of size 1 or 0 are counted as serial sequences.

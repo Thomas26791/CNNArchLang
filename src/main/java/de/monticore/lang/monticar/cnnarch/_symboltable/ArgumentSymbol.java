@@ -21,9 +21,9 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
-import de.monticore.symboltable.SymbolKind;
 import de.se_rwth.commons.logging.Log;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ArgumentSymbol extends CommonSymbol {
@@ -31,7 +31,7 @@ public class ArgumentSymbol extends CommonSymbol {
     public static final ArgumentKind KIND = new ArgumentKind();
 
     private VariableSymbol parameter;
-    private ArchExpressionSymbol value;
+    private ArchExpressionSymbol rhs;
 
     protected ArgumentSymbol(String name) {
         super(name, KIND);
@@ -54,12 +54,26 @@ public class ArgumentSymbol extends CommonSymbol {
         this.parameter = parameter;
     }
 
-    public ArchExpressionSymbol getValue() {
-        return value;
+    public ArchExpressionSymbol getRhs() {
+        return rhs;
     }
 
-    protected void setValue(ArchExpressionSymbol value) {
-        this.value = value;
+    public Optional<Object> getValue(){
+        return getRhs().getValue();
+    }
+
+    protected void setRhs(ArchExpressionSymbol rhs) {
+        this.rhs = rhs;
+    }
+
+    public List<List<ArgumentSymbol>> split(){
+        //todo
+        return null;
+    }
+
+    public List<List<ArgumentSymbol>> expandedSplit(int parallelLength, int serialLength){
+        //todo
+        return null;
     }
 
 
@@ -90,7 +104,7 @@ public class ArgumentSymbol extends CommonSymbol {
             }
             ArgumentSymbol sym = new ArgumentSymbol(name);
             sym.setParameter(parameter);
-            sym.setValue(value);
+            sym.setRhs(value);
             return sym;
         }
     }

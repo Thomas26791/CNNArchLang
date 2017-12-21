@@ -23,10 +23,8 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.se_rwth.commons.logging.Log;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.BiFunction;
 
 public class MethodLayerSymbol extends LayerSymbol {
 
@@ -43,7 +41,7 @@ public class MethodLayerSymbol extends LayerSymbol {
         if (method == null){
             Optional<MethodDeclarationSymbol> optMethod = getEnclosingScope().resolve(getName(), MethodDeclarationSymbol.KIND);
             if (optMethod.isPresent()){
-                method = optMethod.get();
+                setMethod(optMethod.get());
             }
             else {
                 Log.error("method with name " + getName() + " could not be resolved", getSourcePosition());
@@ -53,6 +51,9 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     protected void setMethod(MethodDeclarationSymbol method) {
+        if (method.isPredefined()){
+            setResolvedThis(this);
+        }
         this.method = method;
     }
 
@@ -86,18 +87,37 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public boolean isFullyResolved() {
-        return false;
-    }
-
-    @Override
     public Set<String> resolve() {
+        //todo
         return null;
     }
 
     @Override
     protected void checkIfResolved() {
+        //todo
+    }
 
+    @Override
+    protected List<ShapeSymbol> computeOutputShape() {
+        if (getMethod().isPredefined()){
+            BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction = getMethod().getShapeFunction();
+            return shapeFunction.apply(getInputLayer().getOutputShapes(), this);
+        }
+        else {
+            if (isResolved()){
+                return getResolvedThis().get().computeOutputShape();
+            }
+            else {
+                throw new IllegalStateException("The output shape can only be computed if this and all previous layer are resolved");
+            }
+
+        }
+    }
+
+    @Override
+    public boolean isResolvable() {
+        //todo
+        return false;
     }
 
     public Optional<LayerSymbol> call(){
@@ -113,12 +133,45 @@ public class MethodLayerSymbol extends LayerSymbol {
         return Optional.empty();
     }
 
+    public Optional<Integer> getIntValue(String argumentName){
+        Optional<ArgumentSymbol> arg = getArgument(argumentName);
+        if (arg.isPresent()){
+            Optional<Object> val = arg.get().getValue();
+            if (val.isPresent() && val.get() instanceof Integer){
+                return val.map(o -> (Integer) o);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<List<Integer>> getIntTupleValue(String argumentName){
+        Optional<ArgumentSymbol> arg = getArgument(argumentName);
+        if (arg.isPresent()){
+            Optional<Object> val = arg.get().getValue();
+            if (val.isPresent() && val.get() instanceof List){
+                List<Integer> list = new ArrayList<>();
+                for (Object obj : (List) val.get()){
+                    if (obj instanceof Integer){
+                        list.add((Integer) obj);
+                    }
+                    else{
+                        return Optional.empty();
+                    }
+                }
+                return Optional.of(list);
+            }
+        }
+        return Optional.empty();
+    }
+
+    //todo outputShape Function partial apply and check argument correctness
+
     public boolean isCallable(){
         boolean callable = true;
         for (ArgumentSymbol argument : getArguments()) {
-            if (argument.getValue().isRange()){
-                argument.getValue().resolve();
-                if (!argument.getValue().isFullyResolved()){
+            if (argument.getRhs().isRange()){
+                argument.getRhs().resolve();
+                if (!argument.getRhs().isFullyResolved()){
                     callable = false;
                 }
             }
@@ -130,8 +183,8 @@ public class MethodLayerSymbol extends LayerSymbol {
         if (isCallable()) {
             int parallelLength = -1;
             for (ArgumentSymbol argument : getArguments()) {
-                if (argument.getValue().isParallelSequence()) {
-                    int argumentLength = ((ArchAbstractSequenceExpression) argument.getValue()).getParallelLength().get();
+                if (argument.getRhs().isParallelSequence()) {
+                    int argumentLength = ((ArchAbstractSequenceExpression) argument.getRhs()).getParallelLength().get();
                     if (parallelLength == -1) {
                         parallelLength = argumentLength;
                     } else if (parallelLength != argumentLength) {
@@ -167,8 +220,8 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     private List<List<ArgumentSymbol>> expand(ArgumentSymbol argument, int parallelIndex, int serialIndex){
-        if (argument.getValue().isRange()){
-            ArchRangeExpressionSymbol range = (ArchRangeExpressionSymbol) argument.getValue();
+        if (argument.getRhs().isRange()){
+            ArchRangeExpressionSymbol range = (ArchRangeExpressionSymbol) argument.getRhs();
             range.getValue();
         }
         //todo
@@ -179,8 +232,8 @@ public class MethodLayerSymbol extends LayerSymbol {
         if (isCallable()) {
             int serialLength = -1;
             for (ArgumentSymbol argument : getArguments()) {
-                if (argument.getValue().isSerialSequence()) {
-                    int argumentLength = ((ArchAbstractSequenceExpression) argument.getValue()).getSerialLength().get();
+                if (argument.getRhs().isSerialSequence()) {
+                    int argumentLength = ((ArchAbstractSequenceExpression) argument.getRhs()).getSerialLength().get();
                     if (serialLength == -1) {
                         serialLength = argumentLength;
                     } else if (serialLength != argumentLength) {
@@ -206,6 +259,7 @@ public class MethodLayerSymbol extends LayerSymbol {
         private MethodDeclarationSymbol method;
         private ArchExpressionSymbol ifArgument = ArchSimpleExpressionSymbol.TRUE;
         private ArchExpressionSymbol forArgument = ArchSimpleExpressionSymbol.ONE;
+        private LayerSymbol inputLayer;
 
         public Builder name(String name){
             this.name = name;
@@ -238,6 +292,11 @@ public class MethodLayerSymbol extends LayerSymbol {
             return this;
         }
 
+        public Builder inputLayer(LayerSymbol inputLayer){
+            this.inputLayer = inputLayer;
+            return this;
+        }
+
         public MethodLayerSymbol build(){
             if (name == null || name.equals("")){
                 throw new IllegalStateException("Missing name for MethodLayerSymbol");
@@ -252,6 +311,7 @@ public class MethodLayerSymbol extends LayerSymbol {
             }
             sym.setIfArgument(ifArgument);
             sym.setForArgument(forArgument);
+            sym.setInputLayer(inputLayer);
             return sym;
         }
 

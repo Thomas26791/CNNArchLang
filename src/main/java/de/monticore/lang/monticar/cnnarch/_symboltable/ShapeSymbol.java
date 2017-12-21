@@ -20,6 +20,86 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-public class ShapeSymbol {
-    //todo
+import de.monticore.symboltable.CommonSymbol;
+
+import java.util.Optional;
+
+
+public class ShapeSymbol extends CommonSymbol {
+
+    public static final ShapeKind KIND = new ShapeKind();
+
+    private DimensionSymbol heightSymbol;
+    private DimensionSymbol widthSymbol;
+    private DimensionSymbol channelsSymbol;
+
+    public ShapeSymbol() {
+        super("", KIND);
+    }
+
+    public DimensionSymbol getHeightSymbol() {
+        return heightSymbol;
+    }
+
+    public void setHeightSymbol(DimensionSymbol heightSymbol) {
+        this.heightSymbol = heightSymbol;
+    }
+
+    public DimensionSymbol getWidthSymbol() {
+        return widthSymbol;
+    }
+
+    public void setWidthSymbol(DimensionSymbol widthSymbol) {
+        this.widthSymbol = widthSymbol;
+    }
+
+    public DimensionSymbol getChannelsSymbol() {
+        return channelsSymbol;
+    }
+
+    public void setChannelsSymbol(DimensionSymbol channelsSymbol) {
+        this.channelsSymbol = channelsSymbol;
+    }
+
+    public Optional<Integer> getWidth(){
+        return getWidthSymbol().getValue();
+    }
+
+    public Optional<Integer> getHeight(){
+        return getHeightSymbol().getValue();
+    }
+
+    public Optional<Integer> getChannels(){
+        return getChannelsSymbol().getValue();
+    }
+
+
+    public static class Builder{
+        private DimensionSymbol height = DimensionSymbol.of(1);
+        private DimensionSymbol width = DimensionSymbol.of(1);
+        private DimensionSymbol channels = DimensionSymbol.of(1);
+
+        public Builder height(int height){
+            this.height = DimensionSymbol.of(height);
+            return this;
+        }
+
+        public Builder width(int width){
+            this.width = DimensionSymbol.of(width);
+            return this;
+        }
+
+        public Builder channels(int channels){
+            this.channels = DimensionSymbol.of(channels);
+            return this;
+        }
+
+        public ShapeSymbol build(){
+            ShapeSymbol sym = new ShapeSymbol();
+            sym.setHeightSymbol(height);
+            sym.setChannelsSymbol(channels);
+            sym.setWidthSymbol(width);
+            return sym;
+        }
+    }
 }

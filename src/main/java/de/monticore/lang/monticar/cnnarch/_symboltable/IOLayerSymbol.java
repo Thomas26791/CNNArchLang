@@ -20,6 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -56,5 +57,15 @@ public class IOLayerSymbol extends LayerSymbol {
     @Override
     protected void checkIfResolved() {
 
+    }
+
+    @Override
+    protected List<ShapeSymbol> computeOutputShape() {
+        return null;
+    }
+
+    @Override
+    public boolean isResolvable() {
+        return false;
     }
 }

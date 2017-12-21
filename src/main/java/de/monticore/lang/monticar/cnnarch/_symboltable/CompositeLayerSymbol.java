@@ -55,30 +55,41 @@ public class CompositeLayerSymbol extends LayerSymbol {
     @Override
     public Set<String> resolve() {
         Set<String> unresolvableSet = new HashSet<>();
-        if (!isFullyResolved()) {
-            for (LayerSymbol layer : layers) {
-                unresolvableSet.addAll(layer.resolve());
-            }
-        }
+        //todo
         return unresolvableSet;
     }
 
     @Override
     protected void checkIfResolved() {
-        boolean isResolved = true;
-        for (LayerSymbol layer : layers){
-            layer.checkIfResolved();
-            if (!layer.isFullyResolved()){
-                isResolved = false;
+        //todo
+    }
+
+    @Override
+    protected List<ShapeSymbol> computeOutputShape() {
+        if (isParallel()){
+            List<ShapeSymbol> outputShapes = new ArrayList<>(getLayers().size());
+            for (LayerSymbol layer : getLayers()){
+                //todo: assure that last layer in each parallel group has only one outputShape
+                outputShapes.add(layer.getOutputShapes().get(0));
             }
+            return outputShapes;
         }
-        setFullyResolved(isResolved);
+        else {
+            return getLayers().get(getLayers().size() - 1).getOutputShapes();
+        }
+    }
+
+    @Override
+    public boolean isResolvable() {
+        //todo
+        return false;
     }
 
 
     public static class Builder{
         private boolean parallel = false;
         private List<LayerSymbol> layers = new ArrayList<>();
+        private LayerSymbol inputLayer;
 
         public Builder parallel(boolean parallel){
             this.parallel = parallel;
@@ -95,10 +106,16 @@ public class CompositeLayerSymbol extends LayerSymbol {
             return this;
         }
 
+        public Builder inputLayer(LayerSymbol inputLayer){
+            this.inputLayer = inputLayer;
+            return this;
+        }
+
         public CompositeLayerSymbol build(){
             CompositeLayerSymbol sym = new CompositeLayerSymbol();
             sym.setParallel(parallel);
             sym.setLayers(layers);
+            sym.setInputLayer(inputLayer);
             return sym;
         }
     }

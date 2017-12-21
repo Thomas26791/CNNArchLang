@@ -21,7 +21,6 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 
-import de.monticore.ast.ASTNode;
 import de.monticore.lang.math.math._ast.ASTMathExpression;
 import de.monticore.lang.math.math._symboltable.MathSymbolTableCreator;
 import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
@@ -368,7 +367,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
             MethodLayerSymbol methodLayer = (MethodLayerSymbol) currentScope().get().getSpanningSymbol().get();
             ArchExpressionSymbol value = (ArchExpressionSymbol) node.getRhs().getSymbol().get();
             ArgumentSymbol argument = (ArgumentSymbol) node.getSymbol().get();
-            argument.setValue(value);
+            argument.setRhs(value);
 
             VariableSymbol parameter = (VariableSymbol) methodLayer.getMethod().getSpannedScope()
                     .resolveLocally(argument.getName(), VariableSymbol.KIND).get();
