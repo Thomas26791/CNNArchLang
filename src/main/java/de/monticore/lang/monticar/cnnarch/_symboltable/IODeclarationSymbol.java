@@ -32,9 +32,12 @@ public class IODeclarationSymbol extends CommonSymbol {
     public static final IODeclarationKind KIND = new IODeclarationKind();
 
     private ASTElementType type;
+    private ShapeSymbol shape;
+    private boolean input; //true->input, false->output
+    private int arrayLength = 0;
 
 
-    public IODeclarationSymbol(String name) {
+    protected IODeclarationSymbol(String name) {
         super(name, KIND);
     }
 
@@ -42,9 +45,82 @@ public class IODeclarationSymbol extends CommonSymbol {
         return type;
     }
 
-    public void setType(ASTElementType type) {
+    protected void setType(ASTElementType type) {
         this.type = type;
     }
 
-    //todo
+    public ShapeSymbol getShape() {
+        return shape;
+    }
+
+    protected void setShape(ShapeSymbol shape) {
+        this.shape = shape;
+    }
+
+    public boolean isOutput(){
+        return !input;
+    }
+
+    public boolean isInput() {
+        return input;
+    }
+
+    protected void setInput(boolean input) {
+        this.input = input;
+    }
+
+    public int getArrayLength() {
+        return arrayLength;
+    }
+
+    protected void setArrayLength(int arrayLength) {
+        this.arrayLength = arrayLength;
+    }
+
+
+
+    public static class Builder{
+        private ASTElementType type;
+        private ShapeSymbol shape;
+        private boolean input; //true->input, false->output
+        private int arrayLength = 0;
+        private String name;
+
+        public Builder type(ASTElementType type){
+            this.type = type;
+            return this;
+        }
+
+        public Builder shape(ShapeSymbol shape){
+            this.shape = shape;
+            return this;
+        }
+
+        public Builder input(boolean input){
+            this.input = input;
+            return this;
+        }
+
+        public Builder arrayLength(int arrayLength){
+            this.arrayLength = arrayLength;
+            return this;
+        }
+
+        public Builder name(String name){
+            this.name = name;
+            return this;
+        }
+
+        public IODeclarationSymbol build(){
+            if (name == null || name.equals("")){
+                throw new IllegalStateException("Missing or empty name for IO declaration");
+            }
+            IODeclarationSymbol sym = new IODeclarationSymbol(name);
+            sym.setType(type);
+            sym.setInput(input);
+            sym.setArrayLength(arrayLength);
+            sym.setShape(shape);
+            return sym;
+        }
+    }
 }

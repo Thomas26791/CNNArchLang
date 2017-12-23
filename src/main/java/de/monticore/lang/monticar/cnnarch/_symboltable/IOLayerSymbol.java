@@ -20,16 +20,17 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import de.monticore.lang.monticar.cnnarch.ErrorMessages;
+import de.se_rwth.commons.logging.Log;
+
+import java.util.*;
 
 public class IOLayerSymbol extends LayerSymbol {
 
     private ArchSimpleExpressionSymbol arrayAccess = null;
     private IODeclarationSymbol definition;
 
-    public IOLayerSymbol(String name) {
+    protected IOLayerSymbol(String name) {
         super(name);
     }
 
@@ -37,15 +38,28 @@ public class IOLayerSymbol extends LayerSymbol {
         return Optional.ofNullable(arrayAccess);
     }
 
-    public void setArrayAccess(ArchSimpleExpressionSymbol arrayAccess) {
+    protected void setArrayAccess(ArchSimpleExpressionSymbol arrayAccess) {
         this.arrayAccess = arrayAccess;
     }
 
+    protected void setArrayAccess(int arrayAccess) {
+        this.arrayAccess = ArchSimpleExpressionSymbol.of(arrayAccess);
+    }
+
     public IODeclarationSymbol getDefinition() {
+        if (definition == null){
+            Optional<IODeclarationSymbol> optDef = getEnclosingScope().resolve(getName(), IODeclarationSymbol.KIND);
+            if (optDef.isPresent()){
+                setDefinition(optDef.get());
+            }
+            else {
+                Log.error(ErrorMessages.UNKNOWN_NAME_MSG + "IOVariable with name " + getName() + " could not be resolved", getSourcePosition());
+            }
+        }
         return definition;
     }
 
-    public void setDefinition(IODeclarationSymbol definition) {
+    private void setDefinition(IODeclarationSymbol definition) {
         this.definition = definition;
     }
 
@@ -55,17 +69,71 @@ public class IOLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected void checkIfResolved() {
-
+    public boolean isResolved() {
+        boolean isResolved = true;
+        if (getArrayAccess().isPresent()){
+            if (!getArrayAccess().get().isFullyResolved()){
+                isResolved = false;
+            }
+        }
+        if (!getDefinition().getShape().computeUnresolvableNames().isEmpty()){
+            isResolved = false;
+        }
+        return isResolved;
     }
 
     @Override
-    protected List<ShapeSymbol> computeOutputShape() {
-        return null;
+    protected Set<String> computeUnresolvableNames() {
+        HashSet<String> unresolvableNames = new HashSet<>();
+        if (getArrayAccess().isPresent()){
+            unresolvableNames.addAll(getArrayAccess().get().resolve());
+        }
+        unresolvableNames.addAll(getDefinition().getShape().computeUnresolvableNames());
+        return unresolvableNames;
     }
 
     @Override
-    public boolean isResolvable() {
-        return false;
+    protected List<ShapeSymbol> computeOutputShapes() {
+        List<ShapeSymbol> outputShapes;
+        if (isInput()){
+            outputShapes = new ArrayList<>(getDefinition().getArrayLength());
+            for (int i = 0; i < getDefinition().getArrayLength(); i++){
+                outputShapes.add(getDefinition().getShape());
+            }
+        }
+        else {
+            outputShapes = Collections.emptyList();
+        }
+        return outputShapes;
+    }
+
+
+    public static class Builder{
+        private ArchSimpleExpressionSymbol arrayAccess = null;
+        private String name;
+
+        public Builder arrayAccess(ArchSimpleExpressionSymbol arrayAccess){
+            this.arrayAccess = arrayAccess;
+            return this;
+        }
+
+        public Builder arrayAccess(int arrayAccess){
+            this.arrayAccess = ArchSimpleExpressionSymbol.of(arrayAccess);
+            return this;
+        }
+
+        public Builder name(String name){
+            this.name = name;
+            return this;
+        }
+
+        public IOLayerSymbol build(){
+            if (name == null || name.equals("")){
+                throw new IllegalStateException("Missing or empty name for IOLayerSymbol");
+            }
+            IOLayerSymbol sym = new IOLayerSymbol(name);
+            sym.setArrayAccess(arrayAccess);
+            return sym;
+        }
     }
 }

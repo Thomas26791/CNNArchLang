@@ -51,6 +51,8 @@ public class ErrorMessages {
                         "This is because the number of outputs is variable for all architectures. " +
                         "Example: output{ fullyConnected() activation.softmax() } -> out";
 
+    public static final String UNKNOWN_NAME_CODE = "x32585";
+    public static final String UNKNOWN_NAME_MSG = "0" + UNKNOWN_NAME_CODE + " Unknown method error. ";
 
 
 }

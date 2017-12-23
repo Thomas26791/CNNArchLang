@@ -97,8 +97,17 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
     @Override
     public Optional<Object> getValue() {
         if (isFullyResolved()){
-            Object value = Calculator.getInstance().calculate(getExpression());
-            return Optional.of(value);
+            if (isTuple()){
+                List<Object> tupleValues = new ArrayList<>();
+                for (MathExpressionSymbol element : ((TupleExpressionSymbol) getExpression()).getExpressions()){
+                    tupleValues.add(Calculator.getInstance().calculate(element));
+                }
+                return Optional.of(tupleValues);
+            }
+            else {
+                Object value = Calculator.getInstance().calculate(getExpression());
+                return Optional.of(value);
+            }
         }
         else {
             return Optional.empty();
@@ -184,6 +193,11 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
         }
         TupleExpressionSymbol tupleExpression = new TupleExpressionSymbol(expList);
         return new ArchSimpleExpressionSymbol(tupleExpression);
+    }
+
+    public static ArchSimpleExpressionSymbol of(VariableSymbol variable){
+        MathExpressionSymbol exp = new MathNameExpressionSymbol(variable.getName());
+        return new ArchSimpleExpressionSymbol(exp);
     }
 
     /*

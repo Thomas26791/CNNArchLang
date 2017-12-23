@@ -46,6 +46,11 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         super(name, KIND);
     }
 
+    @Override
+    protected MethodDeclarationScope createSpannedScope() {
+        return new MethodDeclarationScope();
+    }
+
     public List<VariableSymbol> getParameters() {
         return parameters;
     }
@@ -74,6 +79,16 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         this.shapeFunction = shapeFunction;
     }
 
+    public Optional<VariableSymbol> getParameter(String name) {
+        Optional<VariableSymbol> res = Optional.empty();
+        for (VariableSymbol parameter : getParameters()){
+            if (parameter.getName().equals(name)){
+                res = Optional.of(parameter);
+            }
+        }
+        return res;
+    }
+
     public Optional<LayerSymbol> call(MethodLayerSymbol layer) {
         if (isPredefined()){
             return Optional.of(layer);
@@ -92,7 +107,6 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
             return Optional.empty();
         }
     }
-
 
 
     //todo
@@ -130,7 +144,7 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
 
         public MethodDeclarationSymbol build(){
             if (name == null || name.equals("")){
-                throw new IllegalStateException("Missing name for MethodDeclarationSymbol");
+                throw new IllegalStateException("Missing or empty name for MethodDeclarationSymbol");
             }
             MethodDeclarationSymbol sym = new MethodDeclarationSymbol(name);
             sym.setBody(body);

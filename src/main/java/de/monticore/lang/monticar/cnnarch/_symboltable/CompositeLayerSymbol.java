@@ -44,6 +44,21 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     protected void setLayers(List<LayerSymbol> layers) {
+        LayerSymbol previous = null;
+        for (LayerSymbol current : layers){
+            if (previous != null){
+                current.setInputLayer(previous);
+            }
+            else {
+                if (getInputLayer().isPresent()){
+                    current.setInputLayer(getInputLayer().get());
+                }
+                else {
+                    current.setInputLayer(null);
+                }
+            }
+            previous = current;
+        }
         this.layers = layers;
     }
 
@@ -54,42 +69,64 @@ public class CompositeLayerSymbol extends LayerSymbol {
 
     @Override
     public Set<String> resolve() {
+        if (isResolved()){
+            checkIfResolvable();
+            if (isResolvable()){
+                List<LayerSymbol> resolvedLayers = new ArrayList<>();
+                for (LayerSymbol layer : getLayers()){
+                    layer.resolve();
+                }
+            }
+        }
+        return getUnresolvableNames();
+    }
+
+    @Override
+    public boolean isResolved() {
+        boolean isResolved = true;
+        for (LayerSymbol layer : getLayers()){
+            if (!layer.isResolved()){
+                isResolved = false;
+            }
+        }
+        return isResolved;
+    }
+
+    @Override
+    protected Set<String> computeUnresolvableNames() {
         Set<String> unresolvableSet = new HashSet<>();
-        //todo
+        for (LayerSymbol layer : getLayers()){
+            unresolvableSet.addAll(layer.computeUnresolvableNames());
+        }
         return unresolvableSet;
     }
 
     @Override
-    protected void checkIfResolved() {
-        //todo
-    }
-
-    @Override
-    protected List<ShapeSymbol> computeOutputShape() {
-        if (isParallel()){
-            List<ShapeSymbol> outputShapes = new ArrayList<>(getLayers().size());
-            for (LayerSymbol layer : getLayers()){
-                //todo: assure that last layer in each parallel group has only one outputShape
-                outputShapes.add(layer.getOutputShapes().get(0));
-            }
-            return outputShapes;
+    protected List<ShapeSymbol> computeOutputShapes() {
+        if (layers.size() == 0){
+            return getInputLayer().get().getOutputShapes();
         }
         else {
-            return getLayers().get(getLayers().size() - 1).getOutputShapes();
+            if (isParallel()){
+                List<ShapeSymbol> outputShapes = new ArrayList<>(getLayers().size());
+                for (LayerSymbol layer : getLayers()){
+                    //todo: assure with coco that last layer in each parallel group has only one outputShape
+                    if (layer.getOutputShapes().size() != 0){
+                        outputShapes.add(layer.getOutputShapes().get(0));
+                    }
+                }
+                return outputShapes;
+            }
+            else {
+                return getLayers().get(getLayers().size() - 1).getOutputShapes();
+            }
         }
-    }
-
-    @Override
-    public boolean isResolvable() {
-        //todo
-        return false;
     }
 
 
     public static class Builder{
         private boolean parallel = false;
         private List<LayerSymbol> layers = new ArrayList<>();
-        private LayerSymbol inputLayer;
 
         public Builder parallel(boolean parallel){
             this.parallel = parallel;
@@ -106,16 +143,10 @@ public class CompositeLayerSymbol extends LayerSymbol {
             return this;
         }
 
-        public Builder inputLayer(LayerSymbol inputLayer){
-            this.inputLayer = inputLayer;
-            return this;
-        }
-
         public CompositeLayerSymbol build(){
             CompositeLayerSymbol sym = new CompositeLayerSymbol();
             sym.setParallel(parallel);
             sym.setLayers(layers);
-            sym.setInputLayer(inputLayer);
             return sym;
         }
     }

@@ -21,6 +21,8 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 
+import de.monticore.lang.monticar.cnnarch.ErrorMessages;
+import de.monticore.lang.monticar.cnnarch.PredefinedMethods;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
@@ -32,6 +34,7 @@ public class MethodLayerSymbol extends LayerSymbol {
     private List<ArgumentSymbol> arguments;
     private ArchExpressionSymbol ifArgument = ArchSimpleExpressionSymbol.TRUE;
     private ArchExpressionSymbol forArgument = ArchSimpleExpressionSymbol.ONE;
+    private LayerSymbol resolvedThis = null;
 
     protected MethodLayerSymbol(String name) {
         super(name);
@@ -39,18 +42,28 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     public MethodDeclarationSymbol getMethod() {
         if (method == null){
-            Optional<MethodDeclarationSymbol> optMethod = getEnclosingScope().resolve(getName(), MethodDeclarationSymbol.KIND);
-            if (optMethod.isPresent()){
-                setMethod(optMethod.get());
-            }
-            else {
-                Log.error("method with name " + getName() + " could not be resolved", getSourcePosition());
-            }
+            setMethod(resolveMethodSymbolByName());
         }
         return method;
     }
 
-    protected void setMethod(MethodDeclarationSymbol method) {
+    private MethodDeclarationSymbol resolveMethodSymbolByName(){
+        MethodDeclarationSymbol method = PredefinedMethods.MAP.get(getName());
+        if (method == null){
+            Optional<MethodDeclarationSymbol> optMethod = getEnclosingScope().resolve(getName(), MethodDeclarationSymbol.KIND);
+            if (optMethod.isPresent()){
+                method = optMethod.get();
+            }
+        }
+
+        if (method == null){
+            Log.error(ErrorMessages.UNKNOWN_NAME_MSG + "Method with name " + getName() + " could not be resolved", getSourcePosition());
+        }
+
+        return method;
+    }
+
+    private void setMethod(MethodDeclarationSymbol method) {
         if (method.isPredefined()){
             setResolvedThis(this);
         }
@@ -81,43 +94,53 @@ public class MethodLayerSymbol extends LayerSymbol {
         this.forArgument = forArgument;
     }
 
+    public Optional<LayerSymbol> getResolvedThis() {
+        return Optional.ofNullable(resolvedThis);
+    }
+
+    protected void setResolvedThis(LayerSymbol resolvedThis) {
+        this.resolvedThis = resolvedThis;
+    }
+
     @Override
     public boolean isMethod(){
         return true;
     }
 
+    public boolean isResolved(){
+        return getResolvedThis().isPresent();
+    }
+
     @Override
     public Set<String> resolve() {
+        if (!isResolved()){
+            //todo
+        }
+        return null;
+    }
+
+    @Override
+    protected Set<String> computeUnresolvableNames() {
         //todo
         return null;
     }
 
     @Override
-    protected void checkIfResolved() {
-        //todo
-    }
-
-    @Override
-    protected List<ShapeSymbol> computeOutputShape() {
+    protected List<ShapeSymbol> computeOutputShapes() {
         if (getMethod().isPredefined()){
             BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction = getMethod().getShapeFunction();
-            return shapeFunction.apply(getInputLayer().getOutputShapes(), this);
+            return shapeFunction.apply(getInputLayer().get().getOutputShapes(), this);
         }
         else {
-            if (isResolved()){
-                return getResolvedThis().get().computeOutputShape();
+            if (isResolvable()){
+                resolve();
+                return getResolvedThis().get().computeOutputShapes();
             }
             else {
                 throw new IllegalStateException("The output shape can only be computed if this and all previous layer are resolved");
             }
 
         }
-    }
-
-    @Override
-    public boolean isResolvable() {
-        //todo
-        return false;
     }
 
     public Optional<LayerSymbol> call(){
@@ -256,10 +279,8 @@ public class MethodLayerSymbol extends LayerSymbol {
     public static class Builder{
         private String name = null;
         private List<ArgumentSymbol> arguments;
-        private MethodDeclarationSymbol method;
         private ArchExpressionSymbol ifArgument = ArchSimpleExpressionSymbol.TRUE;
         private ArchExpressionSymbol forArgument = ArchSimpleExpressionSymbol.ONE;
-        private LayerSymbol inputLayer;
 
         public Builder name(String name){
             this.name = name;
@@ -276,12 +297,6 @@ public class MethodLayerSymbol extends LayerSymbol {
             return this;
         }
 
-        //will be assigned automatically by name if not set
-        public Builder method(MethodDeclarationSymbol method){
-            this.method = method;
-            return this;
-        }
-
         public Builder ifArgument(ArchExpressionSymbol ifArgument){
             this.ifArgument = ifArgument;
             return this;
@@ -292,26 +307,14 @@ public class MethodLayerSymbol extends LayerSymbol {
             return this;
         }
 
-        public Builder inputLayer(LayerSymbol inputLayer){
-            this.inputLayer = inputLayer;
-            return this;
-        }
-
         public MethodLayerSymbol build(){
             if (name == null || name.equals("")){
-                throw new IllegalStateException("Missing name for MethodLayerSymbol");
+                throw new IllegalStateException("Missing or empty name for MethodLayerSymbol");
             }
             MethodLayerSymbol sym = new MethodLayerSymbol(name);
             sym.setArguments(arguments);
-            if (method == null){
-                sym.getMethod();
-            }
-            else{
-                sym.setMethod(method);
-            }
             sym.setIfArgument(ifArgument);
             sym.setForArgument(forArgument);
-            sym.setInputLayer(inputLayer);
             return sym;
         }
 

@@ -21,7 +21,9 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
+import jline.internal.Nullable;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -32,14 +34,14 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     private LayerSymbol inputLayer;
     private List<ShapeSymbol> outputShapes = null;
-    private LayerSymbol resolvedThis = null;
+    private Set<String> unresolvableNames = null;
 
     protected LayerSymbol(String name) {
         super(name, KIND);
     }
 
-    public LayerSymbol getInputLayer() {
-        return inputLayer;
+    public Optional<LayerSymbol> getInputLayer() {
+        return Optional.ofNullable(inputLayer);
     }
 
     public void setInputLayer(LayerSymbol inputLayer) {
@@ -48,21 +50,13 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     public List<ShapeSymbol> getOutputShapes() {
         if (outputShapes == null){
-            outputShapes = computeOutputShape();
+            outputShapes = computeOutputShapes();
         }
         return outputShapes;
     }
 
     protected void setOutputShapes(List<ShapeSymbol> outputShapes) {
         this.outputShapes = outputShapes;
-    }
-
-    public Optional<LayerSymbol> getResolvedThis() {
-        return Optional.ofNullable(resolvedThis);
-    }
-
-    protected void setResolvedThis(LayerSymbol resolvedThis) {
-        this.resolvedThis = resolvedThis;
     }
 
     public boolean isInput(){
@@ -81,16 +75,26 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         return false;
     }
 
-    public boolean isResolved(){
-        return getResolvedThis().isPresent();
+    public Set<String> getUnresolvableNames() {
+        if (unresolvableNames == null){
+            checkIfResolvable();
+        }
+        return unresolvableNames;
+    }
+
+    public boolean isResolvable(){
+        return getUnresolvableNames().isEmpty();
+    }
+
+    public void checkIfResolvable(){
+        unresolvableNames = computeUnresolvableNames();
     }
 
     abstract public Set<String> resolve();
 
-    abstract protected void checkIfResolved();
+    abstract protected List<ShapeSymbol> computeOutputShapes();
 
-    //todo: add argument inputShape
-    abstract protected List<ShapeSymbol> computeOutputShape();
+    abstract protected Set<String> computeUnresolvableNames();
 
-    abstract public boolean isResolvable();
+    abstract public boolean isResolved();
 }

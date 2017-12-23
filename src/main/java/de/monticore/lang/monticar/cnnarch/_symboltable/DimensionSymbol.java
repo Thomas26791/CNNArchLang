@@ -31,7 +31,7 @@ public class DimensionSymbol extends CommonSymbol {
     private ArchSimpleExpressionSymbol valueExpression;
     private VariableSymbol ioVariable;
 
-    public DimensionSymbol() {
+    protected DimensionSymbol() {
         super("", KIND);
     }
 
@@ -59,6 +59,13 @@ public class DimensionSymbol extends CommonSymbol {
     public static DimensionSymbol of(int value){
         DimensionSymbol sym = new DimensionSymbol();
         sym.setValueExpression(ArchSimpleExpressionSymbol.of(value));
+        return sym;
+    }
+
+    public static DimensionSymbol of(VariableSymbol variable){
+        DimensionSymbol sym = new DimensionSymbol();
+        sym.setValueExpression(ArchSimpleExpressionSymbol.of(variable));
+        sym.setIoVariable(variable);
         return sym;
     }
 }

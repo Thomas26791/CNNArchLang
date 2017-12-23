@@ -119,7 +119,6 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         addToScopeAndLinkWithNode(architectureSymbol, architecture);
 
         createPredefinedConstants();
-        createPredefinedMethods();
     }
 
     public void endVisit(final ASTArchitecture architecture) {
@@ -140,17 +139,6 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
         addToScope(trueConstant);
         addToScope(falseConstant);
-    }
-
-    private void createPredefinedMethods(){
-        for (MethodDeclarationSymbol method : PredefinedMethods.createList()){
-            addToScope(method);
-            putSpannedScopeOnStack(method);
-            for (VariableSymbol parameter : method.getParameters()){
-                addToScope(parameter);
-            }
-            removeCurrentScope();
-        }
     }
 
     @Override
@@ -368,9 +356,9 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
             ArchExpressionSymbol value = (ArchExpressionSymbol) node.getRhs().getSymbol().get();
             ArgumentSymbol argument = (ArgumentSymbol) node.getSymbol().get();
             argument.setRhs(value);
+            argument.setParameter(methodLayer.getMethod().getParameter(argument.getName()).get());
 
-            VariableSymbol parameter = (VariableSymbol) methodLayer.getMethod().getSpannedScope()
-                    .resolveLocally(argument.getName(), VariableSymbol.KIND).get();
+            VariableSymbol parameter = methodLayer.getMethod().getParameter(argument.getName()).get();
 
             argument.setParameter(parameter);
         }
@@ -378,32 +366,62 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
     @Override
     public void visit(ASTIOLayer node) {
-        IOLayerSymbol sym = new IOLayerSymbol(node.getName());
-        addToScopeAndLinkWithNode(sym, node);
-    }
+        IODeclarationSymbol IODef = (IODeclarationSymbol) currentScope().get().resolve(node.getName(), IODeclarationSymbol.KIND).get();
+        int arrayLength = IODef.getArrayLength();
 
-    @Override
-    public void endVisit(ASTIOLayer node) {
-        IOLayerSymbol sym = (IOLayerSymbol) node.getSymbol().get();
-        if (node.getIndex().isPresent()){
-            sym.setArrayAccess((ArchSimpleExpressionSymbol) node.getIndex().get().getSymbol().get());
+        if (!node.getIndex().isPresent() && arrayLength > 1){
+            List<LayerSymbol> ioLayers = new ArrayList<>(arrayLength);
+            IOLayerSymbol ioLayer;
+            for (int i = 0; i < arrayLength; i++){
+                ioLayer = new IOLayerSymbol(node.getName());
+                ioLayer.setArrayAccess(i);
+                ioLayers.add(ioLayer);
+            }
+
+            CompositeLayerSymbol composite = new CompositeLayerSymbol.Builder()
+                    .parallel(true)
+                    .layers(ioLayers)
+                    .build();
+
+            addToScopeAndLinkWithNode(composite, node);
+
+            for (LayerSymbol layer : ioLayers){
+                addToScope(layer);
+            }
+        }
+        else {
+            IOLayerSymbol ioLayer = new IOLayerSymbol(node.getName());
+            addToScopeAndLinkWithNode(ioLayer, node);
         }
     }
 
     @Override
+    public void endVisit(ASTIOLayer node) {
+        if (node.getIndex().isPresent()){
+            IOLayerSymbol sym = (IOLayerSymbol) node.getSymbol().get();
+            sym.setArrayAccess((ArchSimpleExpressionSymbol) node.getIndex().get().getSymbol().get());
+        }
+        removeCurrentScope();
+    }
+
+    @Override
     public void visit(ASTArrayAccessLayer node) {
-        MethodLayerSymbol methodLayer = new MethodLayerSymbol(PredefinedMethods.createGet().getName());
+        MethodLayerSymbol methodLayer = new MethodLayerSymbol(PredefinedMethods.GET.getName());
         addToScopeAndLinkWithNode(methodLayer, node);
     }
 
     @Override
     public void endVisit(ASTArrayAccessLayer node) {
-        MethodLayerSymbol methodLayer = (MethodLayerSymbol) currentScope().get().getSpanningSymbol().get();
-        methodLayer.setArguments(Arrays.asList(new ArgumentSymbol.Builder()
-                .name("index")
+        MethodLayerSymbol methodLayer = (MethodLayerSymbol) node.getSymbol().get();
+        ArgumentSymbol indexArgument = new ArgumentSymbol.Builder()
+                .parameter(methodLayer.getMethod().getParameter("index").get())
                 .value((ArchSimpleExpressionSymbol) node.getIndex().getSymbol().get())
-                .build()));
+                .build();
+        addToScope(indexArgument);
+        methodLayer.setArguments(Collections.singletonList(indexArgument));
         methodLayer.getMethod();
+
+        removeCurrentScope();
     }
 
     @Override

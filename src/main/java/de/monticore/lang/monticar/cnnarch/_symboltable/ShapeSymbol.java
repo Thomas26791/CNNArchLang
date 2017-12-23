@@ -22,7 +22,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
 
-import java.util.Optional;
+import java.util.*;
 
 
 public class ShapeSymbol extends CommonSymbol {
@@ -71,6 +71,30 @@ public class ShapeSymbol extends CommonSymbol {
 
     public Optional<Integer> getChannels(){
         return getChannelsSymbol().getValue();
+    }
+
+    public List<VariableSymbol> getIOVariables(){
+        List<VariableSymbol> vars = new ArrayList<>(4);
+        if (getHeightSymbol().getIoVariable().isPresent()){
+            vars.add(getHeightSymbol().getIoVariable().get());
+        }
+        if (getWidthSymbol().getIoVariable().isPresent()){
+            vars.add(getWidthSymbol().getIoVariable().get());
+        }
+        if (getChannelsSymbol().getIoVariable().isPresent()){
+            vars.add(getChannelsSymbol().getIoVariable().get());
+        }
+        return vars;
+    }
+
+    public Set<String> computeUnresolvableNames(){
+        Set<String> unresolvableNames = new HashSet<>();
+        for (VariableSymbol variable : getIOVariables()){
+            if (!variable.hasValueSymbol()){
+                unresolvableNames.add(variable.getName());
+            }
+        }
+        return unresolvableNames;
     }
 
 

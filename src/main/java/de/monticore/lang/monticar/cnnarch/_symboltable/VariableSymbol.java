@@ -152,7 +152,7 @@ public class VariableSymbol extends CommonSymbol {
 
         public VariableSymbol build(){
             if (name == null || name.equals("")){
-                throw new IllegalStateException("Missing name for VariableSymbol");
+                throw new IllegalStateException("Missing or empty name for VariableSymbol");
             }
             VariableSymbol sym = new VariableSymbol(name);
             sym.setType(type);
