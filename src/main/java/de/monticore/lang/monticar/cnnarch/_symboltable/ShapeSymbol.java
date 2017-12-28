@@ -29,36 +29,38 @@ public class ShapeSymbol extends CommonSymbol {
 
     public static final ShapeKind KIND = new ShapeKind();
 
-    private DimensionSymbol heightSymbol;
-    private DimensionSymbol widthSymbol;
-    private DimensionSymbol channelsSymbol;
+    public static final int HEIGHT_INDEX = 1;
+    public static final int WIDTH_INDEX = 2;
+    public static final int CHANNEL_INDEX = 3;
+
+    private List<DimensionSymbol> dimensions = Arrays.asList(DimensionSymbol.of(-1),DimensionSymbol.of(-1), DimensionSymbol.of(-1), DimensionSymbol.of(-1));
 
     public ShapeSymbol() {
         super("", KIND);
     }
 
     public DimensionSymbol getHeightSymbol() {
-        return heightSymbol;
+        return dimensions.get(HEIGHT_INDEX);
     }
 
     public void setHeightSymbol(DimensionSymbol heightSymbol) {
-        this.heightSymbol = heightSymbol;
+        dimensions.set(HEIGHT_INDEX, heightSymbol);
     }
 
     public DimensionSymbol getWidthSymbol() {
-        return widthSymbol;
+        return dimensions.get(WIDTH_INDEX);
     }
 
     public void setWidthSymbol(DimensionSymbol widthSymbol) {
-        this.widthSymbol = widthSymbol;
+        dimensions.set(WIDTH_INDEX, widthSymbol);
     }
 
     public DimensionSymbol getChannelsSymbol() {
-        return channelsSymbol;
+        return dimensions.get(CHANNEL_INDEX);
     }
 
     public void setChannelsSymbol(DimensionSymbol channelsSymbol) {
-        this.channelsSymbol = channelsSymbol;
+        dimensions.set(CHANNEL_INDEX, channelsSymbol);
     }
 
     public Optional<Integer> getWidth(){
@@ -73,16 +75,17 @@ public class ShapeSymbol extends CommonSymbol {
         return getChannelsSymbol().getValue();
     }
 
+    public List<DimensionSymbol> getDimensionSymbols() {
+        return dimensions;
+    }
+
+
     public List<VariableSymbol> getIOVariables(){
         List<VariableSymbol> vars = new ArrayList<>(4);
-        if (getHeightSymbol().getIoVariable().isPresent()){
-            vars.add(getHeightSymbol().getIoVariable().get());
-        }
-        if (getWidthSymbol().getIoVariable().isPresent()){
-            vars.add(getWidthSymbol().getIoVariable().get());
-        }
-        if (getChannelsSymbol().getIoVariable().isPresent()){
-            vars.add(getChannelsSymbol().getIoVariable().get());
+        for (DimensionSymbol dim : getDimensionSymbols()){
+            if (dim.getIoVariable().isPresent()){
+                vars.add(dim.getIoVariable().get());
+            }
         }
         return vars;
     }
@@ -108,13 +111,28 @@ public class ShapeSymbol extends CommonSymbol {
             return this;
         }
 
+        public Builder height(DimensionSymbol height){
+            this.height = height;
+            return this;
+        }
+
         public Builder width(int width){
             this.width = DimensionSymbol.of(width);
             return this;
         }
 
+        public Builder width(DimensionSymbol width){
+            this.width = width;
+            return this;
+        }
+
         public Builder channels(int channels){
             this.channels = DimensionSymbol.of(channels);
+            return this;
+        }
+
+        public Builder channels(DimensionSymbol channels){
+            this.channels = channels;
             return this;
         }
 

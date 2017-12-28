@@ -23,17 +23,19 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.ErrorMessages;
 import de.monticore.lang.monticar.cnnarch.PredefinedMethods;
+import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
+import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class MethodLayerSymbol extends LayerSymbol {
 
     private MethodDeclarationSymbol method = null;
     private List<ArgumentSymbol> arguments;
-    private ArchExpressionSymbol ifArgument = ArchSimpleExpressionSymbol.TRUE;
-    private ArchExpressionSymbol forArgument = ArchSimpleExpressionSymbol.ONE;
     private LayerSymbol resolvedThis = null;
 
     protected MethodLayerSymbol(String name) {
@@ -65,7 +67,7 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     private void setMethod(MethodDeclarationSymbol method) {
         if (method.isPredefined()){
-            setResolvedThis(this);
+            resolvedThis = this;
         }
         this.method = method;
     }
@@ -78,20 +80,12 @@ public class MethodLayerSymbol extends LayerSymbol {
         this.arguments = arguments;
     }
 
-    public ArchExpressionSymbol isIfArgument() {
-        return ifArgument;
+    public Optional<ArgumentSymbol> getIfArgument() {
+        return getArgument(PredefinedVariables.IF_NAME);
     }
 
-    protected void setIfArgument(ArchExpressionSymbol ifArgument) {
-        this.ifArgument = ifArgument;
-    }
-
-    public ArchExpressionSymbol getForArgument() {
-        return forArgument;
-    }
-
-    protected void setForArgument(ArchExpressionSymbol forArgument) {
-        this.forArgument = forArgument;
+    public Optional<ArgumentSymbol> getForArgument() {
+        return getArgument(PredefinedVariables.FOR_NAME);
     }
 
     public Optional<LayerSymbol> getResolvedThis() {
@@ -100,6 +94,17 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     protected void setResolvedThis(LayerSymbol resolvedThis) {
         this.resolvedThis = resolvedThis;
+        this.resolvedThis.putInScope(getSpannedScope().getAsMutableScope());
+    }
+
+    protected void putInScope(MutableScope scope){
+        Collection<Symbol> symbols = scope.getLocalSymbols().get(getName());
+        if (symbols == null || !symbols.contains(this)){
+            scope.add(this);
+            for (ArgumentSymbol argument : getArguments()){
+                getSpannedScope().getAsMutableScope().add(argument);
+            }
+        }
     }
 
     @Override
@@ -114,15 +119,79 @@ public class MethodLayerSymbol extends LayerSymbol {
     @Override
     public Set<String> resolve() {
         if (!isResolved()){
-            //todo
+            checkIfResolvable();
+            if (isResolvable()){
+                int parallelLength = getParallelLength();
+                int serialLength = getSerialLength();
+
+                if (parallelLength == 1 && serialLength == 1){
+                    resolveExpressions();
+                    setResolvedThis(call());
+                }
+                else {
+                    List<List<LayerSymbol>> layers = computeExpandedSplit(parallelLength, serialLength);
+                    List<LayerSymbol> serialComposites = new ArrayList<>();
+
+                    for (List<LayerSymbol> serialLayers : layers){
+                        CompositeLayerSymbol serialComposite = new CompositeLayerSymbol.Builder()
+                                .parallel(false)
+                                .layers(serialLayers)
+                                .build();
+                        serialComposites.add(serialComposite);
+                    }
+                    CompositeLayerSymbol parallelLayer = new CompositeLayerSymbol.Builder()
+                            .parallel(true)
+                            .layers(serialComposites)
+                            .build();
+
+                    setResolvedThis(parallelLayer);
+                }
+            }
         }
-        return null;
+        return getUnresolvableNames();
+    }
+
+    protected void resolveExpressions(){
+        for (ArgumentSymbol argument : getArguments()){
+            argument.getRhs().resolve();
+        }
+    }
+
+    private List<List<LayerSymbol>> computeExpandedSplit(int parallelLength, int serialLength){
+        List<List<LayerSymbol>> layers = new ArrayList<>(parallelLength);
+
+        List<List<List<ArgumentSymbol>>> allExpandedArguments = new ArrayList<>(getArguments().size());
+        for (ArgumentSymbol argument : getArguments()){
+            allExpandedArguments.add(argument.expandedSplit(parallelLength, serialLength).get());
+        }
+
+        for (int i = 0; i < parallelLength; i++){
+            List<LayerSymbol> serialLayerList = new ArrayList<>(serialLength);
+            for (int j = 0; j < serialLength; j++){
+                List<ArgumentSymbol> methodArguments = new ArrayList<>();
+                for (List<List<ArgumentSymbol>> args : allExpandedArguments){
+                    methodArguments.add(args.get(i).get(j));
+                }
+
+                MethodLayerSymbol method = new MethodLayerSymbol.Builder()
+                        .name(getName())
+                        .arguments(methodArguments)
+                        .build();
+                method.resolve();
+                serialLayerList.add(method);
+            }
+            layers.add(serialLayerList);
+        }
+        return layers;
     }
 
     @Override
     protected Set<String> computeUnresolvableNames() {
-        //todo
-        return null;
+        Set<String> unresolvableNames = new HashSet<>();
+        for (ArgumentSymbol argument : getArguments()){
+            unresolvableNames.addAll(argument.getRhs().computeUnresolvableNames());
+        }
+        return unresolvableNames;
     }
 
     @Override
@@ -143,8 +212,8 @@ public class MethodLayerSymbol extends LayerSymbol {
         }
     }
 
-    public Optional<LayerSymbol> call(){
-        return getMethod().call(this);
+    private LayerSymbol call(){
+        return getMethod().call(this).get();
     }
 
     public Optional<ArgumentSymbol> getArgument(String name){
@@ -187,100 +256,76 @@ public class MethodLayerSymbol extends LayerSymbol {
         return Optional.empty();
     }
 
-    //todo outputShape Function partial apply and check argument correctness
+    //todo outputShape Function partial check and check argument correctness
 
-    public boolean isCallable(){
-        boolean callable = true;
+    public int getParallelLength(){
+        if (getResolvedThis().isPresent()){
+            if (getResolvedThis().get() == this){
+                return 1;
+            }
+            else{
+                return getResolvedThis().get().getParallelLength();
+            }
+        }
+        else {
+            return computeLength(sequence -> sequence.getParallelLength().get());
+        }
+    }
+
+    public int getSerialLength(){
+        //todo check different serial lengths
+        if (getResolvedThis().isPresent()){
+            if (getResolvedThis().get() == this){
+                return 1;
+            }
+            else {
+                return getResolvedThis().get().getSerialLength();
+            }
+        }
+        else {
+            return computeLength(sequence -> sequence.getSerialLength().get());
+        }
+    }
+
+    private int computeLength(Function<ArchAbstractSequenceExpression, Integer> lengthFunction){
+        int length = -1;
+
         for (ArgumentSymbol argument : getArguments()) {
-            if (argument.getRhs().isRange()){
-                argument.getRhs().resolve();
-                if (!argument.getRhs().isFullyResolved()){
-                    callable = false;
+            if (argument.getRhs().isParallelSequence()) {
+                int argumentLength = lengthFunction.apply((ArchAbstractSequenceExpression) argument.getRhs());
+                if (length == -1) {
+                    length = argumentLength;
                 }
+                else if (length != argumentLength) {
+                    Log.error(ErrorMessages.ILLEGAL_SEQUENCE_LENGTH_MSG +
+                                    "Length is " + argumentLength + " but it should be " + length + " or not a sequence. " +
+                                    "All parallel/serial sequences in the same method layer must be of the same size. "
+                            , argument.getSourcePosition());
+                }
+
             }
         }
-        return callable;
+        if (length == -1) length = 1;
+        return length;
     }
 
-    public Optional<Integer> getParallelLength(){
-        if (isCallable()) {
-            int parallelLength = -1;
-            for (ArgumentSymbol argument : getArguments()) {
-                if (argument.getRhs().isParallelSequence()) {
-                    int argumentLength = ((ArchAbstractSequenceExpression) argument.getRhs()).getParallelLength().get();
-                    if (parallelLength == -1) {
-                        parallelLength = argumentLength;
-                    } else if (parallelLength != argumentLength) {
-                        Log.error("Illegal sequence length. " +
-                                        "All serial sequences in the same method layer must be of the same size."
-                                , argument.getSourcePosition());
-                    }
+    @Override
+    public LayerSymbol copy() {
+        List<ArgumentSymbol> args = new ArrayList<>(getArguments().size());
+        for (ArgumentSymbol argument : getArguments()){
+            args.add(argument.copy());
+        }
 
-                }
-            }
-            if (parallelLength == -1) parallelLength = 1;
-            return Optional.of(parallelLength);
-        }
-        else {
-            return Optional.empty();
-        }
+        return new Builder()
+                .name(getName())
+                .arguments(args)
+                .build();
     }
-
-    public Optional<List<MethodLayerSymbol>> parallelize(){
-        Optional<Integer> optLength = getParallelLength();
-        if (optLength.isPresent()){
-            for (int i = 0; i < optLength.get(); i++){
-                for (ArgumentSymbol arg : getArguments()){
-
-                }
-            }
-            //todo
-            return null;
-        }
-        else {
-            return Optional.empty();
-        }
-    }
-
-    private List<List<ArgumentSymbol>> expand(ArgumentSymbol argument, int parallelIndex, int serialIndex){
-        if (argument.getRhs().isRange()){
-            ArchRangeExpressionSymbol range = (ArchRangeExpressionSymbol) argument.getRhs();
-            range.getValue();
-        }
-        //todo
-        return null;
-    }
-
-    public Optional<Integer> getSerialLength(){
-        if (isCallable()) {
-            int serialLength = -1;
-            for (ArgumentSymbol argument : getArguments()) {
-                if (argument.getRhs().isSerialSequence()) {
-                    int argumentLength = ((ArchAbstractSequenceExpression) argument.getRhs()).getSerialLength().get();
-                    if (serialLength == -1) {
-                        serialLength = argumentLength;
-                    } else if (serialLength != argumentLength) {
-                        Log.error("Illegal sequence length. " +
-                                        "All serial sequences in the same method layer must be of the same size."
-                                , argument.getSourcePosition());
-                    }
-
-                }
-            }
-            if (serialLength == -1) serialLength = 1;
-            return Optional.of(serialLength);
-        }
-        else {
-            return Optional.empty();
-        }
-    }
-
 
     public static class Builder{
         private String name = null;
-        private List<ArgumentSymbol> arguments;
-        private ArchExpressionSymbol ifArgument = ArchSimpleExpressionSymbol.TRUE;
-        private ArchExpressionSymbol forArgument = ArchSimpleExpressionSymbol.ONE;
+        private List<ArgumentSymbol> arguments = new ArrayList<>();
+        private boolean isResolved = false;
 
         public Builder name(String name){
             this.name = name;
@@ -297,13 +342,8 @@ public class MethodLayerSymbol extends LayerSymbol {
             return this;
         }
 
-        public Builder ifArgument(ArchExpressionSymbol ifArgument){
-            this.ifArgument = ifArgument;
-            return this;
-        }
-
-        public Builder forArgument(ArchExpressionSymbol forArgument){
-            this.forArgument = forArgument;
+        public Builder isResolved(boolean isResolved){
+            this.isResolved = isResolved;
             return this;
         }
 
@@ -313,8 +353,9 @@ public class MethodLayerSymbol extends LayerSymbol {
             }
             MethodLayerSymbol sym = new MethodLayerSymbol(name);
             sym.setArguments(arguments);
-            sym.setIfArgument(ifArgument);
-            sym.setForArgument(forArgument);
+            if (isResolved){
+                sym.setResolvedThis(sym);
+            }
             return sym;
         }
 

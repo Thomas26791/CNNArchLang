@@ -20,6 +20,8 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.symboltable.MutableScope;
+
 import java.util.*;
 
 public class CompositeLayerSymbol extends LayerSymbol {
@@ -82,6 +84,13 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
+    protected void resolveExpressions() {
+        for (LayerSymbol layer : getLayers()){
+            layer.resolveExpressions();
+        }
+    }
+
+    @Override
     public boolean isResolved() {
         boolean isResolved = true;
         for (LayerSymbol layer : getLayers()){
@@ -123,6 +132,48 @@ public class CompositeLayerSymbol extends LayerSymbol {
         }
     }
 
+    @Override
+    public int getParallelLength() {
+        if (isParallel()){
+            return getLayers().size();
+        }
+        else {
+            return 1;
+        }
+    }
+
+    @Override
+    public int getSerialLength() {
+        if (isParallel()){
+            return 1;
+        }
+        else {
+            return getLayers().size();
+        }
+    }
+
+    @Override
+    protected void putInScope(MutableScope scope) {
+        if (!scope.getLocalSymbols().get(getName()).contains(this)) {
+            scope.add(this);
+            for (LayerSymbol layer : getLayers()) {
+                layer.putInScope(getSpannedScope().getAsMutableScope());
+            }
+        }
+    }
+
+    @Override
+    public CompositeLayerSymbol copy() {
+        List<LayerSymbol> layers = new ArrayList<>(getLayers().size());
+        for (LayerSymbol layer : getLayers()){
+            layers.add(layer.copy());
+        }
+
+        return new Builder()
+                .parallel(isParallel())
+                .layers(layers)
+                .build();
+    }
 
     public static class Builder{
         private boolean parallel = false;

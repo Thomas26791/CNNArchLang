@@ -54,5 +54,9 @@ public class ErrorMessages {
     public static final String UNKNOWN_NAME_CODE = "x32585";
     public static final String UNKNOWN_NAME_MSG = "0" + UNKNOWN_NAME_CODE + " Unknown method error. ";
 
+    public static final String ILLEGAL_SEQUENCE_LENGTH_CODE = "x24772";
+    public static final String ILLEGAL_SEQUENCE_LENGTH_MSG = "0" + ILLEGAL_SEQUENCE_LENGTH_CODE + " Illegal sequence length. ";
+
+
 
 }

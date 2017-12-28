@@ -22,6 +22,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -159,5 +160,51 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
      */
     abstract public Set<String> resolve();
 
+
+    //todo remove
     abstract protected void checkIfResolved();
+
+    abstract public boolean isResolved();
+
+    abstract public List<List<ArchSimpleExpressionSymbol>> getElements();
+
+    public void resolveOrError(){
+        resolve();
+        if (isResolved()){
+            throw new IllegalStateException("The following names could not be resolved: " + getUnresolvableNames());
+        }
+    }
+
+    public boolean isResolvable(){
+        //todo
+        return true;
+    }
+
+    public Set<String> getUnresolvableNames() {
+        //todo
+        return null;
+    }
+
+    public void checkIfResolvable(){
+        //todo: unresolvableNames = computeUnresolvableNames();
+    }
+
+
+    protected Set<String> computeUnresolvableNames(){
+        //todo
+        return null;
+    }
+
+    public boolean isIntTuple(){
+        return false;
+    }
+
+    public boolean isNumberTuple(){
+        return false;
+    }
+
+    public boolean isBooleanTuple(){
+        return false;
+    }
+
 }

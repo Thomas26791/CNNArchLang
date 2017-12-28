@@ -23,16 +23,14 @@
 
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
-import de.monticore.symboltable.SymbolKind;
-import de.se_rwth.commons.logging.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
 
@@ -57,6 +55,16 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
 
     protected void setParameters(List<VariableSymbol> parameters) {
         this.parameters = parameters;
+        if (!getParameter(PredefinedVariables.IF_NAME).isPresent()){
+            VariableSymbol ifParam = PredefinedVariables.createIfParameter();
+            getSpannedScope().getAsMutableScope().add(ifParam);
+            this.parameters.add(ifParam);
+        }
+        if (!getParameter(PredefinedVariables.FOR_NAME).isPresent()){
+            VariableSymbol forParam = PredefinedVariables.createForParameter();
+            getSpannedScope().getAsMutableScope().add(forParam);
+            this.parameters.add(forParam);
+        }
     }
 
     public CompositeLayerSymbol getBody() {
@@ -93,23 +101,20 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         if (isPredefined()){
             return Optional.of(layer);
         }
-        //todo
-        if (layer.isCallable()){
-            int parallelLength = layer.getParallelLength().get();
-            int serialLength = layer.getSerialLength().get();
-
-            List<List<ArgumentSymbol>> arguments = new ArrayList<>(parallelLength);
-
-
-            return null;
-        }
         else {
-            return Optional.empty();
+            for (VariableSymbol param : getParameters()){
+                param.reset();
+            }
+            for (ArgumentSymbol arg : layer.getArguments()){
+                arg.set();
+            }
+            LayerSymbol resolvedCopy = getBody().copy();
+            resolvedCopy.resolveExpressions();
+
+            return Optional.of(resolvedCopy);
         }
     }
 
-
-    //todo
 
     public static class Builder{
         private List<VariableSymbol> parameters = new ArrayList<>();
@@ -123,7 +128,7 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         }
 
         public Builder parameters(VariableSymbol... parameters) {
-            this.parameters = Arrays.asList(parameters);
+            this.parameters = new ArrayList<>(Arrays.asList(parameters));
             return this;
         }
 

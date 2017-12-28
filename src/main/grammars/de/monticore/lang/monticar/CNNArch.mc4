@@ -19,7 +19,9 @@ grammar CNNArch extends de.monticore.lang.math.Math {
                                                Name&
                                                (ArrayDeclaration)?;
 
-    ArchType implements Type = (ElementType ("^" "{" (Dimension || ",")+ "}")?)?;
+    ArchType implements Type = ElementType "^" Shape;
+
+    Shape = "{" (Dimension || ",")+ "}";
 
     Dimension = IOVariable | intLiteral:UnitNumberResolution;
 

@@ -90,12 +90,93 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
     }
 
     @Override
+    public boolean isIntTuple(){
+        //todo
+        return false;
+    }
+
+    @Override
+    public boolean isNumberTuple(){
+        //todo
+        return false;
+    }
+
+    @Override
+    public boolean isBooleanTuple(){
+        //todo
+        return false;
+    }
+
+    @Override
     public boolean isSimpleValue() {
         return true;
     }
 
+    public int getIntValue(){
+        Optional<Object> value = getValue();
+        if (value.get() instanceof Integer){
+            return (Integer) value.get();
+        }
+        else {
+            throw new IllegalStateException("Value is not an integer.");
+        }
+    }
+
+    public double getDoubleValue(){
+        if (isNumber()){
+            Optional<Object> value = getValue();
+            if (value.get() instanceof Integer){
+                return (Integer) value.get();
+            }
+            else {
+                return (Double) value.get();
+            }
+        }
+        else {
+            throw new IllegalStateException("Value is not a number.");
+        }
+    }
+
+    public boolean getBooleanValue(){
+        if (isBoolean()){
+            return (Boolean) getValue().get();
+        }
+        else {
+            throw new IllegalStateException("Value is not a boolean.");
+        }
+    }
+
+    public List<Integer> getIntTupleValue(){
+        List<Integer> intList = new ArrayList<>();
+        for (Object value : getTupleValue()) {
+            if (value instanceof Integer) {
+                intList.add((Integer) value);
+            }
+            else {
+                throw new IllegalStateException("Value is not an integer tuple.");
+            }
+        }
+        return intList;
+    }
+
+    public List<Object> getTupleValue(){
+        if (isTuple()){
+            @SuppressWarnings("unchecked")
+            List<Object> list = (List<Object>) getValue().get();
+            return list;
+        }
+        else {
+            throw new IllegalStateException("Value is not a tuple.");
+        }
+    }
+
     @Override
     public Optional<Object> getValue() {
+        //todo check if correct
+        if (!isFullyResolved()){
+            resolve();
+        }
+
         if (isFullyResolved()){
             if (isTuple()){
                 List<Object> tupleValues = new ArrayList<>();
@@ -116,6 +197,11 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
 
     @Override
     public Set<String> resolve() {
+        //todo check if correct
+        if (!isResolvable()){
+            throw new IllegalStateException("The following names cannot be resolved " + getUnresolvableNames());
+        }
+
         Set<String> unresolvableSet = new HashSet<>();
         Map<MathExpressionSymbol, MathExpressionSymbol> replacementMap = new HashMap<>();
 
@@ -164,7 +250,16 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
         return getExpression().getTextualRepresentation();
     }
 
+    @Override
+    public List<List<ArchSimpleExpressionSymbol>> getElements(){
+        return Collections.singletonList(Collections.singletonList(this));
+    }
 
+    @Override
+    public boolean isResolved() {
+        //todo
+        return false;
+    }
 
     public static ArchSimpleExpressionSymbol of(int value){
         MathNumberExpressionSymbol exp = new MathNumberExpressionSymbol(Rational.valueOf(value, 1));

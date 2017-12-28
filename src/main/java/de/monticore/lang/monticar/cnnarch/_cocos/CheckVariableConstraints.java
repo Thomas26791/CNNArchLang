@@ -18,26 +18,23 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._symboltable;
+package de.monticore.lang.monticar.cnnarch._cocos;
 
-import java.util.List;
-import java.util.Optional;
+import de.monticore.lang.monticar.cnnarch.Constraint;
+import de.monticore.lang.monticar.cnnarch._ast.ASTVariable;
+import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 
-abstract public class ArchAbstractSequenceExpression extends ArchExpressionSymbol {
+public class CheckVariableConstraints implements CNNArchASTVariableCoCo {
 
+    @Override
+    public void check(ASTVariable node) {
+        if (node == null || !node.getSymbol().isPresent()){
+            throw new IllegalArgumentException();
+        }
+        VariableSymbol variable = (VariableSymbol) node.getSymbol().get();
 
-    public ArchAbstractSequenceExpression() {
-        super();
+        for (Constraint constraint : variable.getConstraints()){
+            constraint.check(variable.getValueSymbol());
+        }
     }
-
-    abstract public boolean isParallelSequence();
-
-    abstract public boolean isSerialSequence();
-
-    //todo no Optional
-    abstract public Optional<Integer> getParallelLength();
-
-    //todo no Optional
-    abstract public Optional<Integer> getSerialLength();
-
 }

@@ -28,6 +28,7 @@ import de.monticore.lang.monticar.cnnarch.PredefinedMethods;
 import de.monticore.lang.monticar.cnnarch._ast.*;
 import de.monticore.lang.monticar.cnnarch._visitor.CNNArchVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CommonCNNArchDelegatorVisitor;
+import de.monticore.lang.monticar.types2._ast.ASTType;
 import de.monticore.symboltable.*;
 import de.se_rwth.commons.logging.Log;
 
@@ -150,7 +151,59 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     @Override
     public void endVisit(ASTIODeclaration ast) {
         IODeclarationSymbol iODeclaration = (IODeclarationSymbol) ast.getSymbol().get();
-        //todo set
+        if (ast.getArrayDeclaration().isPresent()){
+            iODeclaration.setArrayLength(ast.getArrayDeclaration().get().getIntLiteral().getNumber().get().getDividend().intValue());
+        }
+        iODeclaration.setShape((ShapeSymbol) ast.getType().getShape().getSymbol().get());
+        iODeclaration.setInput(ast.getIn().isPresent());
+    }
+
+    @Override
+    public void endVisit(ASTType node) {
+        //todo
+    }
+
+    @Override
+    public void endVisit(ASTShape node) {
+        ShapeSymbol sym;
+        if (node.getDimensions().size() == 1){
+            sym = new ShapeSymbol.Builder()
+                    .channels((DimensionSymbol) node.getDimensions().get(0).getSymbol().get())
+                    .build();
+        }
+        else if (node.getDimensions().size() == 3){
+                sym = new ShapeSymbol.Builder()
+                        .height((DimensionSymbol) node.getDimensions().get(ShapeSymbol.HEIGHT_INDEX - 1).getSymbol().get())
+                        .width((DimensionSymbol) node.getDimensions().get(ShapeSymbol.WIDTH_INDEX - 1).getSymbol().get())
+                        .channels((DimensionSymbol) node.getDimensions().get(ShapeSymbol.CHANNEL_INDEX - 1).getSymbol().get())
+                        .build();
+        }
+        else {
+            //todo
+            throw new IllegalStateException();
+        }
+        addToScopeAndLinkWithNode(sym, node);
+    }
+
+    @Override
+    public void endVisit(ASTDimension node) {
+        DimensionSymbol sym;
+        if (node.getIntLiteral().isPresent()){
+            sym = DimensionSymbol.of(node.getIntLiteral().get().getNumber().get().getDividend().intValue());
+        }
+        else {
+            sym = DimensionSymbol.of((VariableSymbol) node.getIOVariable().get().getSymbol().get());
+        }
+        addToScopeAndLinkWithNode(sym, node);
+    }
+
+    @Override
+    public void endVisit(ASTIOVariable node) {
+        VariableSymbol ioVariable = new VariableSymbol.Builder()
+                .name(node.getName())
+                .type(VariableType.IOVariable)
+                .build();
+        addToScopeAndLinkWithNode(ioVariable, node);
     }
 
     @Override
@@ -325,43 +378,25 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
         List<ArgumentSymbol> arguments = new ArrayList<>(6);
         for (ASTArgument astArgument : ast.getArguments()){
-            if (astArgument.getName().equals("_if")){
-                methodLayer.setIfArgument((ArchExpressionSymbol) astArgument.getRhs().getSymbol().get());
-            }
-            else if (astArgument.getName().equals("_for")){
-                methodLayer.setForArgument((ArchExpressionSymbol) astArgument.getRhs().getSymbol().get());
-            }
-            else {
-                arguments.add((ArgumentSymbol) astArgument.getSymbol().get());
-            }
+            arguments.add((ArgumentSymbol) astArgument.getSymbol().get());
         }
         methodLayer.setArguments(arguments);
-        methodLayer.getMethod();
 
         removeCurrentScope();
     }
 
     @Override
-    public void visit(ASTArgument node) {
-        if (!node.getName().equals("_if") && !node.getName().equals("_for")){
-            ArgumentSymbol argument = new ArgumentSymbol(node.getName());
-            addToScopeAndLinkWithNode(argument, node);
-        }
-    }
-
-    @Override
     public void endVisit(ASTArgument node) {
-        if (!node.getName().equals("_if") && !node.getName().equals("_for")){
-            MethodLayerSymbol methodLayer = (MethodLayerSymbol) currentScope().get().getSpanningSymbol().get();
-            ArchExpressionSymbol value = (ArchExpressionSymbol) node.getRhs().getSymbol().get();
-            ArgumentSymbol argument = (ArgumentSymbol) node.getSymbol().get();
-            argument.setRhs(value);
-            argument.setParameter(methodLayer.getMethod().getParameter(argument.getName()).get());
+        ArgumentSymbol argument;
+        ArchExpressionSymbol value = (ArchExpressionSymbol) node.getRhs().getSymbol().get();
 
-            VariableSymbol parameter = methodLayer.getMethod().getParameter(argument.getName()).get();
+        MethodLayerSymbol methodLayer = (MethodLayerSymbol) currentScope().get().getSpanningSymbol().get();
+        argument = new ArgumentSymbol.Builder()
+                .parameter(methodLayer.getMethod().getParameter(node.getName()).get())
+                .value(value)
+                .build();
 
-            argument.setParameter(parameter);
-        }
+        addToScopeAndLinkWithNode(argument, node);
     }
 
     @Override

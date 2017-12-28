@@ -21,6 +21,8 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
+import de.monticore.symboltable.MutableScope;
+import de.se_rwth.commons.logging.Log;
 import jline.internal.Nullable;
 
 import java.util.HashSet;
@@ -90,6 +92,13 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         unresolvableNames = computeUnresolvableNames();
     }
 
+    public void resolveOrError(){
+        resolve();
+        if (isResolved()){
+            throw new IllegalStateException("The following names could not be resolved: " + getUnresolvableNames());
+        }
+    }
+
     abstract public Set<String> resolve();
 
     abstract protected List<ShapeSymbol> computeOutputShapes();
@@ -97,4 +106,15 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
     abstract protected Set<String> computeUnresolvableNames();
 
     abstract public boolean isResolved();
+
+    abstract public int getParallelLength();
+
+    abstract public int getSerialLength();
+
+    abstract protected void putInScope(MutableScope scope);
+
+    //deepCopy for LayerSymbols and ArgumentSymbol but does not copy expressions
+    abstract public LayerSymbol copy();
+
+    abstract protected void resolveExpressions();
 }

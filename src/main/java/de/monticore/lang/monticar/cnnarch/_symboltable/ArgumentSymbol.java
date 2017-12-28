@@ -20,9 +20,12 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.lang.monticar.cnnarch.ErrorMessages;
 import de.monticore.symboltable.CommonSymbol;
 import de.se_rwth.commons.logging.Log;
+import javolution.testing.AssertionException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,13 +61,70 @@ public class ArgumentSymbol extends CommonSymbol {
     }
 
     public List<List<ArgumentSymbol>> split(){
-        //todo
-        return null;
+        List<List<ArchSimpleExpressionSymbol>> elements = getRhs().getElements();
+        List<List<ArgumentSymbol>> arguments = new ArrayList<>(elements.size());
+
+        for (List<ArchSimpleExpressionSymbol> serialElementList : elements){
+            List<ArgumentSymbol> serialArgumentList = new ArrayList<>(serialElementList.size());
+            for (ArchSimpleExpressionSymbol element : serialElementList){
+                ArgumentSymbol argument = new Builder().parameter(getParameter()).value(element).build();
+                serialArgumentList.add(argument);
+            }
+            arguments.add(serialArgumentList);
+        }
+        return arguments;
     }
 
-    public List<List<ArgumentSymbol>> expandedSplit(int parallelLength, int serialLength){
-        //todo
-        return null;
+    //do not call if value is a sequence
+    public void set(){
+        if (getRhs().isSimpleValue()){
+            getParameter().setValue((ArchSimpleExpressionSymbol) getRhs());
+        }
+        else {
+            throw new IllegalStateException("The value of the parameter is set to a sequence. This should never happen.");
+        }
+    }
+
+    public Optional<List<List<ArgumentSymbol>>> expandedSplit(int parallelLength, int serialLength){
+        //todo: serial layers does not need be the same or one
+        List<List<ArgumentSymbol>> splitArguments = split();
+
+        boolean valid = splitArguments.size() == parallelLength || splitArguments.size() == 1;
+        for (List<ArgumentSymbol> serialArgumentList : splitArguments){
+            if (serialArgumentList.size() != serialLength && serialArgumentList.size() != 1){
+                valid = false;
+            }
+        }
+
+        if (valid){
+            List<List<ArgumentSymbol>> expandedArguments = new ArrayList<>(parallelLength);
+
+            for (int i = 0; i < parallelLength; i++){
+                List<ArgumentSymbol> expandedSerialArgumentList = new ArrayList<>(serialLength);
+                List<ArgumentSymbol> serialArgumentList = splitArguments.size() != 1
+                        ? splitArguments.get(i)
+                        : splitArguments.get(0);
+
+                for (int j = 0; j < serialLength; j++){
+                    ArgumentSymbol argument = serialArgumentList.size() != 1
+                            ? serialArgumentList.get(j)
+                            : serialArgumentList.get(0);
+                    expandedSerialArgumentList.add(argument);
+                }
+                expandedArguments.add(expandedSerialArgumentList);
+            }
+            return Optional.of(expandedArguments);
+        }
+        else {
+            return Optional.empty();
+        }
+    }
+
+    public ArgumentSymbol copy(){
+        return new Builder()
+                .parameter(getParameter())
+                .value(getRhs())
+                .build();
     }
 
 

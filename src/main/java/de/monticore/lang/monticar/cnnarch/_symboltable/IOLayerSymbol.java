@@ -21,6 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.ErrorMessages;
+import de.monticore.symboltable.MutableScope;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
@@ -76,6 +77,7 @@ public class IOLayerSymbol extends LayerSymbol {
                 isResolved = false;
             }
         }
+        //todo getShape().isResolved
         if (!getDefinition().getShape().computeUnresolvableNames().isEmpty()){
             isResolved = false;
         }
@@ -86,7 +88,7 @@ public class IOLayerSymbol extends LayerSymbol {
     protected Set<String> computeUnresolvableNames() {
         HashSet<String> unresolvableNames = new HashSet<>();
         if (getArrayAccess().isPresent()){
-            unresolvableNames.addAll(getArrayAccess().get().resolve());
+            unresolvableNames.addAll(getArrayAccess().get().computeUnresolvableNames());
         }
         unresolvableNames.addAll(getDefinition().getShape().computeUnresolvableNames());
         return unresolvableNames;
@@ -107,6 +109,38 @@ public class IOLayerSymbol extends LayerSymbol {
         return outputShapes;
     }
 
+    @Override
+    public int getParallelLength() {
+        return getDefinition().getArrayLength();
+    }
+
+    @Override
+    public int getSerialLength() {
+        return 1;
+    }
+
+    @Override
+    protected void putInScope(MutableScope scope) {
+        if (!scope.getLocalSymbols().get(getName()).contains(this)) {
+            scope.add(this);
+        }
+        //todo: probably not complete
+    }
+
+    @Override
+    public LayerSymbol copy() {
+        return new Builder()
+                .name(getName())
+                .arrayAccess(arrayAccess)
+                .build();
+    }
+
+    @Override
+    protected void resolveExpressions() {
+        if (getArrayAccess().isPresent()){
+            getArrayAccess().get().resolve();
+        }
+    }
 
     public static class Builder{
         private ArchSimpleExpressionSymbol arrayAccess = null;

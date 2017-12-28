@@ -157,6 +157,15 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
         setFullyResolved(startSymbol.isFullyResolved() && endSymbol.isFullyResolved());
     }
 
+    @Override
+    public boolean isResolved() {
+        //todo
+        return false;
+    }
 
-
+    @Override
+    public List<List<ArchSimpleExpressionSymbol>> getElements() {
+        //todo
+        return null;
+    }
 }

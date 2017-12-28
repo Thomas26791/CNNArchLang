@@ -18,26 +18,29 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._symboltable;
+package de.monticore.lang.monticar.cnnarch;
 
-import java.util.List;
-import java.util.Optional;
+import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 
-abstract public class ArchAbstractSequenceExpression extends ArchExpressionSymbol {
+public class PredefinedVariables {
 
+    public static final String IF_NAME = "_if";
+    public static final String FOR_NAME = "_for";
 
-    public ArchAbstractSequenceExpression() {
-        super();
+    public static VariableSymbol createIfParameter(){
+        return new VariableSymbol.Builder()
+                .name(IF_NAME)
+                .constraints(Constraint.BOOLEAN)
+                .defaultValue(true)
+                .build();
     }
 
-    abstract public boolean isParallelSequence();
+    public static VariableSymbol createForParameter(){
+        return new VariableSymbol.Builder()
+                .name(FOR_NAME)
+                .defaultValue(1)
+                .build();
+    }
 
-    abstract public boolean isSerialSequence();
-
-    //todo no Optional
-    abstract public Optional<Integer> getParallelLength();
-
-    //todo no Optional
-    abstract public Optional<Integer> getSerialLength();
-
+    //todo true and false
 }

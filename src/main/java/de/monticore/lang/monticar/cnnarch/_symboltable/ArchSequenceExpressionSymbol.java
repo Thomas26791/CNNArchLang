@@ -133,4 +133,9 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
         setFullyResolved(isResolved);
     }
 
+    @Override
+    public boolean isResolved() {
+        //todo
+        return false;
+    }
 }

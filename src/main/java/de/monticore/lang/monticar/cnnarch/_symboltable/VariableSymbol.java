@@ -20,12 +20,13 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.lang.monticar.cnnarch.Constraint;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.SymbolKind;
 import de.se_rwth.commons.logging.Log;
 import org.jscience.mathematics.number.Rational;
 
-import java.util.Optional;
+import java.util.*;
 
 import static de.monticore.lang.monticar.cnnarch.ErrorMessages.MISSING_VAR_VALUE_CODE;
 
@@ -36,6 +37,7 @@ public class VariableSymbol extends CommonSymbol {
     private VariableType type;
     private ArchSimpleExpressionSymbol defaultValueSymbol = null; //Optional
     private ArchSimpleExpressionSymbol currentValueSymbol = null; //Optional
+    private Set<Constraint> constraints = new HashSet<>();
 
 
     protected VariableSymbol(String name) {
@@ -60,6 +62,14 @@ public class VariableSymbol extends CommonSymbol {
 
     protected Optional<ArchSimpleExpressionSymbol> getCurrentValueSymbol() {
         return Optional.ofNullable(currentValueSymbol);
+    }
+
+    public Set<Constraint> getConstraints() {
+        return constraints;
+    }
+
+    protected void setConstraints(Set<Constraint> constraints) {
+        this.constraints = constraints;
     }
 
     public boolean isConstant(){
@@ -101,7 +111,11 @@ public class VariableSymbol extends CommonSymbol {
         return value;
     }
 
-    public void setValueSymbol(ArchSimpleExpressionSymbol value){
+    public Optional<Object> getValue(){
+        return getValueSymbol().getValue();
+    }
+
+    public void setValue(ArchSimpleExpressionSymbol value){
         currentValueSymbol = value;
     }
 
@@ -114,6 +128,7 @@ public class VariableSymbol extends CommonSymbol {
         private VariableType type = VariableType.PARAMETER;
         private ArchSimpleExpressionSymbol defaultValue = null;
         private String name = null;
+        private Set<Constraint> constraints = new HashSet<>();
 
         public Builder type(VariableType type){
             this.type = type;
@@ -150,6 +165,11 @@ public class VariableSymbol extends CommonSymbol {
             return this;
         }
 
+        public Builder constraints(Constraint... constraints){
+            this.constraints = new HashSet<>(Arrays.asList(constraints));
+            return this;
+        }
+
         public VariableSymbol build(){
             if (name == null || name.equals("")){
                 throw new IllegalStateException("Missing or empty name for VariableSymbol");
@@ -157,6 +177,7 @@ public class VariableSymbol extends CommonSymbol {
             VariableSymbol sym = new VariableSymbol(name);
             sym.setType(type);
             sym.setDefaultValueSymbol(defaultValue);
+            sym.setConstraints(constraints);
             return sym;
         }
     }
