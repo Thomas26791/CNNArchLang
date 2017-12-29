@@ -20,10 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.ErrorMessages;
 import de.monticore.symboltable.CommonSymbol;
-import de.se_rwth.commons.logging.Log;
-import javolution.testing.AssertionException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +58,10 @@ public class ArgumentSymbol extends CommonSymbol {
     }
 
     public List<List<ArgumentSymbol>> split(){
-        List<List<ArchSimpleExpressionSymbol>> elements = getRhs().getElements();
+        if (getRhs().isRange()){
+            getRhs().resolveOrError(getEnclosingScope());
+        }
+        List<List<ArchSimpleExpressionSymbol>> elements = getRhs().getElements().get();
         List<List<ArgumentSymbol>> arguments = new ArrayList<>(elements.size());
 
         for (List<ArchSimpleExpressionSymbol> serialElementList : elements){
@@ -78,7 +78,7 @@ public class ArgumentSymbol extends CommonSymbol {
     //do not call if value is a sequence
     public void set(){
         if (getRhs().isSimpleValue()){
-            getParameter().setValue((ArchSimpleExpressionSymbol) getRhs());
+            getParameter().setExpression((ArchSimpleExpressionSymbol) getRhs());
         }
         else {
             throw new IllegalStateException("The value of the parameter is set to a sequence. This should never happen.");

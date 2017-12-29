@@ -20,6 +20,8 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.symboltable.Scope;
+
 import java.util.*;
 
 public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
@@ -27,6 +29,7 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
     private ArchSimpleExpressionSymbol startSymbol;
     private ArchSimpleExpressionSymbol endSymbol;
     private boolean parallel;
+    private List<List<ArchSimpleExpressionSymbol>> elements = null;
 
 
     public ArchRangeExpressionSymbol() {
@@ -69,7 +72,7 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
 
     private Optional<Integer> getLength(){
         Optional<Integer> optLength = Optional.empty();
-        if (isFullyResolved()) {
+        if (isResolved()){
             Object startValue = getEndSymbol().getValue().get();
             Object endValue = getEndSymbol().getValue().get();
             if (startValue instanceof Integer && endValue instanceof Integer) {
@@ -92,7 +95,7 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
     }
 
     @Override
-    public Optional<Integer> getSerialLength() {
+    public Optional<Integer> getMaxSerialLength() {
         if (isSerialSequence()) {
             return getLength();
         }
@@ -102,70 +105,61 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
     }
 
     @Override
-    public Optional<Object> getValue() {
-        if (isFullyResolved()){
-            //todo check in CoCo: startSymbol.isInt() && endSymbol.isInt()
-            int startInt = (Integer) startSymbol.getValue().get();
-            int endInt = (Integer) endSymbol.getValue().get();
-            int step = 1;
-            if (endInt < startInt){
-                step = -1;
-            }
-            List<List<Integer>> valueLists = new ArrayList<>();
+    public Set<String> resolve(Scope resolvingScope) {
+        if (!isResolved()){
+            checkIfResolvable();
+            if (isResolvable()){
 
-            if (isParallel()){
-                for (int i = startInt; i <= endInt; i = i + step){
-                    List<Integer> values = new ArrayList<>(1);
-                    values.add(i);
-                    valueLists.add(values);
-                }
-            }
-            else {
-                List<Integer> values = new ArrayList<>();
-                for (int i = startInt; i <= endInt; i = i + step){
-                    values.add(i);
-                }
-                valueLists.add(values);
-            }
-
-            return Optional.of(valueLists);
-        }
-        else {
-            return Optional.empty();
-        }
-    }
-
-    @Override
-    public Set<String> resolve() {
-        Set<String> unresolvableSet = new HashSet<>();
-        if (!isFullyResolved()){
-
-            unresolvableSet.addAll(startSymbol.resolve());
-            unresolvableSet.addAll(endSymbol.resolve());
-
-            if (unresolvableSet.isEmpty()) {
-                setFullyResolved(true);
+                getStartSymbol().resolveOrError(resolvingScope);
+                getEndSymbol().resolveOrError(resolvingScope);
             }
         }
-        return unresolvableSet;
-    }
-
-    @Override
-    protected void checkIfResolved() {
-        startSymbol.checkIfResolved();
-        endSymbol.checkIfResolved();
-        setFullyResolved(startSymbol.isFullyResolved() && endSymbol.isFullyResolved());
+        return getUnresolvableNames();
     }
 
     @Override
     public boolean isResolved() {
-        //todo
-        return false;
+        return getStartSymbol().isResolved() && getEndSymbol().isResolved();
     }
 
     @Override
-    public List<List<ArchSimpleExpressionSymbol>> getElements() {
-        //todo
-        return null;
+    public Optional<List<List<ArchSimpleExpressionSymbol>>> getElements() {
+        if (elements == null){
+            if (isResolved()){
+                int start = startSymbol.getIntValue().get();
+                int end = endSymbol.getIntValue().get();
+                int step = 1;
+                if (end < start){
+                    step = -1;
+                }
+
+                List<List<ArchSimpleExpressionSymbol>> elementList = new ArrayList<>(getParallelLength().get());
+                if (isParallel()){
+                    for (int i = start; i <= end; i = i + step){
+                        List<ArchSimpleExpressionSymbol> values = new ArrayList<>(1);
+                        values.add(ArchSimpleExpressionSymbol.of(i));
+                        elementList.add(values);
+                    }
+                }
+                else {
+                    List<ArchSimpleExpressionSymbol> values = new ArrayList<>(getMaxSerialLength().get());
+                    for (int i = start; i <= end; i = i + step){
+                        values.add(ArchSimpleExpressionSymbol.of(i));
+                    }
+                    elementList.add(values);
+                }
+
+                this.elements = elementList;
+            }
+        }
+        return Optional.ofNullable(elements);
+    }
+
+    @Override
+    protected Set<String> computeUnresolvableNames() {
+        Set<String> unresolvableNames = new HashSet<>();
+        unresolvableNames.addAll(getStartSymbol().computeUnresolvableNames());
+        unresolvableNames.addAll(getEndSymbol().computeUnresolvableNames());
+        return unresolvableNames;
     }
 }

@@ -20,6 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,10 +35,26 @@ abstract public class ArchAbstractSequenceExpression extends ArchExpressionSymbo
 
     abstract public boolean isSerialSequence();
 
-    //todo no Optional
     abstract public Optional<Integer> getParallelLength();
 
-    //todo no Optional
-    abstract public Optional<Integer> getSerialLength();
+    abstract public Optional<Integer> getMaxSerialLength();
+
+    @Override
+    public Optional<Object> getValue() {
+        if (isResolved()){
+            List<List<Object>> parallelValues = new ArrayList<>(getParallelLength().get());
+            for (List<ArchSimpleExpressionSymbol> serialElements : getElements().get()){
+                List<Object> serialValues = new ArrayList<>(getMaxSerialLength().get());
+                for (ArchSimpleExpressionSymbol element : serialElements){
+                    serialValues.add(element.getValue().get());
+                }
+                parallelValues.add(serialValues);
+            }
+            return Optional.of(parallelValues);
+        }
+        else{
+            return Optional.empty();
+        }
+    }
 
 }

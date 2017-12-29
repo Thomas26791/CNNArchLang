@@ -73,7 +73,7 @@ public class IOLayerSymbol extends LayerSymbol {
     public boolean isResolved() {
         boolean isResolved = true;
         if (getArrayAccess().isPresent()){
-            if (!getArrayAccess().get().isFullyResolved()){
+            if (!getArrayAccess().get().isResolved()){
                 isResolved = false;
             }
         }
@@ -138,7 +138,7 @@ public class IOLayerSymbol extends LayerSymbol {
     @Override
     protected void resolveExpressions() {
         if (getArrayAccess().isPresent()){
-            getArrayAccess().get().resolve();
+            getArrayAccess().get().resolve(getSpannedScope());
         }
     }
 

@@ -26,6 +26,8 @@ import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 
 public class CheckVariableConstraints implements CNNArchASTVariableCoCo {
 
+    //todo: make coco to check tuple elements (no tuple inside of tuple)
+
     @Override
     public void check(ASTVariable node) {
         if (node == null || !node.getSymbol().isPresent()){
@@ -34,7 +36,7 @@ public class CheckVariableConstraints implements CNNArchASTVariableCoCo {
         VariableSymbol variable = (VariableSymbol) node.getSymbol().get();
 
         for (Constraint constraint : variable.getConstraints()){
-            constraint.check(variable.getValueSymbol());
+            constraint.check(variable.getExpression());
         }
     }
 }

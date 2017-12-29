@@ -67,7 +67,7 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     private void setMethod(MethodDeclarationSymbol method) {
         if (method.isPredefined()){
-            resolvedThis = this;
+            setResolvedThis(this);
         }
         this.method = method;
     }
@@ -80,12 +80,12 @@ public class MethodLayerSymbol extends LayerSymbol {
         this.arguments = arguments;
     }
 
-    public Optional<ArgumentSymbol> getIfArgument() {
-        return getArgument(PredefinedVariables.IF_NAME);
+    public ArchExpressionSymbol getIfExpression(){
+        return getMethod().getParameter(PredefinedVariables.IF_NAME).get().getExpression();
     }
 
-    public Optional<ArgumentSymbol> getForArgument() {
-        return getArgument(PredefinedVariables.FOR_NAME);
+    public ArchExpressionSymbol getForExpression(){
+        return getMethod().getParameter(PredefinedVariables.FOR_NAME).get().getExpression();
     }
 
     public Optional<LayerSymbol> getResolvedThis() {
@@ -93,8 +93,11 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     protected void setResolvedThis(LayerSymbol resolvedThis) {
+        if (resolvedThis != null && resolvedThis != this){
+            resolvedThis.putInScope(getSpannedScope().getAsMutableScope());
+        }
         this.resolvedThis = resolvedThis;
-        this.resolvedThis.putInScope(getSpannedScope().getAsMutableScope());
+        checkIfResolvable();
     }
 
     protected void putInScope(MutableScope scope){
@@ -121,40 +124,62 @@ public class MethodLayerSymbol extends LayerSymbol {
         if (!isResolved()){
             checkIfResolvable();
             if (isResolvable()){
-                int parallelLength = getParallelLength();
-                int serialLength = getSerialLength();
+                resolveExpressions();
 
-                if (parallelLength == 1 && serialLength == 1){
-                    resolveExpressions();
-                    setResolvedThis(call());
-                }
-                else {
-                    List<List<LayerSymbol>> layers = computeExpandedSplit(parallelLength, serialLength);
-                    List<LayerSymbol> serialComposites = new ArrayList<>();
+                if (checkIfActive()){
+                    int parallelLength = getParallelLength();
+                    int serialLength = getSerialLength();
 
-                    for (List<LayerSymbol> serialLayers : layers){
-                        CompositeLayerSymbol serialComposite = new CompositeLayerSymbol.Builder()
-                                .parallel(false)
-                                .layers(serialLayers)
-                                .build();
-                        serialComposites.add(serialComposite);
+                    if (parallelLength == 1 && serialLength == 1){
+                        //resolve the method call
+                        getMethod().call(this);
                     }
-                    CompositeLayerSymbol parallelLayer = new CompositeLayerSymbol.Builder()
-                            .parallel(true)
-                            .layers(serialComposites)
-                            .build();
-
-                    setResolvedThis(parallelLayer);
+                    else {
+                        //split the method if it contains an argument sequence
+                        resolveSequences(parallelLength, serialLength);
+                    }
                 }
             }
         }
         return getUnresolvableNames();
     }
 
+
+    private boolean checkIfActive(){
+        if (getIfExpression().isSimpleValue() && !getIfExpression().getBooleanValue().get()){
+            //set resolved this to empty composite. This practically removes this method call.
+            setResolvedThis(new CompositeLayerSymbol.Builder().build());
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
     protected void resolveExpressions(){
         for (ArgumentSymbol argument : getArguments()){
-            argument.getRhs().resolve();
+            argument.getRhs().resolve(getSpannedScope());
         }
+    }
+
+    private void resolveSequences(int parallelLength, int serialLength){
+        List<List<LayerSymbol>> layers = computeExpandedSplit(parallelLength, serialLength);
+        List<LayerSymbol> serialComposites = new ArrayList<>();
+
+        for (List<LayerSymbol> serialLayers : layers){
+            CompositeLayerSymbol serialComposite = new CompositeLayerSymbol.Builder()
+                    .parallel(false)
+                    .layers(serialLayers)
+                    .build();
+            serialComposites.add(serialComposite);
+        }
+        CompositeLayerSymbol parallelLayer = new CompositeLayerSymbol.Builder()
+                .parallel(true)
+                .layers(serialComposites)
+                .build();
+
+        setResolvedThis(parallelLayer);
+        parallelLayer.resolve();
     }
 
     private List<List<LayerSymbol>> computeExpandedSplit(int parallelLength, int serialLength){
@@ -177,7 +202,6 @@ public class MethodLayerSymbol extends LayerSymbol {
                         .name(getName())
                         .arguments(methodArguments)
                         .build();
-                method.resolve();
                 serialLayerList.add(method);
             }
             layers.add(serialLayerList);
@@ -201,19 +225,16 @@ public class MethodLayerSymbol extends LayerSymbol {
             return shapeFunction.apply(getInputLayer().get().getOutputShapes(), this);
         }
         else {
-            if (isResolvable()){
-                resolve();
+            Set<String> unresolvableNames = resolve();
+            if (unresolvableNames.isEmpty()){
                 return getResolvedThis().get().computeOutputShapes();
             }
             else {
-                throw new IllegalStateException("The output shape can only be computed if this and all previous layer are resolved");
+                throw new IllegalStateException("The output shape can only be computed if this and all previous layer are resolvable. " +
+                        "The following names cannot be resolved: " + String.join(", ", unresolvableNames));
             }
 
         }
-    }
-
-    private LayerSymbol call(){
-        return getMethod().call(this).get();
     }
 
     public Optional<ArgumentSymbol> getArgument(String name){
@@ -283,7 +304,7 @@ public class MethodLayerSymbol extends LayerSymbol {
             }
         }
         else {
-            return computeLength(sequence -> sequence.getSerialLength().get());
+            return computeLength(sequence -> sequence.getMaxSerialLength().get());
         }
     }
 

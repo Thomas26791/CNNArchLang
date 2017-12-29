@@ -21,42 +21,44 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
+import de.monticore.symboltable.Scope;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     public static final ArchExpressionKind KIND = new ArchExpressionKind();
 
-    private boolean fullyResolved = false;
+    private Set<String> unresolvableNames = null;
 
 
     public ArchExpressionSymbol() {
         super("", KIND);
     }
 
-    /**
-     * Getter for the fullyResolved attribute.
-     * If it is still false for the return of resolve()
-     * then the value contains a dimension variable for input
-     * and output which has to be set to succesfully resolve thr expression.
-     *
-     * @return returns true iff the expression is resolved.
-     */
-    public boolean isFullyResolved() {
-        return fullyResolved;
+
+    public Set<String> getUnresolvableNames() {
+        if (unresolvableNames == null){
+            checkIfResolvable();
+        }
+        return unresolvableNames;
     }
 
-    //todo: change to isResolvable()
+    public boolean isResolvable(){
+        return getUnresolvableNames().isEmpty();
+    }
 
-    protected void setFullyResolved(boolean fullyResolved) {
-        this.fullyResolved = fullyResolved;
+    public void checkIfResolvable(){
+        if (isResolved()){
+            unresolvableNames = new HashSet<>();
+        }
+        else {
+            unresolvableNames = computeUnresolvableNames();
+        }
     }
 
     /**
-     * Checks whether the value is a boolean. If true getRhs() will return a Boolean if present.
+     * Checks whether the value is a boolean. If true getValue() will return a Boolean if present.
      *
      * @return returns true iff the value of the resolved expression will be a boolean.
      */
@@ -66,7 +68,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     /**
      * Checks whether the value is a number.
-     * Note that the return of getRhs() can be either a Double or an Integer if present.
+     * Note that the return of getValue() can be either a Double or an Integer if present.
      *
      * @return returns true iff the value of the resolved expression will be a number.
      */
@@ -76,7 +78,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     /**
      * Checks whether the value is a Tuple.
-     * If true getRhs() will return (if present) a List of Objects.
+     * If true getValue() will return (if present) a List of Objects.
      * These Objects can either be Integer, Double or Boolean.
      *
      * @return returns true iff the value of the expression will be a tuple.
@@ -86,14 +88,38 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
     }
 
     /**
-     * Checks whether the value is an integer. This can only be checked if the expression is resolvable.
+     * Checks whether the value is an integer. This can only be checked if the expression is resolved.
      * If true getRhs() will return an Integer.
      *
-     * @return returns Optional.of(true) iff the value of the expression is an integer.
-     *         The Optional is present if the expression can be resolved.
+     * @return returns true iff the value of the expression is an integer.
+     *         The Optional is present if the expression was resolved.
      */
     public Optional<Boolean> isInt(){
-        return Optional.of(false);
+        if (getValue().isPresent()){
+            return Optional.of(getIntValue().isPresent());
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Boolean> isIntTuple(){
+        if (getValue().isPresent()){
+            return Optional.of(getIntTupleValue().isPresent());
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Boolean> isNumberTuple(){
+        if (getValue().isPresent()){
+            return Optional.of(getDoubleTupleValue().isPresent());
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Boolean> isBooleanTuple(){
+        if (getValue().isPresent()){
+            return Optional.of(getBooleanTupleValue().isPresent());
+        }
+        return Optional.empty();
     }
 
     /**
@@ -139,72 +165,133 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
         return false;
     }
 
+    public Optional<Integer> getIntValue(){
+        Optional<Object> optValue = getValue();
+        if (optValue.isPresent() && (optValue.get() instanceof Integer)){
+            return Optional.of((Integer) optValue.get());
+        }
+        return Optional.empty();
+    }
 
+    public Optional<Double> getDoubleValue(){
+        Optional<Object> optValue = getValue();
+        if (optValue.isPresent()){
+            if (optValue.get() instanceof Double){
+                return Optional.of((Double) optValue.get());
+            }
+            if (optValue.get() instanceof Integer){
+                return Optional.of(((Integer) optValue.get()).doubleValue());
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Boolean> getBooleanValue(){
+        Optional<Object> optValue = getValue();
+        if (optValue.isPresent() && (optValue.get() instanceof Boolean)){
+            return Optional.of((Boolean) optValue.get());
+        }
+        return Optional.empty();
+    }
+
+    public Optional<List<Integer>> getIntTupleValue(){
+        Optional<List<Object>> optValue = getTupleValue();
+        if (optValue.isPresent()){
+            List<Integer> list = new ArrayList<>();
+            for (Object value : optValue.get()) {
+                if (value instanceof Integer){
+                    list.add((Integer) value);
+                }
+                else {
+                    return Optional.empty();
+                }
+            }
+            return Optional.of(list);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<List<Double>> getDoubleTupleValue() {
+        Optional<List<Object>> optValue = getTupleValue();
+        if (optValue.isPresent()){
+            List<Double> list = new ArrayList<>();
+            for (Object value : optValue.get()) {
+                if (value instanceof Double) {
+                    list.add((Double) value);
+                }
+                else if (value instanceof Integer){
+                    list.add(((Integer) value).doubleValue());
+                }
+                else {
+                    return Optional.empty();
+                }
+            }
+            return Optional.of(list);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<List<Boolean>> getBooleanTupleValue() {
+        Optional<List<Object>> optValue = getTupleValue();
+        if (optValue.isPresent()){
+            List<Boolean> list = new ArrayList<>();
+            for (Object value : optValue.get()) {
+                if (value instanceof Boolean) {
+                    list.add((Boolean) value);
+                }
+                else {
+                    return Optional.empty();
+                }
+            }
+            return Optional.of(list);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<List<Object>> getTupleValue(){
+        if (getValue().isPresent()){
+            if (isTuple()){
+                @SuppressWarnings("unchecked")
+                List<Object> list = (List<Object>) getValue().get();
+                return Optional.of(list);
+            }
+        }
+        return Optional.empty();
+    }
 
     /**
-     * This method returns the result of the expression.
+     * Same as resolve() but throws an error if it was not successful.
+     */
+    public void resolveOrError(Scope resolvingScope){
+        resolve(resolvingScope);
+        if (!isResolved()){
+            throw new IllegalStateException("The following names could not be resolved: " + getUnresolvableNames());
+        }
+    }
+
+    /**
+     * This method returns the result of the expression if it is already resolved.
      * This can be a primitive object (Integer, Double or Boolean)
-     * or a list of lists of primitive objects. (See other methods for more information)
+     * or a list of primitive objects if it is a tuple
+     * or a list of lists of primitive objects if it is a sequence. (See other methods for more information)
      *
-     * @return returns the value as Object or Optional.empty if the expression cannot be completely resolved yet.
+     * @return returns the value as Object or Optional.empty if the expression is not resolved.
      *
      */
     abstract public Optional<Object> getValue();
 
     /**
-     * Replaces all variable names in this values expression.
-     * If the expression contains an IOVariable which has not yet been set
-     * then the expression is resolved as much as possible and the attribute fullyResolved of this object remains false.
+     * Replaces all variable names in this values expression if possible.
+     * The values of the variables depend on the current scope. The replacement is irreversible if successful.
      *
      * @return returns a set of all names which could not be resolved.
      */
-    abstract public Set<String> resolve();
+    abstract public Set<String> resolve(Scope resolvingScope);
 
+    abstract public Optional<List<List<ArchSimpleExpressionSymbol>>> getElements();
 
-    //todo remove
-    abstract protected void checkIfResolved();
+    abstract protected Set<String> computeUnresolvableNames();
 
     abstract public boolean isResolved();
-
-    abstract public List<List<ArchSimpleExpressionSymbol>> getElements();
-
-    public void resolveOrError(){
-        resolve();
-        if (isResolved()){
-            throw new IllegalStateException("The following names could not be resolved: " + getUnresolvableNames());
-        }
-    }
-
-    public boolean isResolvable(){
-        //todo
-        return true;
-    }
-
-    public Set<String> getUnresolvableNames() {
-        //todo
-        return null;
-    }
-
-    public void checkIfResolvable(){
-        //todo: unresolvableNames = computeUnresolvableNames();
-    }
-
-
-    protected Set<String> computeUnresolvableNames(){
-        //todo
-        return null;
-    }
-
-    public boolean isIntTuple(){
-        return false;
-    }
-
-    public boolean isNumberTuple(){
-        return false;
-    }
-
-    public boolean isBooleanTuple(){
-        return false;
-    }
 
 }

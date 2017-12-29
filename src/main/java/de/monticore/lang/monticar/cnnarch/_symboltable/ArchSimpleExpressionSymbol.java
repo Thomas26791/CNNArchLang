@@ -24,22 +24,15 @@ import de.monticore.lang.math.math._symboltable.expression.*;
 import de.monticore.lang.monticar.cnnarch.helper.Calculator;
 import de.monticore.lang.monticar.cnnarch.helper.ExpressionHelper;
 import de.monticore.lang.monticar.interfaces.TextualExpression;
+import de.monticore.symboltable.Scope;
 import org.jscience.mathematics.number.Rational;
 
 import java.util.*;
 
 public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements TextualExpression {
 
-    private static final MathExpressionSymbol MATH_ONE = new MathNumberExpressionSymbol(Rational.ONE);
-    private static final MathExpressionSymbol MATH_ZERO = new MathNumberExpressionSymbol(Rational.ZERO);
-    private static final MathExpressionSymbol MATH_TRUE = getEqualsOneExpression(MATH_ONE);
-    private static final MathExpressionSymbol MATH_FALSE = getEqualsOneExpression(MATH_ZERO);
-    public static final ArchSimpleExpressionSymbol ONE = new ArchSimpleExpressionSymbol(MATH_ONE);
-    public static final ArchSimpleExpressionSymbol ZERO = new ArchSimpleExpressionSymbol(MATH_ZERO);
-    public static final ArchSimpleExpressionSymbol TRUE = new ArchSimpleExpressionSymbol(MATH_TRUE);
-    public static final ArchSimpleExpressionSymbol FALSE = new ArchSimpleExpressionSymbol(MATH_FALSE);
-
     private MathExpressionSymbol expression;
+    private Object value = null;
 
     public ArchSimpleExpressionSymbol() {
         super();
@@ -58,226 +51,125 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
     }
 
     @Override
-    public boolean isBoolean(){
-        return (getExpression().getRealMathExpressionSymbol() instanceof MathCompareExpressionSymbol);
-    }
-
-    @Override
-    public boolean isNumber(){
-        return (getExpression().getRealMathExpressionSymbol() instanceof MathArithmeticExpressionSymbol);
-    }
-
-    @Override
-    public boolean isTuple(){
-        return (getExpression().getRealMathExpressionSymbol() instanceof TupleExpressionSymbol);
-    }
-
-    @Override
-    public Optional<Boolean> isInt(){
-        Optional<Boolean> isInt = Optional.empty();
-        if (isNumber()){
-            Optional<Object> optValue = getValue();
-            if (optValue.isPresent()){
-                if (optValue.get() instanceof Integer){
-                    isInt = Optional.of(true);
-                }
-                else {
-                    isInt = Optional.of(false);
-                }
-            }
-        }
-        return isInt;
-    }
-
-    @Override
-    public boolean isIntTuple(){
-        //todo
-        return false;
-    }
-
-    @Override
-    public boolean isNumberTuple(){
-        //todo
-        return false;
-    }
-
-    @Override
-    public boolean isBooleanTuple(){
-        //todo
-        return false;
-    }
-
-    @Override
     public boolean isSimpleValue() {
         return true;
     }
 
-    public int getIntValue(){
-        Optional<Object> value = getValue();
-        if (value.get() instanceof Integer){
-            return (Integer) value.get();
-        }
-        else {
-            throw new IllegalStateException("Value is not an integer.");
-        }
-    }
-
-    public double getDoubleValue(){
-        if (isNumber()){
-            Optional<Object> value = getValue();
-            if (value.get() instanceof Integer){
-                return (Integer) value.get();
-            }
-            else {
-                return (Double) value.get();
+    @Override
+    protected Set<String> computeUnresolvableNames() {
+        Set<String> unresolvableNames = new HashSet<>();
+        for (MathExpressionSymbol exp : ExpressionHelper.createSubExpressionList(getExpression())){
+            if (exp instanceof MathNameExpressionSymbol){
+                String name = ((MathNameExpressionSymbol) exp).getNameToAccess();
+                Optional<VariableSymbol> variable = getEnclosingScope().resolve(name, VariableSymbol.KIND);
+                if (variable.isPresent() && variable.get().hasValue()){
+                    unresolvableNames.addAll(variable.get().getExpression().computeUnresolvableNames());
+                }
+                else {
+                    unresolvableNames.add(name);
+                }
             }
         }
-        else {
-            throw new IllegalStateException("Value is not a number.");
-        }
-    }
-
-    public boolean getBooleanValue(){
-        if (isBoolean()){
-            return (Boolean) getValue().get();
-        }
-        else {
-            throw new IllegalStateException("Value is not a boolean.");
-        }
-    }
-
-    public List<Integer> getIntTupleValue(){
-        List<Integer> intList = new ArrayList<>();
-        for (Object value : getTupleValue()) {
-            if (value instanceof Integer) {
-                intList.add((Integer) value);
-            }
-            else {
-                throw new IllegalStateException("Value is not an integer tuple.");
-            }
-        }
-        return intList;
-    }
-
-    public List<Object> getTupleValue(){
-        if (isTuple()){
-            @SuppressWarnings("unchecked")
-            List<Object> list = (List<Object>) getValue().get();
-            return list;
-        }
-        else {
-            throw new IllegalStateException("Value is not a tuple.");
-        }
+        return unresolvableNames;
     }
 
     @Override
     public Optional<Object> getValue() {
-        //todo check if correct
-        if (!isFullyResolved()){
-            resolve();
-        }
+        return Optional.ofNullable(value);
+    }
 
-        if (isFullyResolved()){
-            if (isTuple()){
-                List<Object> tupleValues = new ArrayList<>();
-                for (MathExpressionSymbol element : ((TupleExpressionSymbol) getExpression()).getExpressions()){
-                    tupleValues.add(Calculator.getInstance().calculate(element));
-                }
-                return Optional.of(tupleValues);
-            }
-            else {
-                Object value = Calculator.getInstance().calculate(getExpression());
-                return Optional.of(value);
-            }
-        }
-        else {
-            return Optional.empty();
-        }
+    protected void setValue(Object value){
+        this.value = value;
+        checkIfResolvable();
     }
 
     @Override
-    public Set<String> resolve() {
-        //todo check if correct
-        if (!isResolvable()){
-            throw new IllegalStateException("The following names cannot be resolved " + getUnresolvableNames());
-        }
+    public Set<String> resolve(Scope resolvingScope) {
+        if (!isResolved()){
+            checkIfResolvable();
+            if (isResolvable()){
+                Map<String, String> replacementMap = new HashMap<>();
 
-        Set<String> unresolvableSet = new HashSet<>();
-        Map<MathExpressionSymbol, MathExpressionSymbol> replacementMap = new HashMap<>();
+                for (MathExpressionSymbol exp : ExpressionHelper.createSubExpressionList(getExpression())){
+                    if (exp instanceof MathNameExpressionSymbol){
+                        String name = ((MathNameExpressionSymbol) exp).getNameToAccess();
+                        VariableSymbol variable = (VariableSymbol) resolvingScope.resolve(name, VariableSymbol.KIND).get();
+                        variable.getExpression().resolveOrError(variable.getEnclosingScope());
 
-        if (!isFullyResolved()) {
-            for (MathExpressionSymbol exp : ExpressionHelper.createExpressionList(getExpression())) {
-                if (exp instanceof MathNameExpressionSymbol) {
-                    String name = ((MathNameExpressionSymbol) exp).getNameToAccess();
-                    Optional<VariableSymbol> var = getEnclosingScope().resolve(name, VariableSymbol.KIND);
-                    if (var.isPresent() && var.get().hasValueSymbol()) {
-                        ArchSimpleExpressionSymbol resolventSymbol = (ArchSimpleExpressionSymbol) var.get().getValueSymbol();
-                        unresolvableSet.addAll(resolventSymbol.resolve());
-                        replacementMap.put(exp, resolventSymbol.getExpression());
-                    } else {
-                        unresolvableSet.add(name);
+                        replacementMap.put(name, variable.getExpression().getTextualRepresentation());
                     }
                 }
-            }
-
-            if (!replacementMap.isEmpty()){
-                ExpressionHelper.replace(this, replacementMap);
-            }
-
-            if (unresolvableSet.isEmpty()) {
-                setFullyResolved(true);
+                String resolvedString = ExpressionHelper.replace(getExpression().getTextualRepresentation(), replacementMap);
+                Object value = Calculator.getInstance().calculate(resolvedString);
+                setValue(value);
             }
         }
-        return unresolvableSet;
-    }
-
-    @Override
-    protected void checkIfResolved() {
-        boolean isResolved = true;
-        for (MathExpressionSymbol exp : ExpressionHelper.createExpressionList(getExpression())){
-            if (exp instanceof MathNameExpressionSymbol){
-                MathNameExpressionSymbol nameExpression = (MathNameExpressionSymbol) exp;
-                if (!nameExpression.getNameToAccess().equals("true") && !nameExpression.getNameToAccess().equals("false")){
-                    isResolved = false;
-                }
-            }
-        }
-        setFullyResolved(isResolved);
+        return getUnresolvableNames();
     }
 
     @Override
     public String getTextualRepresentation() {
-        return getExpression().getTextualRepresentation();
+        if (isResolved()){
+            if (isTuple()){
+                return ExpressionHelper.createTupleTextualRepresentation(getTupleValue().get(), Object::toString);
+            }
+            else {
+                return getValue().get().toString();
+            }
+        }
+        else {
+            return getExpression().getTextualRepresentation();
+        }
     }
 
     @Override
-    public List<List<ArchSimpleExpressionSymbol>> getElements(){
-        return Collections.singletonList(Collections.singletonList(this));
+    public Optional<List<List<ArchSimpleExpressionSymbol>>> getElements(){
+        return Optional.of(Collections.singletonList(Collections.singletonList(this)));
     }
 
     @Override
     public boolean isResolved() {
-        //todo
-        return false;
+        return value != null;
     }
 
     public static ArchSimpleExpressionSymbol of(int value){
         MathNumberExpressionSymbol exp = new MathNumberExpressionSymbol(Rational.valueOf(value, 1));
-        return new ArchSimpleExpressionSymbol(exp);
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol(exp);
+        res.setValue(value);
+        return res;
     }
 
     public static ArchSimpleExpressionSymbol of(Rational value){
         MathNumberExpressionSymbol exp = new MathNumberExpressionSymbol(value);
-        return new ArchSimpleExpressionSymbol(exp);
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol(exp);
+        res.setValue(value.doubleValue());
+        return res;
     }
 
     public static ArchSimpleExpressionSymbol of(boolean value){
+        ArchSimpleExpressionSymbol res;
+        MathExpressionSymbol mathOne = new MathNumberExpressionSymbol(Rational.ONE);
+        MathExpressionSymbol mathZero = new MathNumberExpressionSymbol(Rational.ZERO);
         if (value){
-            return TRUE;
+            res = new ArchSimpleExpressionSymbol(createEqualsExpression(mathZero, mathZero));
         }
         else {
-            return FALSE;
+            res = new ArchSimpleExpressionSymbol(createEqualsExpression(mathZero, mathOne));
         }
+        res.setValue(value);
+        return res;
+    }
+
+    /*
+        only used to create 'true' and 'false' expression.
+        This is necessary because true and false are at the moment just names in the MontiMath SMI.
+    */
+    private static MathExpressionSymbol createEqualsExpression(MathExpressionSymbol leftExpression, MathExpressionSymbol rightExpression){
+        MathCompareExpressionSymbol exp = new MathCompareExpressionSymbol();
+        exp.setLeftExpression(leftExpression);
+        exp.setRightExpression(rightExpression);
+        exp.setCompareOperator("==");
+        return exp;
     }
 
     public static ArchSimpleExpressionSymbol of(int... tupleValues){
@@ -287,23 +179,14 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
             expList.add(exp);
         }
         TupleExpressionSymbol tupleExpression = new TupleExpressionSymbol(expList);
-        return new ArchSimpleExpressionSymbol(tupleExpression);
+
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol(tupleExpression);
+        res.setValue(Arrays.asList(tupleValues));
+        return res;
     }
 
     public static ArchSimpleExpressionSymbol of(VariableSymbol variable){
         MathExpressionSymbol exp = new MathNameExpressionSymbol(variable.getName());
         return new ArchSimpleExpressionSymbol(exp);
-    }
-
-    /*
-        only used to create 'true' and 'false' expression.
-        This is necessary because true and false are at the moment just names in the MontiMath SMI.
-    */
-    private static MathExpressionSymbol getEqualsOneExpression(MathExpressionSymbol leftExpression){
-        MathCompareExpressionSymbol exp = new MathCompareExpressionSymbol();
-        exp.setLeftExpression(leftExpression);
-        exp.setRightExpression(MATH_ONE);
-        exp.setCompareOperator("==");
-        return exp;
     }
 }

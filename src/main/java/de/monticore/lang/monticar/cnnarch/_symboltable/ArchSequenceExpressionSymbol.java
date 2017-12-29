@@ -20,6 +20,8 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.symboltable.Scope;
+
 import java.util.*;
 
 public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression {
@@ -31,7 +33,12 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
     }
 
 
-    public List<List<ArchSimpleExpressionSymbol>> getElements() {
+    @Override
+    public Optional<List<List<ArchSimpleExpressionSymbol>>> getElements() {
+        return Optional.of(_getElements());
+    }
+
+    protected List<List<ArchSimpleExpressionSymbol>> _getElements(){
         return elements;
     }
 
@@ -42,7 +49,7 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
     @Override
     public boolean isSerialSequence(){
         boolean isSerial = !isParallelSequence();
-        for (List<ArchSimpleExpressionSymbol> serialElement : getElements()){
+        for (List<ArchSimpleExpressionSymbol> serialElement : _getElements()){
             if (serialElement.size() >= 2){
                 isSerial = true;
             }
@@ -61,10 +68,10 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
     }
 
     @Override
-    public Optional<Integer> getSerialLength() {
+    public Optional<Integer> getMaxSerialLength() {
         if (!elements.isEmpty()){
             int maxLenght = 0;
-            for (List<ArchSimpleExpressionSymbol> element : getElements()){
+            for (List<ArchSimpleExpressionSymbol> element : _getElements()){
                 if (maxLenght < element.size()){
                     maxLenght = element.size();
                 }
@@ -77,65 +84,42 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
     }
 
     @Override
-    public Optional<Object> getValue() {
-        if (isFullyResolved()){
-            List<List<Object>> valueLists = new ArrayList<>(4);
+    public Set<String> resolve(Scope resolvingScope) {
+        if (!isResolved()){
+            checkIfResolvable();
+            if (isResolvable()){
 
-            for (List<ArchSimpleExpressionSymbol> serialList : getElements()) {
-
-                List<Object> values = new ArrayList<>(4);
-                for (ArchSimpleExpressionSymbol element : serialList) {
-                    values.add(element.getValue().get());
-                }
-                valueLists.add(values);
-            }
-
-            if (valueLists.isEmpty()) {
-                valueLists.add(new ArrayList<Object>(2));
-            }
-
-            return Optional.of(valueLists);
-        }
-        else{
-            return Optional.empty();
-        }
-    }
-
-    @Override
-    public Set<String> resolve() {
-        Set<String> unresolvableSet = new HashSet<>();
-        if (!isFullyResolved()){
-
-            for (List<ArchSimpleExpressionSymbol> serialList : getElements()) {
-                for (ArchSimpleExpressionSymbol element : serialList) {
-                    unresolvableSet.addAll(element.resolve());
-                }
-            }
-
-            if (unresolvableSet.isEmpty()) {
-                setFullyResolved(true);
-            }
-        }
-        return unresolvableSet;
-    }
-
-    @Override
-    protected void checkIfResolved() {
-        boolean isResolved = true;
-        for (List<ArchSimpleExpressionSymbol> serialList : getElements()) {
-            for (ArchSimpleExpressionSymbol element : serialList) {
-                element.checkIfResolved();
-                if (!element.isFullyResolved()){
-                    isResolved = false;
+                for (List<ArchSimpleExpressionSymbol> serialList : _getElements()) {
+                    for (ArchSimpleExpressionSymbol element : serialList) {
+                        element.resolveOrError(resolvingScope);
+                    }
                 }
             }
         }
-        setFullyResolved(isResolved);
+        return getUnresolvableNames();
     }
 
     @Override
     public boolean isResolved() {
-        //todo
-        return false;
+        boolean isResolved = true;
+        for (List<ArchSimpleExpressionSymbol> serialElements : _getElements()){
+            for (ArchSimpleExpressionSymbol element : serialElements){
+                if (!element.isResolved()){
+                    isResolved = false;
+                }
+            }
+        }
+        return isResolved;
+    }
+
+    @Override
+    protected Set<String> computeUnresolvableNames() {
+        Set<String> unresolvableNames = new HashSet<>();
+        for (List<ArchSimpleExpressionSymbol> serialElements : _getElements()){
+            for (ArchSimpleExpressionSymbol element : serialElements){
+                unresolvableNames.addAll(element.computeUnresolvableNames());
+            }
+        }
+        return unresolvableNames;
     }
 }

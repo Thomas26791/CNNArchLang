@@ -93,7 +93,7 @@ public class ShapeSymbol extends CommonSymbol {
     public Set<String> computeUnresolvableNames(){
         Set<String> unresolvableNames = new HashSet<>();
         for (VariableSymbol variable : getIOVariables()){
-            if (!variable.hasValueSymbol()){
+            if (!variable.hasValue()){
                 unresolvableNames.add(variable.getName());
             }
         }

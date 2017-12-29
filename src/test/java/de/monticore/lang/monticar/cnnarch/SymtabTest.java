@@ -20,17 +20,13 @@
  */
 package de.monticore.lang.monticar.cnnarch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import de.monticore.lang.monticar.cnnarch._parser.CNNArchParser;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.symboltable.Scope;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Optional;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class SymtabTest extends AbstractSymtabTest {
 
@@ -47,6 +43,8 @@ public class SymtabTest extends AbstractSymtabTest {
                 "Alexnet",
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
+        a.getBody().resolve();
+        boolean f = true;
     }
 
 

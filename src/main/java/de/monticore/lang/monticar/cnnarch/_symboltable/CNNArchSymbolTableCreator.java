@@ -25,6 +25,7 @@ import de.monticore.lang.math.math._ast.ASTMathExpression;
 import de.monticore.lang.math.math._symboltable.MathSymbolTableCreator;
 import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch.PredefinedMethods;
+import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.lang.monticar.cnnarch._ast.*;
 import de.monticore.lang.monticar.cnnarch._visitor.CNNArchVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CommonCNNArchDelegatorVisitor;
@@ -112,34 +113,24 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         setEnclosingScopeOfNodes(ast);
     }
 
-    public void visit(final ASTArchitecture architecture) {
-        ArchitectureSymbol architectureSymbol = new ArchitectureSymbol(
-                architecture.getName()
-        );
+    public void visit(final ASTArchitecture node) {
+        ArchitectureSymbol architecture = new ArchitectureSymbol(node.getName());
 
-        addToScopeAndLinkWithNode(architectureSymbol, architecture);
+        addToScopeAndLinkWithNode(architecture, node);
 
         createPredefinedConstants();
     }
 
-    public void endVisit(final ASTArchitecture architecture) {
+    public void endVisit(final ASTArchitecture node) {
+        ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
+        architecture.setBody((LayerSymbol) node.getBody().getSymbol().get());
+
         removeCurrentScope();
     }
 
     private void createPredefinedConstants(){
-        VariableSymbol trueConstant = new VariableSymbol.Builder()
-                .name("true")
-                .type(VariableType.CONSTANT)
-                .defaultValue(true)
-                .build();
-        VariableSymbol falseConstant = new VariableSymbol.Builder()
-                .name("false")
-                .type(VariableType.CONSTANT)
-                .defaultValue(false)
-                .build();
-
-        addToScope(trueConstant);
-        addToScope(falseConstant);
+        addToScope(PredefinedVariables.createTrueConstant());
+        addToScope(PredefinedVariables.createFalseConstant());
     }
 
     @Override
@@ -238,7 +229,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     public void endVisit(ASTParameter ast) {
         VariableSymbol variable = (VariableSymbol) ast.getSymbol().get();
         if (ast.getDefault().isPresent()){
-            variable.setDefaultValueSymbol((ArchSimpleExpressionSymbol) ast.getDefault().get().getSymbol().get());
+            variable.setDefaultExpression((ArchSimpleExpressionSymbol) ast.getDefault().get().getSymbol().get());
         }
     }
 
@@ -252,7 +243,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     @Override
     public void endVisit(ASTConstant node) {
         VariableSymbol constant = (VariableSymbol) node.getSymbol().get();
-        constant.setDefaultValueSymbol((ArchSimpleExpressionSymbol) node.getRhs().getSymbol().get());
+        constant.setDefaultExpression((ArchSimpleExpressionSymbol) node.getRhs().getSymbol().get());
     }
 
     @Override
@@ -274,9 +265,8 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
             mathExp = (MathExpressionSymbol) ast.getTupleExpression().get().getSymbol().get();
         }
         ArchSimpleExpressionSymbol sym = new ArchSimpleExpressionSymbol();
-        addToScopeAndLinkWithNode(sym, ast);
         sym.setExpression(mathExp);
-        sym.checkIfResolved();
+        addToScopeAndLinkWithNode(sym, ast);
     }
 
     @Override
@@ -301,7 +291,6 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         sym.setParallel(node.getParallel().isPresent());
         sym.setStartSymbol((ArchSimpleExpressionSymbol) node.getStart().getSymbol().get());
         sym.setEndSymbol((ArchSimpleExpressionSymbol) node.getEnd().getSymbol().get());
-        sym.checkIfResolved();
     }
 
     @Override
@@ -323,7 +312,6 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
             elements.add(serialElements);
         }
         sym.setElements(elements);
-        sym.checkIfResolved();
     }
 
     @Override

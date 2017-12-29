@@ -105,7 +105,8 @@ public class CompositeLayerSymbol extends LayerSymbol {
     protected Set<String> computeUnresolvableNames() {
         Set<String> unresolvableSet = new HashSet<>();
         for (LayerSymbol layer : getLayers()){
-            unresolvableSet.addAll(layer.computeUnresolvableNames());
+            layer.checkIfResolvable();
+            unresolvableSet.addAll(layer.getUnresolvableNames());
         }
         return unresolvableSet;
     }

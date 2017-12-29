@@ -50,16 +50,13 @@ public class Calculator {
     }
 
 
-    public Object calculate(MathExpressionSymbol expression){
-        Object obj = null;
+    public Object calculate(String expression){
         try {
-            obj = engine.eval(expression.getTextualRepresentation());
+            return engine.eval(expression);
         }
         catch (ScriptException e){
-            Log.error("Calculation error in the expression: " + expression.getTextualRepresentation()
-                    , expression.getSourcePosition());
+            throw new IllegalArgumentException("Calculation error in the expression: " + expression);
         }
-        return obj;
     }
 
 }

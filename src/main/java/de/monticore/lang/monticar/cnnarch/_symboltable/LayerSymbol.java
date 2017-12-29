@@ -89,7 +89,12 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
     }
 
     public void checkIfResolvable(){
-        unresolvableNames = computeUnresolvableNames();
+        if (isResolved()){
+            unresolvableNames = new HashSet<>();
+        }
+        else {
+            unresolvableNames = computeUnresolvableNames();
+        }
     }
 
     public void resolveOrError(){

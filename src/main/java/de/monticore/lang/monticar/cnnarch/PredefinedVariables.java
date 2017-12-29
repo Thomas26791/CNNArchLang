@@ -21,11 +21,14 @@
 package de.monticore.lang.monticar.cnnarch;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.VariableType;
 
 public class PredefinedVariables {
 
     public static final String IF_NAME = "_if";
     public static final String FOR_NAME = "_for";
+    public static final String TRUE_NAME = "true";
+    public static final String FALSE_NAME = "false";
 
     public static VariableSymbol createIfParameter(){
         return new VariableSymbol.Builder()
@@ -42,5 +45,21 @@ public class PredefinedVariables {
                 .build();
     }
 
-    //todo true and false
+    //necessary because true is currently only a name in MontiMath and it needs to be evaluated at compile time for this language
+    public static VariableSymbol createTrueConstant(){
+        return new VariableSymbol.Builder()
+                .name(TRUE_NAME)
+                .type(VariableType.CONSTANT)
+                .defaultValue(true)
+                .build();
+    }
+
+    //necessary because false is currently only a name in MontiMath and it needs to be evaluated at compile time for this language
+    public static VariableSymbol createFalseConstant() {
+        return new VariableSymbol.Builder()
+                .name(FALSE_NAME)
+                .type(VariableType.CONSTANT)
+                .defaultValue(false)
+                .build();
+    }
 }

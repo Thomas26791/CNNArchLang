@@ -22,11 +22,13 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.Constraint;
 import de.monticore.symboltable.CommonSymbol;
-import de.monticore.symboltable.SymbolKind;
 import de.se_rwth.commons.logging.Log;
 import org.jscience.mathematics.number.Rational;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import static de.monticore.lang.monticar.cnnarch.ErrorMessages.MISSING_VAR_VALUE_CODE;
 
@@ -35,8 +37,8 @@ public class VariableSymbol extends CommonSymbol {
     public static final VariableKind KIND = new VariableKind();
 
     private VariableType type;
-    private ArchSimpleExpressionSymbol defaultValueSymbol = null; //Optional
-    private ArchSimpleExpressionSymbol currentValueSymbol = null; //Optional
+    private ArchSimpleExpressionSymbol defaultExpression = null; //Optional
+    private ArchSimpleExpressionSymbol currentExpression = null; //Optional
     private Set<Constraint> constraints = new HashSet<>();
 
 
@@ -52,16 +54,16 @@ public class VariableSymbol extends CommonSymbol {
         this.type = type;
     }
 
-    public Optional<ArchSimpleExpressionSymbol> getDefaultValueSymbol() {
-        return Optional.ofNullable(defaultValueSymbol);
+    public Optional<ArchSimpleExpressionSymbol> getDefaultExpression() {
+        return Optional.ofNullable(defaultExpression);
     }
 
-    protected void setDefaultValueSymbol(ArchSimpleExpressionSymbol defaultValueSymbol) {
-        this.defaultValueSymbol = defaultValueSymbol;
+    protected void setDefaultExpression(ArchSimpleExpressionSymbol defaultExpression) {
+        this.defaultExpression = defaultExpression;
     }
 
-    protected Optional<ArchSimpleExpressionSymbol> getCurrentValueSymbol() {
-        return Optional.ofNullable(currentValueSymbol);
+    protected Optional<ArchSimpleExpressionSymbol> getCurrentExpression() {
+        return Optional.ofNullable(currentExpression);
     }
 
     public Set<Constraint> getConstraints() {
@@ -85,18 +87,22 @@ public class VariableSymbol extends CommonSymbol {
     }
 
 
-    public boolean hasValueSymbol(){
-        return getCurrentValueSymbol().isPresent() || getDefaultValueSymbol().isPresent();
+    public boolean hasValue(){
+        return getCurrentExpression().isPresent() || getDefaultExpression().isPresent();
     }
 
-    public ArchSimpleExpressionSymbol getValueSymbol(){
+    public void setExpression(ArchSimpleExpressionSymbol value){
+        currentExpression = value;
+    }
+
+    public ArchSimpleExpressionSymbol getExpression(){
         ArchSimpleExpressionSymbol value = null;
-        if (hasValueSymbol()){
-            if (getCurrentValueSymbol().isPresent()){
-                value = getCurrentValueSymbol().get();
+        if (hasValue()){
+            if (getCurrentExpression().isPresent()){
+                value = getCurrentExpression().get();
             }
             else {
-                value = getDefaultValueSymbol().get();
+                value = getDefaultExpression().get();
             }
         }
         else {
@@ -112,15 +118,11 @@ public class VariableSymbol extends CommonSymbol {
     }
 
     public Optional<Object> getValue(){
-        return getValueSymbol().getValue();
-    }
-
-    public void setValue(ArchSimpleExpressionSymbol value){
-        currentValueSymbol = value;
+        return getExpression().getValue();
     }
 
     public void reset(){
-        currentValueSymbol = null;
+        currentExpression = null;
     }
 
 
@@ -176,7 +178,7 @@ public class VariableSymbol extends CommonSymbol {
             }
             VariableSymbol sym = new VariableSymbol(name);
             sym.setType(type);
-            sym.setDefaultValueSymbol(defaultValue);
+            sym.setDefaultExpression(defaultValue);
             sym.setConstraints(constraints);
             return sym;
         }

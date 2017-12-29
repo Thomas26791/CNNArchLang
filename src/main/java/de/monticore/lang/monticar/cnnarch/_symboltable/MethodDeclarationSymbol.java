@@ -97,21 +97,23 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         return res;
     }
 
-    public Optional<LayerSymbol> call(MethodLayerSymbol layer) {
-        if (isPredefined()){
-            return Optional.of(layer);
-        }
-        else {
-            for (VariableSymbol param : getParameters()){
-                param.reset();
-            }
-            for (ArgumentSymbol arg : layer.getArguments()){
-                arg.set();
-            }
-            LayerSymbol resolvedCopy = getBody().copy();
-            resolvedCopy.resolveExpressions();
 
-            return Optional.of(resolvedCopy);
+    public void call(MethodLayerSymbol layer) {
+        if (layer.getParallelLength() == 1 && layer.getSerialLength() == 1){
+            if (isPredefined()){
+                layer.setResolvedThis(layer);
+            }
+            else {
+                for (VariableSymbol param : getParameters()){
+                    param.reset();
+                }
+                for (ArgumentSymbol arg : layer.getArguments()){
+                    arg.set();
+                }
+                LayerSymbol bodyCopy = getBody().copy();
+                layer.setResolvedThis(bodyCopy);
+                bodyCopy.resolve();
+            }
         }
     }
 

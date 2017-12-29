@@ -30,14 +30,23 @@ import java.util.Collection;
 
 public class ArchitectureSymbol extends ArchitectureSymbolTOP {
 
+  private LayerSymbol body;
+
   public ArchitectureSymbol(String name) {
     super(name);
   }
 
-
   @Override
   protected ArchitectureScope createSpannedScope() {
     return new ArchitectureScope();
+  }
+
+  public LayerSymbol getBody() {
+    return body;
+  }
+
+  public void setBody(LayerSymbol body) {
+    this.body = body;
   }
 
   //todo
