@@ -21,7 +21,10 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
+import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Scope;
+import de.monticore.symboltable.Symbol;
+import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
 
@@ -31,11 +34,15 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     private Set<String> unresolvableNames = null;
 
-
     public ArchExpressionSymbol() {
         super("", KIND);
     }
 
+
+    protected Boolean isResolvable(){
+        Set<String> set = getUnresolvableNames();
+        return set != null && set.isEmpty();
+    }
 
     public Set<String> getUnresolvableNames() {
         if (unresolvableNames == null){
@@ -44,17 +51,12 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
         return unresolvableNames;
     }
 
-    public boolean isResolvable(){
-        return getUnresolvableNames().isEmpty();
+    protected void setUnresolvableNames(Set<String> unresolvableNames){
+        this.unresolvableNames = unresolvableNames;
     }
 
     public void checkIfResolvable(){
-        if (isResolved()){
-            unresolvableNames = new HashSet<>();
-        }
-        else {
-            unresolvableNames = computeUnresolvableNames();
-        }
+        setUnresolvableNames(computeUnresolvableNames());
     }
 
     /**
@@ -62,9 +64,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
      *
      * @return returns true iff the value of the resolved expression will be a boolean.
      */
-    public boolean isBoolean(){
-        return false;
-    }
+    abstract public boolean isBoolean();
 
     /**
      * Checks whether the value is a number.
@@ -72,9 +72,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
      *
      * @return returns true iff the value of the resolved expression will be a number.
      */
-    public boolean isNumber(){
-        return false;
-    }
+    abstract public boolean isNumber();
 
     /**
      * Checks whether the value is a Tuple.
@@ -83,9 +81,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
      *
      * @return returns true iff the value of the expression will be a tuple.
      */
-    public boolean isTuple(){
-        return false;
-    }
+    abstract public boolean isTuple();
 
     /**
      * Checks whether the value is an integer. This can only be checked if the expression is resolved.
@@ -124,7 +120,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     /**
      * Checks whether the value is a parallel Sequence.
-     * If true, getRhs() will return (if present) a List of Lists of Objects.
+     * If true, getValue() will return (if present) a List of Lists of Objects.
      * These Objects can either be Integer, Double or Boolean.
      * If isSerialSequence() returns false, the second List will always have a size smaller than 2.
      * Sequences of size 1 or 0 cannot be parallel sequences.
@@ -137,7 +133,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     /**
      * Checks whether the value is a serial Sequence.
-     * If true, getRhs() will return (if present) a List(parallel) of Lists(serial) of Objects.
+     * If true, getValue() will return (if present) a List(parallel) of Lists(serial) of Objects.
      * If isParallelSequence() is false, the first list will be of size 1.
      * These Objects can either be Integer, Double or Boolean.
      * Sequences of size 1 or 0 are counted as serial sequences.
@@ -154,6 +150,10 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
      * @return returns true if this object is instance of ArchRangeExpressionSymbol
      */
     public boolean isRange(){
+        return false;
+    }
+
+    public boolean isSequence(){
         return false;
     }
 
@@ -259,11 +259,46 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
         return Optional.empty();
     }
 
+    public Optional<Integer> getParallelLength(){
+        Optional<List<List<ArchSimpleExpressionSymbol>>> elements = getElements();
+        return elements.map(e -> e.isEmpty() ? 1 : e.size());
+    }
+
+    public Optional<List<Integer>> getSerialLengths(){
+        Optional<List<List<ArchSimpleExpressionSymbol>>> elements = getElements();
+        if (elements.isPresent()){
+            List<Integer> serialLengths = new ArrayList<>();
+            for (List<ArchSimpleExpressionSymbol> serialList : getElements().get()){
+                serialLengths.add(serialList.size());
+            }
+            return Optional.of(serialLengths);
+        }
+        else {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<Integer> getMaxSerialLength(){
+        int max = 0;
+        Optional<List<Integer>> optLens = getSerialLengths();
+        if (optLens.isPresent()){
+            for (int len : optLens.get()){
+                if (len > max){
+                    max = len;
+                }
+            }
+        }
+        else {
+            return Optional.empty();
+        }
+        return Optional.of(max);
+    }
+
     /**
      * Same as resolve() but throws an error if it was not successful.
      */
-    public void resolveOrError(Scope resolvingScope){
-        resolve(resolvingScope);
+    public void resolveOrError(){
+        resolve();
         if (!isResolved()){
             throw new IllegalStateException("The following names could not be resolved: " + getUnresolvableNames());
         }
@@ -286,12 +321,29 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
      *
      * @return returns a set of all names which could not be resolved.
      */
-    abstract public Set<String> resolve(Scope resolvingScope);
+    abstract public Set<String> resolve();
 
+    /**
+     * @return returns a optional of a list(parallel) of lists(serial) of simple expressions in this sequence.
+     *         These lists will only contain one element if this is not a sequence.
+     *         If the optional is not present that means this expression is a range which is not resolved.
+     */
     abstract public Optional<List<List<ArchSimpleExpressionSymbol>>> getElements();
 
     abstract protected Set<String> computeUnresolvableNames();
 
+    /**
+     * @return returns true if the expression is resolved.
+     */
     abstract public boolean isResolved();
+
+    abstract public ArchExpressionSymbol copy();
+
+    protected void putInScope(MutableScope scope){
+        Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
+        if (symbolsInScope == null || !symbolsInScope.contains(this)) {
+            scope.add(this);
+        }
+    }
 
 }

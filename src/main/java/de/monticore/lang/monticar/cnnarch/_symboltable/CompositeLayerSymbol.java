@@ -21,6 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Symbol;
 
 import java.util.*;
 
@@ -48,20 +49,32 @@ public class CompositeLayerSymbol extends LayerSymbol {
     protected void setLayers(List<LayerSymbol> layers) {
         LayerSymbol previous = null;
         for (LayerSymbol current : layers){
-            if (previous != null){
+            if (previous != null && !isParallel()){
                 current.setInputLayer(previous);
             }
             else {
                 if (getInputLayer().isPresent()){
                     current.setInputLayer(getInputLayer().get());
                 }
-                else {
-                    current.setInputLayer(null);
-                }
             }
             previous = current;
         }
         this.layers = layers;
+    }
+
+    @Override
+    public void setInputLayer(LayerSymbol inputLayer) {
+        super.setInputLayer(inputLayer);
+        if (isParallel()){
+            for (LayerSymbol current : getLayers()){
+                current.setInputLayer(inputLayer);
+            }
+        }
+        else {
+            if (!getLayers().isEmpty()){
+                getLayers().get(0).setInputLayer(inputLayer);
+            }
+        }
     }
 
     @Override
@@ -71,13 +84,11 @@ public class CompositeLayerSymbol extends LayerSymbol {
 
     @Override
     public Set<String> resolve() {
-        if (isResolved()){
-            checkIfResolvable();
-            if (isResolvable()){
-                List<LayerSymbol> resolvedLayers = new ArrayList<>();
-                for (LayerSymbol layer : getLayers()){
-                    layer.resolve();
-                }
+        checkIfResolvable();
+        if (isResolvable()){
+            List<LayerSymbol> resolvedLayers = new ArrayList<>();
+            for (LayerSymbol layer : getLayers()){
+                layer.resolve();
             }
         }
         return getUnresolvableNames();
@@ -134,46 +145,46 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public int getParallelLength() {
+    public Optional<Integer> getParallelLength() {
         if (isParallel()){
-            return getLayers().size();
+            return Optional.of(getLayers().size());
         }
         else {
-            return 1;
+            return Optional.of(1);
         }
     }
 
     @Override
-    public int getSerialLength() {
+    public Optional<List<Integer>> getSerialLengths() {
         if (isParallel()){
-            return 1;
+            return Optional.of(Collections.nCopies(getLayers().size(), 1));
         }
         else {
-            return getLayers().size();
+            return Optional.of(Collections.singletonList(getLayers().size()));
         }
     }
 
     @Override
-    protected void putInScope(MutableScope scope) {
-        if (!scope.getLocalSymbols().get(getName()).contains(this)) {
+    protected void putInScope(LayerScope scope) {
+        Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
+        if (symbolsInScope == null || !symbolsInScope.contains(this)) {
             scope.add(this);
             for (LayerSymbol layer : getLayers()) {
-                layer.putInScope(getSpannedScope().getAsMutableScope());
+                layer.putInScope(getSpannedScope());
             }
         }
     }
 
     @Override
     public CompositeLayerSymbol copy() {
+        CompositeLayerSymbol copy = new CompositeLayerSymbol();
+        copy.setParallel(isParallel());
         List<LayerSymbol> layers = new ArrayList<>(getLayers().size());
         for (LayerSymbol layer : getLayers()){
             layers.add(layer.copy());
         }
-
-        return new Builder()
-                .parallel(isParallel())
-                .layers(layers)
-                .build();
+        copy.setLayers(layers);
+        return copy;
     }
 
     public static class Builder{

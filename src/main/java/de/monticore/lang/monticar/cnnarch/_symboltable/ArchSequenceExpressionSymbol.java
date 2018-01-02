@@ -20,6 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Scope;
 
 import java.util.*;
@@ -28,7 +29,7 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
 
     private List<List<ArchSimpleExpressionSymbol>> elements;
 
-    public ArchSequenceExpressionSymbol() {
+    protected ArchSequenceExpressionSymbol() {
         super();
     }
 
@@ -42,7 +43,7 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
         return elements;
     }
 
-    public void setElements(List<List<ArchSimpleExpressionSymbol>> elements) {
+    protected void setElements(List<List<ArchSimpleExpressionSymbol>> elements) {
         this.elements = elements;
     }
 
@@ -63,35 +64,14 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
     }
 
     @Override
-    public Optional<Integer> getParallelLength() {
-        return Optional.of(elements.size());
-    }
-
-    @Override
-    public Optional<Integer> getMaxSerialLength() {
-        if (!elements.isEmpty()){
-            int maxLenght = 0;
-            for (List<ArchSimpleExpressionSymbol> element : _getElements()){
-                if (maxLenght < element.size()){
-                    maxLenght = element.size();
-                }
-            }
-            return Optional.of(maxLenght);
-        }
-        else {
-            return Optional.of(0);
-        }
-    }
-
-    @Override
-    public Set<String> resolve(Scope resolvingScope) {
+    public Set<String> resolve() {
         if (!isResolved()){
             checkIfResolvable();
             if (isResolvable()){
 
                 for (List<ArchSimpleExpressionSymbol> serialList : _getElements()) {
                     for (ArchSimpleExpressionSymbol element : serialList) {
-                        element.resolveOrError(resolvingScope);
+                        element.resolveOrError();
                     }
                 }
             }
@@ -121,5 +101,36 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
             }
         }
         return unresolvableNames;
+    }
+
+    public ArchSequenceExpressionSymbol copy(){
+        ArchSequenceExpressionSymbol copy = new ArchSequenceExpressionSymbol();
+        List<List<ArchSimpleExpressionSymbol>> elementsCopy = new ArrayList<>(getElements().get().size());
+        for (List<ArchSimpleExpressionSymbol> serialList : getElements().get()){
+            List<ArchSimpleExpressionSymbol> serialListCopy = new ArrayList<>(serialList.size());
+            for (ArchSimpleExpressionSymbol element : serialList){
+                serialListCopy.add(element.copy());
+            }
+            elementsCopy.add(serialListCopy);
+        }
+        copy.setElements(getElements().get());
+        copy.setUnresolvableNames(getUnresolvableNames());
+        return copy;
+    }
+
+    @Override
+    protected void putInScope(MutableScope scope) {
+        super.putInScope(scope);
+        for (List<ArchSimpleExpressionSymbol> serialList : _getElements()){
+            for (ArchSimpleExpressionSymbol element : serialList){
+                element.putInScope(scope);
+            }
+        }
+    }
+
+    public static ArchSequenceExpressionSymbol of(List<List<ArchSimpleExpressionSymbol>> elements){
+        ArchSequenceExpressionSymbol sym = new ArchSequenceExpressionSymbol();
+        sym.setElements(elements);
+        return sym;
     }
 }

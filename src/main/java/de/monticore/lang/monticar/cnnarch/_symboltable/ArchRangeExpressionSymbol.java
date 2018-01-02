@@ -20,9 +20,12 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Scope;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
 
@@ -32,7 +35,7 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
     private List<List<ArchSimpleExpressionSymbol>> elements = null;
 
 
-    public ArchRangeExpressionSymbol() {
+    protected ArchRangeExpressionSymbol() {
         super();
     }
 
@@ -40,7 +43,7 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
         return startSymbol;
     }
 
-    public void setStartSymbol(ArchSimpleExpressionSymbol startSymbol) {
+    protected void setStartSymbol(ArchSimpleExpressionSymbol startSymbol) {
         this.startSymbol = startSymbol;
     }
 
@@ -48,11 +51,11 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
         return endSymbol;
     }
 
-    public void setEndSymbol(ArchSimpleExpressionSymbol endSymbol) {
+    protected void setEndSymbol(ArchSimpleExpressionSymbol endSymbol) {
         this.endSymbol = endSymbol;
     }
 
-    protected boolean isParallel() {
+    public boolean isParallel() {
         return parallel;
     }
 
@@ -70,7 +73,7 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
         return !isParallel();
     }
 
-    private Optional<Integer> getLength(){
+    /*private Optional<Integer> getLength(){
         Optional<Integer> optLength = Optional.empty();
         if (isResolved()){
             Object startValue = getEndSymbol().getValue().get();
@@ -82,36 +85,16 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
             }
         }
         return optLength;
-    }
+    }*/
 
     @Override
-    public Optional<Integer> getParallelLength() {
-        if (isParallelSequence()) {
-            return getLength();
-        }
-        else {
-            return Optional.of(1);
-        }
-    }
-
-    @Override
-    public Optional<Integer> getMaxSerialLength() {
-        if (isSerialSequence()) {
-            return getLength();
-        }
-        else {
-            return Optional.of(1);
-        }
-    }
-
-    @Override
-    public Set<String> resolve(Scope resolvingScope) {
+    public Set<String> resolve() {
         if (!isResolved()){
             checkIfResolvable();
             if (isResolvable()){
 
-                getStartSymbol().resolveOrError(resolvingScope);
-                getEndSymbol().resolveOrError(resolvingScope);
+                getStartSymbol().resolveOrError();
+                getEndSymbol().resolveOrError();
             }
         }
         return getUnresolvableNames();
@@ -128,23 +111,26 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
             if (isResolved()){
                 int start = startSymbol.getIntValue().get();
                 int end = endSymbol.getIntValue().get();
-                int step = 1;
-                if (end < start){
-                    step = -1;
+                List<Integer> range;
+                if (start <= end){
+                    range = IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList());
+                }
+                else {
+                    range = IntStream.rangeClosed(-start, -end).map(e -> -e).boxed().collect(Collectors.toList());
                 }
 
-                List<List<ArchSimpleExpressionSymbol>> elementList = new ArrayList<>(getParallelLength().get());
+                List<List<ArchSimpleExpressionSymbol>> elementList = new ArrayList<>();
                 if (isParallel()){
-                    for (int i = start; i <= end; i = i + step){
+                    for (int element : range){
                         List<ArchSimpleExpressionSymbol> values = new ArrayList<>(1);
-                        values.add(ArchSimpleExpressionSymbol.of(i));
+                        values.add(ArchSimpleExpressionSymbol.of(element));
                         elementList.add(values);
                     }
                 }
                 else {
-                    List<ArchSimpleExpressionSymbol> values = new ArrayList<>(getMaxSerialLength().get());
-                    for (int i = start; i <= end; i = i + step){
-                        values.add(ArchSimpleExpressionSymbol.of(i));
+                    List<ArchSimpleExpressionSymbol> values = new ArrayList<>();
+                    for (int element : range){
+                        values.add(ArchSimpleExpressionSymbol.of(element));
                     }
                     elementList.add(values);
                 }
@@ -161,5 +147,28 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
         unresolvableNames.addAll(getStartSymbol().computeUnresolvableNames());
         unresolvableNames.addAll(getEndSymbol().computeUnresolvableNames());
         return unresolvableNames;
+    }
+
+    public ArchRangeExpressionSymbol copy(){
+        ArchRangeExpressionSymbol copy = new ArchRangeExpressionSymbol();
+        copy.setParallel(isParallel());
+        copy.setStartSymbol(getStartSymbol().copy());
+        copy.setEndSymbol(getEndSymbol().copy());
+        copy.setUnresolvableNames(getUnresolvableNames());
+        return copy;
+    }
+
+    @Override
+    protected void putInScope(MutableScope scope) {
+        super.putInScope(scope);
+        getStartSymbol().putInScope(scope);
+        getEndSymbol().putInScope(scope);
+    }
+
+    public static ArchRangeExpressionSymbol of(ArchSimpleExpressionSymbol start, ArchSimpleExpressionSymbol end){
+        ArchRangeExpressionSymbol sym = new ArchRangeExpressionSymbol();
+        sym.setStartSymbol(start);
+        sym.setEndSymbol(end);
+        return sym;
     }
 }

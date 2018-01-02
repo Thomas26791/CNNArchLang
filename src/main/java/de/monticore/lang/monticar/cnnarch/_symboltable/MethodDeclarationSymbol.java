@@ -25,11 +25,10 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
+import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Symbol;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiFunction;
 
 public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
@@ -49,6 +48,11 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         return new MethodDeclarationScope();
     }
 
+    @Override
+    public MethodDeclarationScope getSpannedScope() {
+        return (MethodDeclarationScope) super.getSpannedScope();
+    }
+
     public List<VariableSymbol> getParameters() {
         return parameters;
     }
@@ -57,13 +61,13 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         this.parameters = parameters;
         if (!getParameter(PredefinedVariables.IF_NAME).isPresent()){
             VariableSymbol ifParam = PredefinedVariables.createIfParameter();
-            getSpannedScope().getAsMutableScope().add(ifParam);
             this.parameters.add(ifParam);
+            ifParam.putInScope(getSpannedScope());
         }
         if (!getParameter(PredefinedVariables.FOR_NAME).isPresent()){
             VariableSymbol forParam = PredefinedVariables.createForParameter();
-            getSpannedScope().getAsMutableScope().add(forParam);
             this.parameters.add(forParam);
+            forParam.putInScope(getSpannedScope());
         }
     }
 
@@ -98,10 +102,17 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
     }
 
 
-    public void call(MethodLayerSymbol layer) {
-        if (layer.getParallelLength() == 1 && layer.getSerialLength() == 1){
+    public LayerSymbol call(MethodLayerSymbol layer) {
+        boolean valid = true;
+        for (ArgumentSymbol arg : layer.getArguments()){
+            if (arg.getRhs() instanceof  ArchAbstractSequenceExpression){
+                valid = false;
+            }
+        }
+
+        if (valid){
             if (isPredefined()){
-                layer.setResolvedThis(layer);
+                return layer;
             }
             else {
                 for (VariableSymbol param : getParameters()){
@@ -110,10 +121,13 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
                 for (ArgumentSymbol arg : layer.getArguments()){
                     arg.set();
                 }
-                LayerSymbol bodyCopy = getBody().copy();
-                layer.setResolvedThis(bodyCopy);
-                bodyCopy.resolve();
+
+                getBody().resolveOrError();
+                return getBody().copy();
             }
+        }
+        else {
+            throw new IllegalArgumentException("Arguments with sequence expressions have to be resolved first before calling the method.");
         }
     }
 
@@ -155,6 +169,9 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
             }
             MethodDeclarationSymbol sym = new MethodDeclarationSymbol(name);
             sym.setBody(body);
+            for (VariableSymbol param : parameters){
+                param.putInScope(sym.getSpannedScope());
+            }
             sym.setParameters(parameters);
             sym.setShapeFunction(shapeFunction);
             return sym;

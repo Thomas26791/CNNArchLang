@@ -100,6 +100,44 @@ public class ShapeSymbol extends CommonSymbol {
         return unresolvableNames;
     }
 
+    public Set<String> resolve() {
+        if (!isResolved()){
+            if (isResolvable()){
+                for (DimensionSymbol dimension : getDimensionSymbols()){
+                    dimension.getValueExpression().resolveOrError();
+                }
+            }
+        }
+        return getUnresolvableNames();
+    }
+
+    public boolean isResolvable(){
+        boolean isResolvable = true;
+        for (DimensionSymbol dimension : getDimensionSymbols()){
+            if (!dimension.getValueExpression().isResolvable()){
+                isResolvable = false;
+            }
+        }
+        return isResolvable;
+    }
+
+    public boolean isResolved(){
+        boolean isResolved = true;
+        for (DimensionSymbol dimension : getDimensionSymbols()){
+            if (!dimension.getValueExpression().isResolved()){
+                isResolved = false;
+            }
+        }
+        return isResolved;
+    }
+
+    public Set<String> getUnresolvableNames(){
+        Set<String> unresolvableNames = new HashSet<>();
+        for (DimensionSymbol dimension : getDimensionSymbols()){
+            unresolvableNames.addAll(dimension.getValueExpression().getUnresolvableNames());
+        }
+        return unresolvableNames;
+    }
 
     public static class Builder{
         private DimensionSymbol height = DimensionSymbol.of(1);

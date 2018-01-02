@@ -24,53 +24,24 @@ import de.monticore.lang.math.math._symboltable.expression.*;
 import de.monticore.lang.monticar.cnnarch.helper.Calculator;
 import de.monticore.lang.monticar.cnnarch.helper.ExpressionHelper;
 import de.monticore.lang.monticar.interfaces.TextualExpression;
-import de.monticore.symboltable.Scope;
-import org.jscience.mathematics.number.Rational;
 
 import java.util.*;
 
 public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements TextualExpression {
 
-    private MathExpressionSymbol expression;
+    private MathExpressionSymbol mathExpression = null;
     private Object value = null;
 
-    public ArchSimpleExpressionSymbol() {
+    protected ArchSimpleExpressionSymbol() {
         super();
     }
 
-    public ArchSimpleExpressionSymbol(MathExpressionSymbol expression) {
-        this.expression = expression;
+    public Optional<MathExpressionSymbol> getMathExpression() {
+        return Optional.ofNullable(mathExpression);
     }
 
-    public MathExpressionSymbol getExpression() {
-        return expression;
-    }
-
-    public void setExpression(MathExpressionSymbol expression) {
-        this.expression = expression;
-    }
-
-    @Override
-    public boolean isSimpleValue() {
-        return true;
-    }
-
-    @Override
-    protected Set<String> computeUnresolvableNames() {
-        Set<String> unresolvableNames = new HashSet<>();
-        for (MathExpressionSymbol exp : ExpressionHelper.createSubExpressionList(getExpression())){
-            if (exp instanceof MathNameExpressionSymbol){
-                String name = ((MathNameExpressionSymbol) exp).getNameToAccess();
-                Optional<VariableSymbol> variable = getEnclosingScope().resolve(name, VariableSymbol.KIND);
-                if (variable.isPresent() && variable.get().hasValue()){
-                    unresolvableNames.addAll(variable.get().getExpression().computeUnresolvableNames());
-                }
-                else {
-                    unresolvableNames.add(name);
-                }
-            }
-        }
-        return unresolvableNames;
+    public void setMathExpression(MathExpressionSymbol mathExpression) {
+        this.mathExpression = mathExpression;
     }
 
     @Override
@@ -80,31 +51,109 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
 
     protected void setValue(Object value){
         this.value = value;
-        checkIfResolvable();
     }
 
     @Override
-    public Set<String> resolve(Scope resolvingScope) {
-        if (!isResolved()){
-            checkIfResolvable();
-            if (isResolvable()){
-                Map<String, String> replacementMap = new HashMap<>();
+    public boolean isSimpleValue() {
+        return true;
+    }
 
-                for (MathExpressionSymbol exp : ExpressionHelper.createSubExpressionList(getExpression())){
-                    if (exp instanceof MathNameExpressionSymbol){
-                        String name = ((MathNameExpressionSymbol) exp).getNameToAccess();
-                        VariableSymbol variable = (VariableSymbol) resolvingScope.resolve(name, VariableSymbol.KIND).get();
-                        variable.getExpression().resolveOrError(variable.getEnclosingScope());
+    @Override
+    public boolean isBoolean() {
+        if (getMathExpression().isPresent()){
+            return getMathExpression().get() instanceof MathCompareExpressionSymbol;
+        }
+        else {
+            return getBooleanValue().isPresent();
+        }
+    }
 
-                        replacementMap.put(name, variable.getExpression().getTextualRepresentation());
+    @Override
+    public boolean isNumber() {
+        if (getMathExpression().isPresent()){
+            return getMathExpression().get() instanceof MathArithmeticExpressionSymbol;
+        }
+        else {
+            return getDoubleValue().isPresent();
+        }
+    }
+
+    @Override
+    public boolean isTuple() {
+        if (getMathExpression().isPresent()){
+            return getMathExpression().get() instanceof TupleExpressionSymbol;
+        }
+        else {
+            return getValue().get() instanceof List;
+        }
+    }
+
+    @Override
+    protected Set<String> computeUnresolvableNames() {
+        Set<String> unresolvableNames = new HashSet<>();
+        Set<String> allNames = new HashSet<>();
+        computeUnresolvableNames(unresolvableNames, allNames);
+        return unresolvableNames;
+    }
+
+    protected void computeUnresolvableNames(Set<String> unresolvableNames, Set<String> allNames) {
+        if (getMathExpression().isPresent()) {
+            for (MathExpressionSymbol exp : ExpressionHelper.createSubExpressionList(getMathExpression().get())) {
+                if (exp instanceof MathNameExpressionSymbol) {
+                    String name = ((MathNameExpressionSymbol) exp).getNameToAccess();
+                    if (!allNames.contains(name)) {
+                        allNames.add(name);
+                        Optional<VariableSymbol> variable = getEnclosingScope().resolve(name, VariableSymbol.KIND);
+                        if (variable.isPresent() && !variable.get().getExpression().isResolved()) {
+                            if (variable.get().hasValue()) {
+                                variable.get().getExpression().computeUnresolvableNames(unresolvableNames, allNames);
+                            } else {
+                                unresolvableNames.add(name);
+                            }
+                        }
                     }
                 }
-                String resolvedString = ExpressionHelper.replace(getExpression().getTextualRepresentation(), replacementMap);
-                Object value = Calculator.getInstance().calculate(resolvedString);
-                setValue(value);
             }
         }
+    }
+
+    @Override
+    public Set<String> resolve() {
+        checkIfResolvable();
+        if (getMathExpression().isPresent() && isResolvable()) {
+            Object value;
+            if (isTuple()){
+                TupleExpressionSymbol tuple = (TupleExpressionSymbol) getMathExpression().get();
+                List<Object> tupleValues = new ArrayList<>(tuple.getExpressions().size());
+                for (MathExpressionSymbol exp : tuple.getExpressions()){
+                    tupleValues.add(computeValue());
+                }
+                value = tupleValues;
+            }
+            else {
+                value = computeValue();
+            }
+            setValue(value);
+        }
         return getUnresolvableNames();
+    }
+
+    private Object computeValue(){
+        Map<String, String> replacementMap = new HashMap<>();
+        for (MathExpressionSymbol exp : ExpressionHelper.createSubExpressionList(getMathExpression().get())) {
+            if (exp instanceof MathNameExpressionSymbol) {
+                String name = ((MathNameExpressionSymbol) exp).getNameToAccess();
+                VariableSymbol variable = (VariableSymbol) getEnclosingScope().resolve(name, VariableSymbol.KIND).get();
+                if (!variable.getExpression().isResolved()) {
+                    variable.getExpression().resolveOrError();
+                }
+
+                replacementMap.put(name, variable.getExpression().getTextualRepresentation());
+            }
+        }
+
+        String resolvedString = ExpressionHelper.replace(getTextualRepresentation(), replacementMap);
+        return Calculator.getInstance().calculate(resolvedString);
     }
 
     @Override
@@ -118,7 +167,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
             }
         }
         else {
-            return getExpression().getTextualRepresentation();
+            return getMathExpression().get().getTextualRepresentation();
         }
     }
 
@@ -129,64 +178,52 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
 
     @Override
     public boolean isResolved() {
-        return value != null;
+        return getValue().isPresent() || !getMathExpression().isPresent();
     }
 
+    public ArchSimpleExpressionSymbol copy(){
+        ArchSimpleExpressionSymbol copy = new ArchSimpleExpressionSymbol();
+        //copy.setMathExpression(mathExpression);
+        copy.setValue(value);
+        copy.setUnresolvableNames(getUnresolvableNames());
+        return copy;
+    }
+
+
     public static ArchSimpleExpressionSymbol of(int value){
-        MathNumberExpressionSymbol exp = new MathNumberExpressionSymbol(Rational.valueOf(value, 1));
-        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol(exp);
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol();
         res.setValue(value);
         return res;
     }
 
-    public static ArchSimpleExpressionSymbol of(Rational value){
-        MathNumberExpressionSymbol exp = new MathNumberExpressionSymbol(value);
-        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol(exp);
-        res.setValue(value.doubleValue());
+    public static ArchSimpleExpressionSymbol of(double value){
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol();
+        res.setValue(value);
         return res;
     }
 
     public static ArchSimpleExpressionSymbol of(boolean value){
-        ArchSimpleExpressionSymbol res;
-        MathExpressionSymbol mathOne = new MathNumberExpressionSymbol(Rational.ONE);
-        MathExpressionSymbol mathZero = new MathNumberExpressionSymbol(Rational.ZERO);
-        if (value){
-            res = new ArchSimpleExpressionSymbol(createEqualsExpression(mathZero, mathZero));
-        }
-        else {
-            res = new ArchSimpleExpressionSymbol(createEqualsExpression(mathZero, mathOne));
-        }
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol();
         res.setValue(value);
         return res;
     }
 
-    /*
-        only used to create 'true' and 'false' expression.
-        This is necessary because true and false are at the moment just names in the MontiMath SMI.
-    */
-    private static MathExpressionSymbol createEqualsExpression(MathExpressionSymbol leftExpression, MathExpressionSymbol rightExpression){
-        MathCompareExpressionSymbol exp = new MathCompareExpressionSymbol();
-        exp.setLeftExpression(leftExpression);
-        exp.setRightExpression(rightExpression);
-        exp.setCompareOperator("==");
-        return exp;
+    public static ArchSimpleExpressionSymbol of(MathExpressionSymbol expressions){
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol();
+        res.setMathExpression(expressions);
+        return res;
     }
 
-    public static ArchSimpleExpressionSymbol of(int... tupleValues){
-        List<MathExpressionSymbol> expList = new ArrayList<>(tupleValues.length);
-        for (int tupleValue : tupleValues) {
-            MathNumberExpressionSymbol exp = new MathNumberExpressionSymbol(Rational.valueOf(tupleValue, 1));
-            expList.add(exp);
-        }
-        TupleExpressionSymbol tupleExpression = new TupleExpressionSymbol(expList);
-
-        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol(tupleExpression);
-        res.setValue(Arrays.asList(tupleValues));
+    public static ArchSimpleExpressionSymbol of(List<Object> tupleValues){
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol();
+        res.setValue(tupleValues);
         return res;
     }
 
     public static ArchSimpleExpressionSymbol of(VariableSymbol variable){
         MathExpressionSymbol exp = new MathNameExpressionSymbol(variable.getName());
-        return new ArchSimpleExpressionSymbol(exp);
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol();
+        res.setMathExpression(exp);
+        return res;
     }
 }

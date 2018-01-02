@@ -23,7 +23,6 @@
 
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.*;
 import de.monticore.lang.monticar.types2._ast.ASTElementType;
 import de.monticore.symboltable.CommonSymbol;
 

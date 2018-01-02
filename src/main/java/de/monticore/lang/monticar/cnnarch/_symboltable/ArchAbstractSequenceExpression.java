@@ -31,20 +31,23 @@ abstract public class ArchAbstractSequenceExpression extends ArchExpressionSymbo
         super();
     }
 
+    abstract public Optional<List<List<ArchSimpleExpressionSymbol>>> getElements();
+
     abstract public boolean isParallelSequence();
 
     abstract public boolean isSerialSequence();
 
-    abstract public Optional<Integer> getParallelLength();
-
-    abstract public Optional<Integer> getMaxSerialLength();
+    @Override
+    public boolean isSequence(){
+        return true;
+    }
 
     @Override
     public Optional<Object> getValue() {
         if (isResolved()){
             List<List<Object>> parallelValues = new ArrayList<>(getParallelLength().get());
             for (List<ArchSimpleExpressionSymbol> serialElements : getElements().get()){
-                List<Object> serialValues = new ArrayList<>(getMaxSerialLength().get());
+                List<Object> serialValues = new ArrayList<>();
                 for (ArchSimpleExpressionSymbol element : serialElements){
                     serialValues.add(element.getValue().get());
                 }
@@ -55,6 +58,21 @@ abstract public class ArchAbstractSequenceExpression extends ArchExpressionSymbo
         else{
             return Optional.empty();
         }
+    }
+
+    @Override
+    public boolean isBoolean(){
+        return false;
+    }
+
+    @Override
+    public boolean isNumber(){
+        return false;
+    }
+
+    @Override
+    public boolean isTuple(){
+        return false;
     }
 
 }

@@ -41,6 +41,8 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     private String compilationUnitPackage = "";
 
     private MathSymbolTableCreator mathSTC;
+    private List<IODeclarationSymbol> inputs = new ArrayList<>();
+    private List<IODeclarationSymbol> outputs = new ArrayList<>();
 
 
     public CNNArchSymbolTableCreator(final ResolvingConfiguration resolvingConfig,
@@ -119,11 +121,14 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         addToScopeAndLinkWithNode(architecture, node);
 
         createPredefinedConstants();
+        createPredefinedMethods();
     }
 
     public void endVisit(final ASTArchitecture node) {
         ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
         architecture.setBody((LayerSymbol) node.getBody().getSymbol().get());
+        architecture.setInputs(inputs);
+        architecture.setOutputs(outputs);
 
         removeCurrentScope();
     }
@@ -131,6 +136,12 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     private void createPredefinedConstants(){
         addToScope(PredefinedVariables.createTrueConstant());
         addToScope(PredefinedVariables.createFalseConstant());
+    }
+
+    private void createPredefinedMethods(){
+        for (MethodDeclarationSymbol sym : PredefinedMethods.createList()){
+            addToScope(sym);
+        }
     }
 
     @Override
@@ -147,6 +158,13 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         }
         iODeclaration.setShape((ShapeSymbol) ast.getType().getShape().getSymbol().get());
         iODeclaration.setInput(ast.getIn().isPresent());
+        iODeclaration.setType(ast.getType().getElementType());
+        if (iODeclaration.isInput()){
+            inputs.add(iODeclaration);
+        }
+        else {
+            outputs.add(iODeclaration);
+        }
     }
 
     @Override
@@ -265,7 +283,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
             mathExp = (MathExpressionSymbol) ast.getTupleExpression().get().getSymbol().get();
         }
         ArchSimpleExpressionSymbol sym = new ArchSimpleExpressionSymbol();
-        sym.setExpression(mathExp);
+        sym.setMathExpression(mathExp);
         addToScopeAndLinkWithNode(sym, ast);
     }
 
@@ -429,7 +447,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
     @Override
     public void visit(ASTArrayAccessLayer node) {
-        MethodLayerSymbol methodLayer = new MethodLayerSymbol(PredefinedMethods.GET.getName());
+        MethodLayerSymbol methodLayer = new MethodLayerSymbol(PredefinedMethods.GET_NAME);
         addToScopeAndLinkWithNode(methodLayer, node);
     }
 
@@ -442,7 +460,6 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
                 .build();
         addToScope(indexArgument);
         methodLayer.setArguments(Collections.singletonList(indexArgument));
-        methodLayer.getMethod();
 
         removeCurrentScope();
     }

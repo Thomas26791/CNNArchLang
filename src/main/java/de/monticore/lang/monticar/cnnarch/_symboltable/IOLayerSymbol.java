@@ -22,6 +22,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.ErrorMessages;
 import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
@@ -66,7 +67,12 @@ public class IOLayerSymbol extends LayerSymbol {
 
     @Override
     public Set<String> resolve() {
-        return null;
+        checkIfResolvable();
+        if (isResolvable()){
+            resolveExpressions();
+            getDefinition().getShape().resolve();
+        }
+        return getUnresolvableNames();
     }
 
     @Override
@@ -110,35 +116,45 @@ public class IOLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public int getParallelLength() {
-        return getDefinition().getArrayLength();
+    public Optional<Integer> getParallelLength() {
+        return Optional.of(getDefinition().getArrayLength());
     }
 
     @Override
-    public int getSerialLength() {
-        return 1;
+    public Optional<List<Integer>> getSerialLengths() {
+        return Optional.of(Collections.nCopies(getParallelLength().get(), 1));
     }
 
+
+
     @Override
-    protected void putInScope(MutableScope scope) {
-        if (!scope.getLocalSymbols().get(getName()).contains(this)) {
+    protected void putInScope(LayerScope scope) {
+        Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
+        if (symbolsInScope == null || !symbolsInScope.contains(this)) {
             scope.add(this);
+            if (getArrayAccess().isPresent()){
+                getArrayAccess().get().putInScope(getSpannedScope());
+            }
         }
-        //todo: probably not complete
     }
 
     @Override
     public LayerSymbol copy() {
-        return new Builder()
+        ArchSimpleExpressionSymbol arrayAccessCopy = null;
+        if (getArrayAccess().isPresent()){
+            arrayAccessCopy = getArrayAccess().get().copy();
+        }
+        IOLayerSymbol copy = new Builder()
                 .name(getName())
-                .arrayAccess(arrayAccess)
+                .arrayAccess(arrayAccessCopy)
                 .build();
+        return copy;
     }
 
     @Override
     protected void resolveExpressions() {
         if (getArrayAccess().isPresent()){
-            getArrayAccess().get().resolve(getSpannedScope());
+            getArrayAccess().get().resolveOrError();
         }
     }
 

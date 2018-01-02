@@ -22,15 +22,12 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 
 import de.monticore.lang.monticar.cnnarch.ErrorMessages;
-import de.monticore.lang.monticar.cnnarch.PredefinedMethods;
 import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
-import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class MethodLayerSymbol extends LayerSymbol {
 
@@ -50,15 +47,12 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     private MethodDeclarationSymbol resolveMethodSymbolByName(){
-        MethodDeclarationSymbol method = PredefinedMethods.MAP.get(getName());
-        if (method == null){
-            Optional<MethodDeclarationSymbol> optMethod = getEnclosingScope().resolve(getName(), MethodDeclarationSymbol.KIND);
-            if (optMethod.isPresent()){
-                method = optMethod.get();
-            }
+        MethodDeclarationSymbol method = null;
+        Optional<MethodDeclarationSymbol> optMethod = getEnclosingScope().resolve(getName(), MethodDeclarationSymbol.KIND);
+        if (optMethod.isPresent()){
+            method = optMethod.get();
         }
-
-        if (method == null){
+        else {
             Log.error(ErrorMessages.UNKNOWN_NAME_MSG + "Method with name " + getName() + " could not be resolved", getSourcePosition());
         }
 
@@ -94,18 +88,18 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     protected void setResolvedThis(LayerSymbol resolvedThis) {
         if (resolvedThis != null && resolvedThis != this){
-            resolvedThis.putInScope(getSpannedScope().getAsMutableScope());
+            resolvedThis.putInScope(getSpannedScope());
         }
         this.resolvedThis = resolvedThis;
-        checkIfResolvable();
     }
 
-    protected void putInScope(MutableScope scope){
-        Collection<Symbol> symbols = scope.getLocalSymbols().get(getName());
-        if (symbols == null || !symbols.contains(this)){
+    @Override
+    protected void putInScope(LayerScope scope){
+        Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
+        if (symbolsInScope == null || !symbolsInScope.contains(this)){
             scope.add(this);
             for (ArgumentSymbol argument : getArguments()){
-                getSpannedScope().getAsMutableScope().add(argument);
+                argument.putInScope(getSpannedScope());
             }
         }
     }
@@ -121,34 +115,56 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     @Override
     public Set<String> resolve() {
-        if (!isResolved()){
-            checkIfResolvable();
-            if (isResolvable()){
-                resolveExpressions();
+        //todo checkForRecursion()
+        checkIfResolvable();
+        if (isResolvable()){
+            resolveExpressions();
+            int parallelLength = getParallelLength().get();
+            int maxSerialLength = getMaxSerialLength().get();
 
-                if (checkIfActive()){
-                    int parallelLength = getParallelLength();
-                    int serialLength = getSerialLength();
-
-                    if (parallelLength == 1 && serialLength == 1){
-                        //resolve the method call
-                        getMethod().call(this);
-                    }
-                    else {
-                        //split the method if it contains an argument sequence
-                        resolveSequences(parallelLength, serialLength);
-                    }
-                }
+            if (!isActive() || maxSerialLength == 0){
+                //set resolvedThis to empty composite. This practically removes this method call.
+                setResolvedThis(new CompositeLayerSymbol.Builder().build());
+            }
+            else if (parallelLength == 1 && maxSerialLength == 1){
+                //resolve the method call
+                LayerSymbol resolvedMethod = getMethod().call(this);
+                setResolvedThis(resolvedMethod);
+            }
+            else {
+                //split the method if it contains an argument sequence
+                LayerSymbol splitComposite = resolveSequences(parallelLength, getSerialLengths().get());
+                setResolvedThis(splitComposite);
+                splitComposite.resolveOrError();
             }
         }
         return getUnresolvableNames();
     }
 
+    /*protected void computeResolvedThis(){
+        int parallelLength = getParallelLength().get();
+        int maxSerialLength = getMaxSerialLength().get();
 
-    private boolean checkIfActive(){
-        if (getIfExpression().isSimpleValue() && !getIfExpression().getBooleanValue().get()){
-            //set resolved this to empty composite. This practically removes this method call.
+        if (!isActive() || maxSerialLength == 0){
+            //set resolvedThis to empty composite. This practically removes this method call.
             setResolvedThis(new CompositeLayerSymbol.Builder().build());
+        }
+        else if (parallelLength == 1 && maxSerialLength == 1){
+            //resolve the method call
+            LayerSymbol resolvedMethod = getMethod().call(this);
+            setResolvedThis(resolvedMethod);
+            resolvedMethod.computeResolvedThis();
+        }
+        else {
+            //split the method if it contains an argument sequence
+            LayerSymbol splitComposite = resolveSequences(parallelLength, getSerialLengths().get());
+            setResolvedThis(splitComposite);
+            splitComposite.resolveOrError();
+        }
+    }*/
+
+    private boolean isActive(){
+        if (getIfExpression().isSimpleValue() && !getIfExpression().getBooleanValue().get()){
             return false;
         }
         else {
@@ -158,12 +174,12 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     protected void resolveExpressions(){
         for (ArgumentSymbol argument : getArguments()){
-            argument.getRhs().resolve(getSpannedScope());
+            argument.getRhs().resolveOrError();
         }
     }
 
-    private void resolveSequences(int parallelLength, int serialLength){
-        List<List<LayerSymbol>> layers = computeExpandedSplit(parallelLength, serialLength);
+    private LayerSymbol resolveSequences(int parallelLength, List<Integer> serialLengths){
+        List<List<LayerSymbol>> layers = computeExpandedSplit(parallelLength, serialLengths);
         List<LayerSymbol> serialComposites = new ArrayList<>();
 
         for (List<LayerSymbol> serialLayers : layers){
@@ -177,29 +193,28 @@ public class MethodLayerSymbol extends LayerSymbol {
                 .parallel(true)
                 .layers(serialComposites)
                 .build();
-
-        setResolvedThis(parallelLayer);
-        parallelLayer.resolve();
+        return parallelLayer;
     }
 
-    private List<List<LayerSymbol>> computeExpandedSplit(int parallelLength, int serialLength){
+    private List<List<LayerSymbol>> computeExpandedSplit(int parallelLength, List<Integer> serialLengths){
+        //todo change serialLength to List
         List<List<LayerSymbol>> layers = new ArrayList<>(parallelLength);
 
         List<List<List<ArgumentSymbol>>> allExpandedArguments = new ArrayList<>(getArguments().size());
         for (ArgumentSymbol argument : getArguments()){
-            allExpandedArguments.add(argument.expandedSplit(parallelLength, serialLength).get());
+            allExpandedArguments.add(argument.expandedSplit(parallelLength, serialLengths).get());
         }
 
         for (int i = 0; i < parallelLength; i++){
-            List<LayerSymbol> serialLayerList = new ArrayList<>(serialLength);
-            for (int j = 0; j < serialLength; j++){
+            List<LayerSymbol> serialLayerList = new ArrayList<>(serialLengths.get(i));
+            for (int j = 0; j < serialLengths.get(i); j++){
                 List<ArgumentSymbol> methodArguments = new ArrayList<>();
                 for (List<List<ArgumentSymbol>> args : allExpandedArguments){
                     methodArguments.add(args.get(i).get(j));
                 }
 
                 MethodLayerSymbol method = new MethodLayerSymbol.Builder()
-                        .name(getName())
+                        .method(getMethod())
                         .arguments(methodArguments)
                         .build();
                 serialLayerList.add(method);
@@ -279,77 +294,131 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     //todo outputShape Function partial check and check argument correctness
 
-    public int getParallelLength(){
-        if (getResolvedThis().isPresent()){
-            if (getResolvedThis().get() == this){
-                return 1;
-            }
-            else{
-                return getResolvedThis().get().getParallelLength();
-            }
-        }
-        else {
-            return computeLength(sequence -> sequence.getParallelLength().get());
-        }
-    }
-
-    public int getSerialLength(){
-        //todo check different serial lengths
-        if (getResolvedThis().isPresent()){
-            if (getResolvedThis().get() == this){
-                return 1;
-            }
-            else {
-                return getResolvedThis().get().getSerialLength();
-            }
-        }
-        else {
-            return computeLength(sequence -> sequence.getMaxSerialLength().get());
-        }
-    }
-
-    private int computeLength(Function<ArchAbstractSequenceExpression, Integer> lengthFunction){
+    @Override
+    public Optional<Integer> getParallelLength(){
         int length = -1;
-
         for (ArgumentSymbol argument : getArguments()) {
-            if (argument.getRhs().isParallelSequence()) {
-                int argumentLength = lengthFunction.apply((ArchAbstractSequenceExpression) argument.getRhs());
-                if (length == -1) {
-                    length = argumentLength;
+            if (argument.getRhs() instanceof ArchAbstractSequenceExpression) {
+                Optional<Integer> optParallelLength = argument.getRhs().getParallelLength();
+                if (optParallelLength.isPresent()) {
+                    int argLength = optParallelLength.get();
+                    if (length == -1) {
+                        length = argLength;
+                    }
+                    else if (length != argLength) {
+                        Log.error(ErrorMessages.ILLEGAL_SEQUENCE_LENGTH_MSG +
+                                        "Length is " + argLength + " but it should be " + length + " or not a sequence. " +
+                                        "All parallel sequences in the same method layer must be of the same size. "
+                                , argument.getSourcePosition());
+                    }
                 }
-                else if (length != argumentLength) {
-                    Log.error(ErrorMessages.ILLEGAL_SEQUENCE_LENGTH_MSG +
-                                    "Length is " + argumentLength + " but it should be " + length + " or not a sequence. " +
-                                    "All parallel/serial sequences in the same method layer must be of the same size. "
-                            , argument.getSourcePosition());
+                else {
+                    return Optional.empty();
                 }
-
             }
         }
         if (length == -1) length = 1;
-        return length;
+        return Optional.of(length);
+    }
+
+    @Override
+    public Optional<Integer> getMaxSerialLength(){
+        int max = 0;
+        for (ArgumentSymbol arg : getArguments()){
+            Optional<Integer> argLen = arg.getRhs().getMaxSerialLength();
+            if (argLen.isPresent()){
+                if (argLen.get() > max){
+                    max = argLen.get();
+                }
+            }
+            else {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(max);
+    }
+
+    @Override
+    public Optional<List<Integer>> getSerialLengths(){
+        Optional<Integer> optParallelLength = getParallelLength();
+        if (optParallelLength.isPresent()){
+            Optional<List<List<Integer>>> allArgLengths = expandArgumentSerialLengths(getArguments(), optParallelLength.get());
+            if (allArgLengths.isPresent()){
+                List<Integer> serialLengths = new ArrayList<>(optParallelLength.get());
+                for (int i = 0; i < optParallelLength.get(); i++){
+                    int serialLength = checkSerialLength(allArgLengths.get(), i);
+                    serialLengths.add(serialLength);
+                }
+                return Optional.of(serialLengths);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private int checkSerialLength(List<List<Integer>> allArgumentLengths, int serialIndex){
+        int serialLength = 0;
+        for (List<Integer> argLengths : allArgumentLengths){
+            int argLength = argLengths.get(serialIndex);
+            if (serialLength == 0){
+                serialLength = argLength;
+            }
+            else if (serialLength == 1) {
+                if (argLength > 1){
+                    serialLength = argLength;
+                }
+            }
+            else if (argLength != 1 && argLength != serialLength){
+                Log.error(ErrorMessages.ILLEGAL_SEQUENCE_LENGTH_MSG +
+                                "Length of sequence dimension "+ serialIndex +" is " + argLength + " but it should be " + serialLength + " or not a sequence. " +
+                                "All serial sequences of the same paralle dimension in the same method layer must be of the same size. "
+                        , getSourcePosition());
+            }
+        }
+        return serialLength;
+    }
+
+    private Optional<List<List<Integer>>> expandArgumentSerialLengths(List<ArgumentSymbol> arguments, int parallelLength){
+        List<List<Integer>> argumentLengths = new ArrayList<>();
+        for (ArgumentSymbol arg : arguments){
+            Optional<List<Integer>> argLen = arg.getRhs().getSerialLengths();
+            if (argLen.isPresent()){
+                if (argLen.get().size() == 1){
+                    argumentLengths.add(Collections.nCopies(parallelLength, argLen.get().get(0)));
+                }
+                else {
+                    //assuming argLen.get().size() == parallelLength.
+                    argumentLengths.add(argLen.get());
+                }
+            }
+            else {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(argumentLengths);
     }
 
     @Override
     public LayerSymbol copy() {
+        MethodLayerSymbol copy = new MethodLayerSymbol(getName());
         List<ArgumentSymbol> args = new ArrayList<>(getArguments().size());
         for (ArgumentSymbol argument : getArguments()){
             args.add(argument.copy());
         }
-
-        return new Builder()
-                .name(getName())
-                .arguments(args)
-                .build();
+        copy.setArguments(args);
+        copy.setMethod(getMethod());
+        if (getResolvedThis().isPresent() && getResolvedThis().get() != this) {
+            copy.setResolvedThis(getResolvedThis().get().copy());
+        }
+        return copy;
     }
 
     public static class Builder{
-        private String name = null;
+        private MethodDeclarationSymbol method;
         private List<ArgumentSymbol> arguments = new ArrayList<>();
         private boolean isResolved = false;
 
-        public Builder name(String name){
-            this.name = name;
+        public Builder method(MethodDeclarationSymbol method){
+            this.method = method;
             return this;
         }
 
@@ -369,10 +438,11 @@ public class MethodLayerSymbol extends LayerSymbol {
         }
 
         public MethodLayerSymbol build(){
-            if (name == null || name.equals("")){
-                throw new IllegalStateException("Missing or empty name for MethodLayerSymbol");
+            if (method == null){
+                throw new IllegalStateException("Missing method for MethodLayerSymbol");
             }
-            MethodLayerSymbol sym = new MethodLayerSymbol(name);
+            MethodLayerSymbol sym = new MethodLayerSymbol(method.getName());
+            sym.setMethod(method);
             sym.setArguments(arguments);
             if (isResolved){
                 sym.setResolvedThis(sym);

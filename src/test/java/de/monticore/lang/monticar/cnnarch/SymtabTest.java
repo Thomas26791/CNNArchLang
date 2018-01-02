@@ -22,8 +22,11 @@ package de.monticore.lang.monticar.cnnarch;
 
 import de.monticore.lang.monticar.cnnarch._parser.CNNArchParser;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
 import de.monticore.symboltable.Scope;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -38,12 +41,25 @@ public class SymtabTest extends AbstractSymtabTest {
 
     @Test
     public void testAlexnet(){
-        Scope symTab = createSymTab("src/test/resources/architectures");
+        Scope symTab = createSymTab("src/test/resources/valid_tests");
         ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
-                "Alexnet",
+                "Fixed_Alexnet",
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.getBody().resolve();
+        List<ShapeSymbol> asd = a.getBody().getOutputShapes();
+        boolean f = true;
+    }
+
+    @Test
+    public void testRes(){
+        Scope symTab = createSymTab("src/test/resources/valid_tests");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "Fixed_ResNeXt50",
+                ArchitectureSymbol.KIND).orElse(null);
+        assertNotNull(a);
+        a.getBody().resolve();
+        List<ShapeSymbol> asd = a.getBody().getOutputShapes();
         boolean f = true;
     }
 

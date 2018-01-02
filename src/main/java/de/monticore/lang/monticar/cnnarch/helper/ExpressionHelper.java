@@ -81,7 +81,7 @@ public class ExpressionHelper {
 
     /*public static void replace(ArchSimpleExpressionSymbol container, Map<MathExpressionSymbol, MathExpressionSymbol> replacementMap){
         if (replacementMap.containsKey(container.getExpression())){
-            container.setExpression(replacementMap.get(container.getExpression()));
+            container.setMathExpression(replacementMap.get(container.getExpression()));
         }
         else {
             replace(container.getExpression(), replacementMap);

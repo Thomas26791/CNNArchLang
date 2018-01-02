@@ -1,0 +1,45 @@
+architecture Fixed_ResNeXt50{
+    def input Z(0:255)^{256,256,3} image
+    def output Q(0:1)^{10} predictions
+
+    def conv(filter, channels, stride=1, act=true){
+        Convolution(kernel=filter, channels=channels, stride=stride) ->
+        BatchNorm() ->
+        Relu(_if=act)
+    }
+    def resGroup(innerChannels, outChannels, stride=1){
+        conv(filter=(1,1), channels=innerChannels) ->
+        conv(filter=(3,3), channels=innerChannels, stride=stride) ->
+        conv(filter=(1,1), channels=outChannels, act=false)
+    }
+    def skip(outChannels, stride){
+        Convolution(kernel=(1,1), channels=outChannels, stride=stride) ->
+        BatchNorm()
+    }
+    def resLayer(innerChannels, outChannels, stride=1, cardinality=32){
+        (
+            resGroup(innerChannels=innerChannels,
+                     outChannels=outChannels,
+                     stride=stride,
+                     _for=[1|:cardinality]) ->
+            Add()
+        |
+            skip(outChannels=outChannels, stride=stride, _if=(stride!=1))
+        ) ->
+        Add() ->
+        Relu()
+    }
+    def resStructure(innerChannels, outChannels, resLayers){
+        resLayer(innerChannels=innerChannels, outChannels=outChannels, stride=2) ->
+        resLayer(innerChannels=innerChannels, outChannels=outChannels, _for=[2->:resLayers])
+    }
+
+    image ->
+    conv(filter=(7,7), channels=64, stride=2) ->
+    MaxPooling(kernel=(3,3), stride=2) ->
+    resStructure(innerChannels=[4->8->16->32], outChannels=[256->512->1024->2048], resLayers=[3->4->6->3]) ->
+    AveragePooling(global=true) ->
+    FullyConnected(units=10) ->
+    Softmax() ->
+    predictions
+}

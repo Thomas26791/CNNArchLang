@@ -22,13 +22,12 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.Constraint;
 import de.monticore.symboltable.CommonSymbol;
+import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 import org.jscience.mathematics.number.Rational;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static de.monticore.lang.monticar.cnnarch.ErrorMessages.MISSING_VAR_VALUE_CODE;
 
@@ -125,6 +124,16 @@ public class VariableSymbol extends CommonSymbol {
         currentExpression = null;
     }
 
+    protected void putInScope(MutableScope scope){
+        Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
+        if (symbolsInScope == null || !symbolsInScope.contains(this)) {
+            scope.add(this);
+            if (getDefaultExpression().isPresent()){
+                getDefaultExpression().get().putInScope(scope);
+            }
+        }
+    }
+
 
     public static class Builder{
         private VariableType type = VariableType.PARAMETER;
@@ -152,7 +161,7 @@ public class VariableSymbol extends CommonSymbol {
             return this;
         }
 
-        public Builder defaultValue(Rational defaultValue){
+        public Builder defaultValue(double defaultValue){
             this.defaultValue = ArchSimpleExpressionSymbol.of(defaultValue);
             return this;
         }
@@ -162,7 +171,7 @@ public class VariableSymbol extends CommonSymbol {
             return this;
         }
 
-        public Builder defaultValue(int... tupleValues){
+        public Builder defaultValue(List<Object> tupleValues){
             this.defaultValue = ArchSimpleExpressionSymbol.of(tupleValues);
             return this;
         }

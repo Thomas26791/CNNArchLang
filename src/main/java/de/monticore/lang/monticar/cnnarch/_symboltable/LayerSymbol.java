@@ -22,8 +22,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
 import de.monticore.symboltable.MutableScope;
-import de.se_rwth.commons.logging.Log;
-import jline.internal.Nullable;
+import de.monticore.symboltable.Scope;
 
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +39,16 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     protected LayerSymbol(String name) {
         super(name, KIND);
+    }
+
+    @Override
+    protected LayerScope createSpannedScope() {
+        return new LayerScope();
+    }
+
+    @Override
+    public LayerScope getSpannedScope() {
+        return (LayerScope) super.getSpannedScope();
     }
 
     public Optional<LayerSymbol> getInputLayer() {
@@ -84,22 +93,21 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         return unresolvableNames;
     }
 
+    protected void setUnresolvableNames(Set<String> unresolvableNames) {
+        this.unresolvableNames = unresolvableNames;
+    }
+
     public boolean isResolvable(){
         return getUnresolvableNames().isEmpty();
     }
 
     public void checkIfResolvable(){
-        if (isResolved()){
-            unresolvableNames = new HashSet<>();
-        }
-        else {
-            unresolvableNames = computeUnresolvableNames();
-        }
+        setUnresolvableNames(computeUnresolvableNames());
     }
 
     public void resolveOrError(){
-        resolve();
-        if (isResolved()){
+        Set<String> names = resolve();
+        if (!isResolved()){
             throw new IllegalStateException("The following names could not be resolved: " + getUnresolvableNames());
         }
     }
@@ -112,14 +120,32 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     abstract public boolean isResolved();
 
-    abstract public int getParallelLength();
+    abstract public Optional<Integer> getParallelLength();
 
-    abstract public int getSerialLength();
+    abstract public Optional<List<Integer>> getSerialLengths();
 
-    abstract protected void putInScope(MutableScope scope);
+    public Optional<Integer> getMaxSerialLength() {
+        Optional<List<Integer>> optLengths = getSerialLengths();
+        if (optLengths.isPresent()){
+            int max = 0;
+            for (int length : optLengths.get()){
+                if (length > max){
+                    max = length;
+                }
+            }
+            return Optional.of(max);
+        }
+        else {
+            return Optional.empty();
+        }
+    }
 
-    //deepCopy for LayerSymbols and ArgumentSymbol but does not copy expressions
+    /*abstract protected void putInScope(MutableScope scope);*/
+
+    //deepCopy for LayerSymbols, ArgumentSymbol and ArchExpressionSymbols but does not copy math expressions or scope and ast information.
     abstract public LayerSymbol copy();
+
+    abstract protected void putInScope(LayerScope scope);
 
     abstract protected void resolveExpressions();
 }

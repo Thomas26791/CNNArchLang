@@ -21,16 +21,35 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.ScopeSpanningSymbol;
+import de.monticore.symboltable.Symbol;
+import de.monticore.symboltable.resolving.ResolvingFilter;
 
+import java.util.Collection;
 import java.util.Optional;
 
-public class MethodDeclarationScope extends de.monticore.symboltable.CommonScope {
+public class LayerScope extends de.monticore.symboltable.CommonScope {
 
-    public MethodDeclarationScope() {
+    public LayerScope() {
         super(true);
     }
 
-    public MethodDeclarationScope(Optional<MutableScope> enclosingScope) {
+    public LayerScope(Optional<MutableScope> enclosingScope) {
         super(enclosingScope, true);
+    }
+
+    @Override
+    public void setResolvingFilters(Collection<ResolvingFilter<? extends Symbol>> resolvingFilters) {
+        super.setResolvingFilters(resolvingFilters);
+    }
+
+    @Override
+    public void add(Symbol symbol) {
+        super.add(symbol);
+        if (symbol instanceof LayerSymbol){
+            LayerScope subScope = ((LayerSymbol) symbol).getSpannedScope();
+            addSubScope(subScope);
+            subScope.setResolvingFilters(getResolvingFilters());
+        }
     }
 }

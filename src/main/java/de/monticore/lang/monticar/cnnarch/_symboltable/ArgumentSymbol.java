@@ -21,8 +21,11 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
+import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Symbol;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,9 +60,19 @@ public class ArgumentSymbol extends CommonSymbol {
         this.rhs = rhs;
     }
 
+    //do not call if value is a sequence
+    public void set(){
+        if (getRhs().isSimpleValue()){
+            getParameter().setExpression((ArchSimpleExpressionSymbol) getRhs());
+        }
+        else {
+            throw new IllegalStateException("The value of the parameter is set to a sequence. This should never happen.");
+        }
+    }
+
     public List<List<ArgumentSymbol>> split(){
         if (getRhs().isRange()){
-            getRhs().resolveOrError(getEnclosingScope());
+            getRhs().resolveOrError();
         }
         List<List<ArchSimpleExpressionSymbol>> elements = getRhs().getElements().get();
         List<List<ArgumentSymbol>> arguments = new ArrayList<>(elements.size());
@@ -75,37 +88,28 @@ public class ArgumentSymbol extends CommonSymbol {
         return arguments;
     }
 
-    //do not call if value is a sequence
-    public void set(){
-        if (getRhs().isSimpleValue()){
-            getParameter().setExpression((ArchSimpleExpressionSymbol) getRhs());
-        }
-        else {
-            throw new IllegalStateException("The value of the parameter is set to a sequence. This should never happen.");
-        }
-    }
-
-    public Optional<List<List<ArgumentSymbol>>> expandedSplit(int parallelLength, int serialLength){
-        //todo: serial layers does not need be the same or one
+    public Optional<List<List<ArgumentSymbol>>> expandedSplit(int parallelLength, List<Integer> serialLengths){
         List<List<ArgumentSymbol>> splitArguments = split();
 
         boolean valid = splitArguments.size() == parallelLength || splitArguments.size() == 1;
+        int k = 0;
         for (List<ArgumentSymbol> serialArgumentList : splitArguments){
-            if (serialArgumentList.size() != serialLength && serialArgumentList.size() != 1){
+            if (serialArgumentList.size() != serialLengths.get(k) && serialArgumentList.size() != 1){
                 valid = false;
             }
+            k++;
         }
 
         if (valid){
             List<List<ArgumentSymbol>> expandedArguments = new ArrayList<>(parallelLength);
 
             for (int i = 0; i < parallelLength; i++){
-                List<ArgumentSymbol> expandedSerialArgumentList = new ArrayList<>(serialLength);
+                List<ArgumentSymbol> expandedSerialArgumentList = new ArrayList<>(serialLengths.get(i));
                 List<ArgumentSymbol> serialArgumentList = splitArguments.size() != 1
                         ? splitArguments.get(i)
                         : splitArguments.get(0);
 
-                for (int j = 0; j < serialLength; j++){
+                for (int j = 0; j < serialLengths.get(i); j++){
                     ArgumentSymbol argument = serialArgumentList.size() != 1
                             ? serialArgumentList.get(j)
                             : serialArgumentList.get(0);
@@ -120,11 +124,20 @@ public class ArgumentSymbol extends CommonSymbol {
         }
     }
 
+    protected void putInScope(MutableScope scope){
+        Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
+        if (symbolsInScope == null || !symbolsInScope.contains(this)) {
+            scope.add(this);
+            getRhs().putInScope(scope);
+        }
+    }
+
     public ArgumentSymbol copy(){
-        return new Builder()
+        ArgumentSymbol copy = new Builder()
                 .parameter(getParameter())
-                .value(getRhs())
+                .value(getRhs().copy())
                 .build();
+        return copy;
     }
 
 
