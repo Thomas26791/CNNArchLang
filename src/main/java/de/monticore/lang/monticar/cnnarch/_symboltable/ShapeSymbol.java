@@ -20,7 +20,10 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.lang.math.math._symboltable.expression.MathNameExpressionSymbol;
 import de.monticore.symboltable.CommonSymbol;
+import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Symbol;
 
 import java.util.*;
 
@@ -29,92 +32,108 @@ public class ShapeSymbol extends CommonSymbol {
 
     public static final ShapeKind KIND = new ShapeKind();
 
+    public static final int BATCH_SIZE_INDEX = 0;
     public static final int HEIGHT_INDEX = 1;
     public static final int WIDTH_INDEX = 2;
     public static final int CHANNEL_INDEX = 3;
 
-    private List<DimensionSymbol> dimensions = Arrays.asList(DimensionSymbol.of(-1),DimensionSymbol.of(-1), DimensionSymbol.of(-1), DimensionSymbol.of(-1));
+    private List<ArchSimpleExpressionSymbol> dimensions =
+            Arrays.asList(ArchSimpleExpressionSymbol.of(-1),
+                    ArchSimpleExpressionSymbol.of(-1),
+                    ArchSimpleExpressionSymbol.of(-1),
+                    ArchSimpleExpressionSymbol.of(-1));
 
     public ShapeSymbol() {
         super("", KIND);
     }
 
-    public DimensionSymbol getHeightSymbol() {
+    public ArchSimpleExpressionSymbol getBatchSizeSymbol() {
+        return dimensions.get(BATCH_SIZE_INDEX);
+    }
+
+    public void setBatchSize(int batchSize) {
+        dimensions.get(BATCH_SIZE_INDEX).reset();
+        dimensions.get(BATCH_SIZE_INDEX).setValue(batchSize);
+        dimensions.get(BATCH_SIZE_INDEX).setMathExpression(null);
+    }
+
+    public void setBatchSize(ArchSimpleExpressionSymbol batchSize) {
+        getDimensionSymbols().set(BATCH_SIZE_INDEX, batchSize);
+    }
+
+    public ArchSimpleExpressionSymbol getHeightSymbol() {
         return dimensions.get(HEIGHT_INDEX);
     }
 
-    public void setHeightSymbol(DimensionSymbol heightSymbol) {
-        dimensions.set(HEIGHT_INDEX, heightSymbol);
+    public void setHeight(int height) {
+        dimensions.get(HEIGHT_INDEX).reset();
+        dimensions.get(HEIGHT_INDEX).setValue(height);
+        dimensions.get(HEIGHT_INDEX).setMathExpression(null);
     }
 
-    public DimensionSymbol getWidthSymbol() {
+    public void setHeight(ArchSimpleExpressionSymbol height) {
+        getDimensionSymbols().set(HEIGHT_INDEX, height);
+    }
+
+    public ArchSimpleExpressionSymbol getWidthSymbol() {
         return dimensions.get(WIDTH_INDEX);
     }
 
-    public void setWidthSymbol(DimensionSymbol widthSymbol) {
-        dimensions.set(WIDTH_INDEX, widthSymbol);
+    public void setWidth(int width) {
+        dimensions.get(WIDTH_INDEX).reset();
+        dimensions.get(WIDTH_INDEX).setValue(width);
+        dimensions.get(WIDTH_INDEX).setMathExpression(null);
     }
 
-    public DimensionSymbol getChannelsSymbol() {
+    public void setWidth(ArchSimpleExpressionSymbol width) {
+        getDimensionSymbols().set(WIDTH_INDEX, width);
+    }
+
+    public ArchSimpleExpressionSymbol getChannelsSymbol() {
         return dimensions.get(CHANNEL_INDEX);
     }
 
-    public void setChannelsSymbol(DimensionSymbol channelsSymbol) {
-        dimensions.set(CHANNEL_INDEX, channelsSymbol);
+    public void setChannels(int channels) {
+        dimensions.get(CHANNEL_INDEX).reset();
+        dimensions.get(CHANNEL_INDEX).setValue(channels);
+        dimensions.get(CHANNEL_INDEX).setMathExpression(null);
+    }
+
+    public void setChannels(ArchSimpleExpressionSymbol channels) {
+        getDimensionSymbols().set(CHANNEL_INDEX, channels);
     }
 
     public Optional<Integer> getWidth(){
-        return getWidthSymbol().getValue();
+        return getWidthSymbol().getIntValue();
     }
 
     public Optional<Integer> getHeight(){
-        return getHeightSymbol().getValue();
+        return getHeightSymbol().getIntValue();
     }
 
     public Optional<Integer> getChannels(){
-        return getChannelsSymbol().getValue();
+        return getChannelsSymbol().getIntValue();
     }
 
-    public List<DimensionSymbol> getDimensionSymbols() {
+    public List<ArchSimpleExpressionSymbol> getDimensionSymbols() {
         return dimensions;
     }
 
-
-    public List<VariableSymbol> getIOVariables(){
-        List<VariableSymbol> vars = new ArrayList<>(4);
-        for (DimensionSymbol dim : getDimensionSymbols()){
-            if (dim.getIoVariable().isPresent()){
-                vars.add(dim.getIoVariable().get());
-            }
-        }
-        return vars;
-    }
-
-    public Set<String> computeUnresolvableNames(){
-        Set<String> unresolvableNames = new HashSet<>();
-        for (VariableSymbol variable : getIOVariables()){
-            if (!variable.hasValue()){
-                unresolvableNames.add(variable.getName());
-            }
-        }
-        return unresolvableNames;
-    }
-
-    public Set<String> resolve() {
+    public Set<VariableSymbol> resolve() {
         if (!isResolved()){
             if (isResolvable()){
-                for (DimensionSymbol dimension : getDimensionSymbols()){
-                    dimension.getValueExpression().resolveOrError();
+                for (ArchSimpleExpressionSymbol dimension : getDimensionSymbols()){
+                    dimension.resolveOrError();
                 }
             }
         }
-        return getUnresolvableNames();
+        return getUnresolvableVariables();
     }
 
     public boolean isResolvable(){
         boolean isResolvable = true;
-        for (DimensionSymbol dimension : getDimensionSymbols()){
-            if (!dimension.getValueExpression().isResolvable()){
+        for (ArchSimpleExpressionSymbol dimension : getDimensionSymbols()){
+            if (!dimension.isResolvable()){
                 isResolvable = false;
             }
         }
@@ -123,62 +142,61 @@ public class ShapeSymbol extends CommonSymbol {
 
     public boolean isResolved(){
         boolean isResolved = true;
-        for (DimensionSymbol dimension : getDimensionSymbols()){
-            if (!dimension.getValueExpression().isResolved()){
+        for (ArchSimpleExpressionSymbol dimension : getDimensionSymbols()){
+            if (!dimension.isResolved()){
                 isResolved = false;
             }
         }
         return isResolved;
     }
 
-    public Set<String> getUnresolvableNames(){
-        Set<String> unresolvableNames = new HashSet<>();
-        for (DimensionSymbol dimension : getDimensionSymbols()){
-            unresolvableNames.addAll(dimension.getValueExpression().getUnresolvableNames());
+    public Set<VariableSymbol> getUnresolvableVariables(){
+        Set<VariableSymbol> unresolvableVariables = new HashSet<>();
+        for (ArchSimpleExpressionSymbol dimension : getDimensionSymbols()){
+            unresolvableVariables.addAll(dimension.getUnresolvableVariables());
         }
-        return unresolvableNames;
+        return unresolvableVariables;
+    }
+
+    public void checkIfResolvable(Set<VariableSymbol> seenVariables) {
+        for (ArchSimpleExpressionSymbol dimension : getDimensionSymbols()){
+            dimension.checkIfResolvable(seenVariables);
+        }
+    }
+
+    @Override
+    public void setEnclosingScope(MutableScope scope) {
+        super.setEnclosingScope(scope);
+        for (ArchSimpleExpressionSymbol dimension : getDimensionSymbols()){
+            dimension.putInScope(scope);
+        }
     }
 
     public static class Builder{
-        private DimensionSymbol height = DimensionSymbol.of(1);
-        private DimensionSymbol width = DimensionSymbol.of(1);
-        private DimensionSymbol channels = DimensionSymbol.of(1);
+        private int height;
+        private int width;
+        private int channels;
 
         public Builder height(int height){
-            this.height = DimensionSymbol.of(height);
-            return this;
-        }
-
-        public Builder height(DimensionSymbol height){
             this.height = height;
             return this;
         }
 
         public Builder width(int width){
-            this.width = DimensionSymbol.of(width);
-            return this;
-        }
-
-        public Builder width(DimensionSymbol width){
             this.width = width;
             return this;
         }
 
         public Builder channels(int channels){
-            this.channels = DimensionSymbol.of(channels);
-            return this;
-        }
-
-        public Builder channels(DimensionSymbol channels){
             this.channels = channels;
             return this;
         }
 
         public ShapeSymbol build(){
             ShapeSymbol sym = new ShapeSymbol();
-            sym.setHeightSymbol(height);
-            sym.setChannelsSymbol(channels);
-            sym.setWidthSymbol(width);
+            sym.setHeight(height);
+            sym.setChannels(channels);
+            sym.setWidth(width);
             return sym;
         }
     }

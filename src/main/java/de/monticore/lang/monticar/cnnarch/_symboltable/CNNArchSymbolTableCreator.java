@@ -173,35 +173,37 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     }
 
     @Override
+    public void visit(ASTShape ast) {
+        ShapeSymbol sym = new ShapeSymbol();
+        addToScopeAndLinkWithNode(sym, ast);
+    }
+
+    @Override
     public void endVisit(ASTShape node) {
-        ShapeSymbol sym;
+        ShapeSymbol sym = (ShapeSymbol) node.getSymbol().get();
         if (node.getDimensions().size() == 1){
-            sym = new ShapeSymbol.Builder()
-                    .channels((DimensionSymbol) node.getDimensions().get(0).getSymbol().get())
-                    .build();
+            sym.setChannels((ArchSimpleExpressionSymbol) node.getDimensions().get(0).getSymbol().get());
         }
         else if (node.getDimensions().size() == 3){
-                sym = new ShapeSymbol.Builder()
-                        .height((DimensionSymbol) node.getDimensions().get(ShapeSymbol.HEIGHT_INDEX - 1).getSymbol().get())
-                        .width((DimensionSymbol) node.getDimensions().get(ShapeSymbol.WIDTH_INDEX - 1).getSymbol().get())
-                        .channels((DimensionSymbol) node.getDimensions().get(ShapeSymbol.CHANNEL_INDEX - 1).getSymbol().get())
-                        .build();
+            sym.setHeight((ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.HEIGHT_INDEX - 1).getSymbol().get());
+            sym.setWidth((ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.WIDTH_INDEX - 1).getSymbol().get());
+            sym.setChannels((ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.CHANNEL_INDEX - 1).getSymbol().get());
         }
         else {
             //todo
-            throw new IllegalStateException();
+            throw new IllegalStateException("todo: incorrect shape");
         }
         addToScopeAndLinkWithNode(sym, node);
     }
 
     @Override
     public void endVisit(ASTDimension node) {
-        DimensionSymbol sym;
+        ArchSimpleExpressionSymbol sym;
         if (node.getIntLiteral().isPresent()){
-            sym = DimensionSymbol.of(node.getIntLiteral().get().getNumber().get().getDividend().intValue());
+            sym = ArchSimpleExpressionSymbol.of(node.getIntLiteral().get().getNumber().get().getDividend().intValue());
         }
         else {
-            sym = DimensionSymbol.of((VariableSymbol) node.getIOVariable().get().getSymbol().get());
+            sym = ArchSimpleExpressionSymbol.of((VariableSymbol) node.getIOVariable().get().getSymbol().get());
         }
         addToScopeAndLinkWithNode(sym, node);
     }
@@ -212,6 +214,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
                 .name(node.getName())
                 .type(VariableType.IOVariable)
                 .build();
+        addToScope(ArchSimpleExpressionSymbol.of(ioVariable));
         addToScopeAndLinkWithNode(ioVariable, node);
     }
 

@@ -22,9 +22,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
-import de.monticore.symboltable.Scope;
 import de.monticore.symboltable.Symbol;
-import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
 
@@ -32,7 +30,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     public static final ArchExpressionKind KIND = new ArchExpressionKind();
 
-    private Set<String> unresolvableNames = null;
+    private Set<VariableSymbol> unresolvableVariables = null;
 
     public ArchExpressionSymbol() {
         super("", KIND);
@@ -40,24 +38,27 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
 
     protected Boolean isResolvable(){
-        Set<String> set = getUnresolvableNames();
+        Set<VariableSymbol> set = getUnresolvableVariables();
         return set != null && set.isEmpty();
     }
 
-    public Set<String> getUnresolvableNames() {
-        if (unresolvableNames == null){
-            checkIfResolvable();
+    public Set<VariableSymbol> getUnresolvableVariables() {
+        if (unresolvableVariables == null){
+            checkIfResolvable(new HashSet<>());
         }
-        return unresolvableNames;
+        return unresolvableVariables;
     }
 
-    protected void setUnresolvableNames(Set<String> unresolvableNames){
-        this.unresolvableNames = unresolvableNames;
+    protected void setUnresolvableVariables(Set<VariableSymbol> unresolvableVariables){
+        this.unresolvableVariables = unresolvableVariables;
     }
 
-    public void checkIfResolvable(){
-        setUnresolvableNames(computeUnresolvableNames());
+    public void checkIfResolvable(Set<VariableSymbol> seenVariables){
+        Set<VariableSymbol> unresolvableVariables = new HashSet<>();
+        computeUnresolvableVariables(unresolvableVariables, seenVariables);
+        setUnresolvableVariables(unresolvableVariables);
     }
+
 
     /**
      * Checks whether the value is a boolean. If true getValue() will return a Boolean if present.
@@ -99,21 +100,21 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
 
     public Optional<Boolean> isIntTuple(){
         if (getValue().isPresent()){
-            return Optional.of(getIntTupleValue().isPresent());
+            return Optional.of(getIntTupleValues().isPresent());
         }
         return Optional.empty();
     }
 
     public Optional<Boolean> isNumberTuple(){
         if (getValue().isPresent()){
-            return Optional.of(getDoubleTupleValue().isPresent());
+            return Optional.of(getDoubleTupleValues().isPresent());
         }
         return Optional.empty();
     }
 
     public Optional<Boolean> isBooleanTuple(){
         if (getValue().isPresent()){
-            return Optional.of(getBooleanTupleValue().isPresent());
+            return Optional.of(getBooleanTupleValues().isPresent());
         }
         return Optional.empty();
     }
@@ -194,8 +195,8 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
         return Optional.empty();
     }
 
-    public Optional<List<Integer>> getIntTupleValue(){
-        Optional<List<Object>> optValue = getTupleValue();
+    public Optional<List<Integer>> getIntTupleValues(){
+        Optional<List<Object>> optValue = getTupleValues();
         if (optValue.isPresent()){
             List<Integer> list = new ArrayList<>();
             for (Object value : optValue.get()) {
@@ -211,8 +212,8 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
         return Optional.empty();
     }
 
-    public Optional<List<Double>> getDoubleTupleValue() {
-        Optional<List<Object>> optValue = getTupleValue();
+    public Optional<List<Double>> getDoubleTupleValues() {
+        Optional<List<Object>> optValue = getTupleValues();
         if (optValue.isPresent()){
             List<Double> list = new ArrayList<>();
             for (Object value : optValue.get()) {
@@ -231,8 +232,8 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
         return Optional.empty();
     }
 
-    public Optional<List<Boolean>> getBooleanTupleValue() {
-        Optional<List<Object>> optValue = getTupleValue();
+    public Optional<List<Boolean>> getBooleanTupleValues() {
+        Optional<List<Object>> optValue = getTupleValues();
         if (optValue.isPresent()){
             List<Boolean> list = new ArrayList<>();
             for (Object value : optValue.get()) {
@@ -248,9 +249,10 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
         return Optional.empty();
     }
 
-    public Optional<List<Object>> getTupleValue(){
+    public Optional<List<Object>> getTupleValues(){
         if (getValue().isPresent()){
-            if (isTuple()){
+            Optional<Object> optValue = getValue();
+            if (optValue.isPresent() && (optValue.get() instanceof List)){
                 @SuppressWarnings("unchecked")
                 List<Object> list = (List<Object>) getValue().get();
                 return Optional.of(list);
@@ -300,7 +302,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
     public void resolveOrError(){
         resolve();
         if (!isResolved()){
-            throw new IllegalStateException("The following names could not be resolved: " + getUnresolvableNames());
+            throw new IllegalStateException("The following names could not be resolved: " + getUnresolvableVariables());
         }
     }
 
@@ -315,13 +317,15 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
      */
     abstract public Optional<Object> getValue();
 
+    abstract public void reset();
+
     /**
      * Replaces all variable names in this values expression if possible.
      * The values of the variables depend on the current scope. The replacement is irreversible if successful.
      *
      * @return returns a set of all names which could not be resolved.
      */
-    abstract public Set<String> resolve();
+    abstract public Set<VariableSymbol> resolve();
 
     /**
      * @return returns a optional of a list(parallel) of lists(serial) of simple expressions in this sequence.
@@ -330,7 +334,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
      */
     abstract public Optional<List<List<ArchSimpleExpressionSymbol>>> getElements();
 
-    abstract protected Set<String> computeUnresolvableNames();
+    abstract protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables);
 
     /**
      * @return returns true if the expression is resolved.

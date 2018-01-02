@@ -21,7 +21,7 @@ architecture ResNeXt50{
             resGroup(innerChannels=innerChannels,
                      outChannels=outChannels,
                      stride=stride,
-                     _for=[1|:cardinality]) ->
+                     _cardinality=cardinality) ->
             Add()
         |
             skip(outChannels=outChannels, stride=stride, _if=(stride!=1))
@@ -31,7 +31,7 @@ architecture ResNeXt50{
     }
     def resStructure(innerChannels, outChannels, resLayers){
         resLayer(innerChannels=innerChannels, outChannels=outChannels, stride=2) ->
-        resLayer(innerChannels=innerChannels, outChannels=outChannels, _for=[2->:resLayers])
+        resLayer(innerChannels=innerChannels, outChannels=outChannels, _for=resLayers - 1)
     }
 
     image ->

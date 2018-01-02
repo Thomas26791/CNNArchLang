@@ -24,10 +24,13 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 import de.monticore.lang.monticar.cnnarch.ErrorMessages;
 import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.symboltable.Symbol;
+import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class MethodLayerSymbol extends LayerSymbol {
 
@@ -60,9 +63,9 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     private void setMethod(MethodDeclarationSymbol method) {
-        if (method.isPredefined()){
+        /*if (method.isPredefined()){
             setResolvedThis(this);
-        }
+        }*/
         this.method = method;
     }
 
@@ -75,11 +78,13 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     public ArchExpressionSymbol getIfExpression(){
-        return getMethod().getParameter(PredefinedVariables.IF_NAME).get().getExpression();
-    }
-
-    public ArchExpressionSymbol getForExpression(){
-        return getMethod().getParameter(PredefinedVariables.FOR_NAME).get().getExpression();
+        Optional<ArgumentSymbol> argument = getArgument(PredefinedVariables.IF_NAME);
+        if (argument.isPresent()){
+            return argument.get().getRhs();
+        }
+        else {
+            return ArchSimpleExpressionSymbol.of(true);
+        }
     }
 
     public Optional<LayerSymbol> getResolvedThis() {
@@ -89,8 +94,19 @@ public class MethodLayerSymbol extends LayerSymbol {
     protected void setResolvedThis(LayerSymbol resolvedThis) {
         if (resolvedThis != null && resolvedThis != this){
             resolvedThis.putInScope(getSpannedScope());
+            if (getInputLayer().isPresent()){
+                resolvedThis.setInputLayer(getInputLayer().get());
+            }
         }
         this.resolvedThis = resolvedThis;
+    }
+
+    @Override
+    public void setInputLayer(LayerSymbol inputLayer) {
+        super.setInputLayer(inputLayer);
+        if (getResolvedThis().isPresent()){
+            getResolvedThis().get().setInputLayer(inputLayer);
+        }
     }
 
     @Override
@@ -98,9 +114,24 @@ public class MethodLayerSymbol extends LayerSymbol {
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)){
             scope.add(this);
+            /*if (getResolvedThis().isPresent()){
+                getResolvedThis().get().putInScope(getSpannedScope());
+            }*/
             for (ArgumentSymbol argument : getArguments()){
                 argument.putInScope(getSpannedScope());
             }
+        }
+    }
+
+    @Override
+    public void reset() {
+        /*if (getResolvedThis().isPresent() && getResolvedThis().get() != this && getResolvedThis().get().getMaxSerialLength().get() != 0){
+            getSpannedScope().remove(getResolvedThis().get());
+        }*/
+        setResolvedThis(null);
+        setUnresolvableVariables(null);
+        for (ArgumentSymbol arg : getArguments()){
+            arg.getRhs().reset();
         }
     }
 
@@ -114,54 +145,33 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public Set<String> resolve() {
+    public Set<VariableSymbol> resolve() {
         //todo checkForRecursion()
-        checkIfResolvable();
-        if (isResolvable()){
-            resolveExpressions();
-            int parallelLength = getParallelLength().get();
-            int maxSerialLength = getMaxSerialLength().get();
+        if (!isResolved()) {
+            if (isResolvable()) {
+                resolveExpressions();
+                int parallelLength = getParallelLength().get();
+                int maxSerialLength = getMaxSerialLength().get();
 
-            if (!isActive() || maxSerialLength == 0){
-                //set resolvedThis to empty composite. This practically removes this method call.
-                setResolvedThis(new CompositeLayerSymbol.Builder().build());
-            }
-            else if (parallelLength == 1 && maxSerialLength == 1){
-                //resolve the method call
-                LayerSymbol resolvedMethod = getMethod().call(this);
-                setResolvedThis(resolvedMethod);
-            }
-            else {
-                //split the method if it contains an argument sequence
-                LayerSymbol splitComposite = resolveSequences(parallelLength, getSerialLengths().get());
-                setResolvedThis(splitComposite);
-                splitComposite.resolveOrError();
+                if (!isActive() || maxSerialLength == 0) {
+                    //set resolvedThis to empty composite. This practically removes this method call.
+                    setResolvedThis(new CompositeLayerSymbol.Builder().build());
+                }
+                else if (parallelLength == 1 && maxSerialLength == 1) {
+                    //resolve the method call
+                    LayerSymbol resolvedMethod = getMethod().call(this);
+                    setResolvedThis(resolvedMethod);
+                }
+                else {
+                    //split the method if it contains an argument sequence
+                    LayerSymbol splitComposite = resolveSequences(parallelLength, getSerialLengths().get());
+                    setResolvedThis(splitComposite);
+                    splitComposite.resolveOrError();
+                }
             }
         }
-        return getUnresolvableNames();
+        return getUnresolvableVariables();
     }
-
-    /*protected void computeResolvedThis(){
-        int parallelLength = getParallelLength().get();
-        int maxSerialLength = getMaxSerialLength().get();
-
-        if (!isActive() || maxSerialLength == 0){
-            //set resolvedThis to empty composite. This practically removes this method call.
-            setResolvedThis(new CompositeLayerSymbol.Builder().build());
-        }
-        else if (parallelLength == 1 && maxSerialLength == 1){
-            //resolve the method call
-            LayerSymbol resolvedMethod = getMethod().call(this);
-            setResolvedThis(resolvedMethod);
-            resolvedMethod.computeResolvedThis();
-        }
-        else {
-            //split the method if it contains an argument sequence
-            LayerSymbol splitComposite = resolveSequences(parallelLength, getSerialLengths().get());
-            setResolvedThis(splitComposite);
-            splitComposite.resolveOrError();
-        }
-    }*/
 
     private boolean isActive(){
         if (getIfExpression().isSimpleValue() && !getIfExpression().getBooleanValue().get()){
@@ -225,12 +235,11 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected Set<String> computeUnresolvableNames() {
-        Set<String> unresolvableNames = new HashSet<>();
+    protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables) {
         for (ArgumentSymbol argument : getArguments()){
-            unresolvableNames.addAll(argument.getRhs().computeUnresolvableNames());
+            argument.getRhs().checkIfResolvable(allVariables);
+            unresolvableVariables.addAll(argument.getRhs().getUnresolvableVariables());
         }
-        return unresolvableNames;
     }
 
     @Override
@@ -240,13 +249,13 @@ public class MethodLayerSymbol extends LayerSymbol {
             return shapeFunction.apply(getInputLayer().get().getOutputShapes(), this);
         }
         else {
-            Set<String> unresolvableNames = resolve();
-            if (unresolvableNames.isEmpty()){
+            Set<VariableSymbol> unresolvableVariables = resolve();
+            if (unresolvableVariables.isEmpty()){
                 return getResolvedThis().get().computeOutputShapes();
             }
             else {
                 throw new IllegalStateException("The output shape can only be computed if this and all previous layer are resolvable. " +
-                        "The following names cannot be resolved: " + String.join(", ", unresolvableNames));
+                        "The following names cannot be resolved: " + Joiners.COMMA.join(unresolvableVariables));
             }
 
         }
@@ -262,32 +271,29 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     public Optional<Integer> getIntValue(String argumentName){
-        Optional<ArgumentSymbol> arg = getArgument(argumentName);
-        if (arg.isPresent()){
-            Optional<Object> val = arg.get().getValue();
-            if (val.isPresent() && val.get() instanceof Integer){
-                return val.map(o -> (Integer) o);
-            }
-        }
-        return Optional.empty();
+        return getTValue(argumentName, ArchExpressionSymbol::getIntValue);
     }
 
     public Optional<List<Integer>> getIntTupleValue(String argumentName){
+        return getTValue(argumentName, ArchExpressionSymbol::getIntTupleValues);
+    }
+
+    public Optional<Boolean> getBooleanValue(String argumentName){
+        return getTValue(argumentName, ArchExpressionSymbol::getBooleanValue);
+    }
+
+    public Optional<Object> getValue(String argumentName){
+        return getTValue(argumentName, ArchExpressionSymbol::getValue);
+    }
+
+    private <T> Optional<T> getTValue(String argumentName, Function<ArchExpressionSymbol, Optional<T>> getMethod){
         Optional<ArgumentSymbol> arg = getArgument(argumentName);
+        Optional<VariableSymbol> param = getMethod().getParameter(argumentName);
         if (arg.isPresent()){
-            Optional<Object> val = arg.get().getValue();
-            if (val.isPresent() && val.get() instanceof List){
-                List<Integer> list = new ArrayList<>();
-                for (Object obj : (List) val.get()){
-                    if (obj instanceof Integer){
-                        list.add((Integer) obj);
-                    }
-                    else{
-                        return Optional.empty();
-                    }
-                }
-                return Optional.of(list);
-            }
+            return getMethod.apply(arg.get().getRhs());
+        }
+        else if (param.isPresent() && param.get().getDefaultExpression().isPresent()){
+            return getMethod.apply(param.get().getDefaultExpression().get());
         }
         return Optional.empty();
     }
@@ -334,6 +340,9 @@ public class MethodLayerSymbol extends LayerSymbol {
             else {
                 return Optional.empty();
             }
+        }
+        if (getArguments().isEmpty()){
+            max = 1;
         }
         return Optional.of(max);
     }
@@ -393,6 +402,9 @@ public class MethodLayerSymbol extends LayerSymbol {
             else {
                 return Optional.empty();
             }
+        }
+        if (getArguments().isEmpty()){
+            argumentLengths.add(Collections.singletonList(1));
         }
         return Optional.of(argumentLengths);
     }

@@ -27,6 +27,7 @@ public class PredefinedVariables {
 
     public static final String IF_NAME = "_if";
     public static final String FOR_NAME = "_for";
+    public static final String CARDINALITY_NAME = "_cardinality";
     public static final String TRUE_NAME = "true";
     public static final String FALSE_NAME = "false";
 
@@ -41,6 +42,13 @@ public class PredefinedVariables {
     public static VariableSymbol createForParameter(){
         return new VariableSymbol.Builder()
                 .name(FOR_NAME)
+                .defaultValue(1)
+                .build();
+    }
+
+    public static VariableSymbol createCardinalityParameter(){
+        return new VariableSymbol.Builder()
+                .name(CARDINALITY_NAME)
                 .defaultValue(1)
                 .build();
     }

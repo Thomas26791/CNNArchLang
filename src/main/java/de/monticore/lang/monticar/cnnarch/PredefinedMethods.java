@@ -41,7 +41,7 @@ public class PredefinedMethods {
     public static final String AVG_POOLING_NAME = "AveragePooling";
     public static final String LRN_NAME = "Lrn";
     public static final String BATCHNORM_NAME = "BatchNorm";
-    public static final String SPLIT_NAME = "Split";
+    public static final String SPLIT_NAME = "SplitData";
     public static final String GET_NAME = "Get";
     public static final String ADD_NAME = "Add";
     public static final String CONCATENATE_NAME = "Concatenate";
@@ -323,22 +323,36 @@ public class PredefinedMethods {
     }
 
     private static List<ShapeSymbol> strideShapeFunction(ShapeSymbol inputShape, MethodLayerSymbol method, int channels) {
-        int strideHeight = method.getIntTupleValue("stride").get().get(0);
-        int strideWidth = method.getIntTupleValue("stride").get().get(1);
-        int kernelHeight = method.getIntTupleValue("kernel").get().get(0);
-        int kernelWidth = method.getIntTupleValue("kernel").get().get(1);
-        int inputHeight = inputShape.getHeight().get();
-        int inputWidth = inputShape.getWidth().get();
+        Optional<Boolean> optGlobal = method.getBooleanValue("global");
+        if (optGlobal.isPresent() && optGlobal.get()){
+            return Collections.singletonList(new ShapeSymbol.Builder()
+                    .height(1)
+                    .width(1)
+                    .channels(channels)
+                    .build());
+        }
+        else{
+            int strideHeight = method.getIntTupleValue("stride").get().get(0);
+            int strideWidth = method.getIntTupleValue("stride").get().get(1);
+            int kernelHeight = method.getIntTupleValue("kernel").get().get(0);
+            int kernelWidth = method.getIntTupleValue("kernel").get().get(1);
+            int inputHeight = inputShape.getHeight().get();
+            int inputWidth = inputShape.getWidth().get();
 
-        //assume padding with border_mode='same'
-        int outputWidth = 1 + ((inputWidth - kernelWidth + strideWidth - 1) / strideWidth);
-        int outputHeight = 1 + ((inputHeight - kernelHeight + strideHeight - 1) / strideHeight);
+            //assume padding with border_mode='same'
+            int outputWidth = inputWidth  / strideWidth;
+            int outputHeight = inputHeight / strideHeight;
 
-        return Collections.singletonList(new ShapeSymbol.Builder()
-                .height(outputHeight)
-                .width(outputWidth)
-                .channels(channels)
-                .build());
+            //border_mode=valid
+            //int outputWidth = 1 + Math.max(0, ((inputWidth - kernelWidth + strideWidth - 1) / strideWidth));
+            //int outputHeight = 1 + Math.max(0, ((inputHeight - kernelHeight + strideHeight - 1) / strideHeight));
+
+            return Collections.singletonList(new ShapeSymbol.Builder()
+                    .height(outputHeight)
+                    .width(outputWidth)
+                    .channels(channels)
+                    .build());
+        }
     }
 
     private static List<ShapeSymbol> splitShapeFunction(ShapeSymbol inputShape, MethodLayerSymbol method) {

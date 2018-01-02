@@ -21,7 +21,6 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.MutableScope;
-import de.monticore.symboltable.Scope;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,6 +63,13 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
     }
 
     @Override
+    public void reset() {
+        getStartSymbol().reset();
+        getEndSymbol().reset();
+        setUnresolvableVariables(null);
+    }
+
+    @Override
     public boolean isParallelSequence() {
         return isParallel();
     }
@@ -88,16 +94,15 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
     }*/
 
     @Override
-    public Set<String> resolve() {
+    public Set<VariableSymbol> resolve() {
         if (!isResolved()){
-            checkIfResolvable();
             if (isResolvable()){
 
                 getStartSymbol().resolveOrError();
                 getEndSymbol().resolveOrError();
             }
         }
-        return getUnresolvableNames();
+        return getUnresolvableVariables();
     }
 
     @Override
@@ -142,11 +147,11 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
     }
 
     @Override
-    protected Set<String> computeUnresolvableNames() {
-        Set<String> unresolvableNames = new HashSet<>();
-        unresolvableNames.addAll(getStartSymbol().computeUnresolvableNames());
-        unresolvableNames.addAll(getEndSymbol().computeUnresolvableNames());
-        return unresolvableNames;
+    protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables) {
+        getStartSymbol().checkIfResolvable(allVariables);
+        unresolvableVariables.addAll(getStartSymbol().getUnresolvableVariables());
+        getEndSymbol().checkIfResolvable(allVariables);
+        unresolvableVariables.addAll(getEndSymbol().getUnresolvableVariables());
     }
 
     public ArchRangeExpressionSymbol copy(){
@@ -154,7 +159,7 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
         copy.setParallel(isParallel());
         copy.setStartSymbol(getStartSymbol().copy());
         copy.setEndSymbol(getEndSymbol().copy());
-        copy.setUnresolvableNames(getUnresolvableNames());
+        copy.setUnresolvableVariables(getUnresolvableVariables());
         return copy;
     }
 
@@ -165,10 +170,11 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
         getEndSymbol().putInScope(scope);
     }
 
-    public static ArchRangeExpressionSymbol of(ArchSimpleExpressionSymbol start, ArchSimpleExpressionSymbol end){
+    public static ArchRangeExpressionSymbol of(ArchSimpleExpressionSymbol start, ArchSimpleExpressionSymbol end, boolean parallel){
         ArchRangeExpressionSymbol sym = new ArchRangeExpressionSymbol();
         sym.setStartSymbol(start);
         sym.setEndSymbol(end);
+        sym.setParallel(parallel);
         return sym;
     }
 }

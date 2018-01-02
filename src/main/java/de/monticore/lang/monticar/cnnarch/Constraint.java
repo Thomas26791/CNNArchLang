@@ -51,28 +51,60 @@ public enum Constraint {
     INTEGER_TUPLE {
         @Override
         public boolean check(ArchSimpleExpressionSymbol exp) {
-            boolean res = false;
-            if (exp.isTuple()){
-                //todo
-            }
-            return false;
+            return exp.isIntTuple().get();
         }
     },
     POSITIVE {
         @Override
         public boolean check(ArchSimpleExpressionSymbol exp) {
+            if (exp.getDoubleValue().isPresent()){
+                return exp.getDoubleValue().get() > 0;
+            }
+            else if (exp.getDoubleTupleValues().isPresent()){
+                boolean isPositive = true;
+                for (double value : exp.getDoubleTupleValues().get()){
+                    if (value <= 0){
+                        isPositive = false;
+                    }
+                }
+                return isPositive;
+            }
             return false;
         }
     },
     NON_NEGATIVE {
         @Override
         public boolean check(ArchSimpleExpressionSymbol exp) {
+            if (exp.getDoubleValue().isPresent()){
+                return exp.getDoubleValue().get() >= 0;
+            }
+            else if (exp.getDoubleTupleValues().isPresent()){
+                boolean isPositive = true;
+                for (double value : exp.getDoubleTupleValues().get()){
+                    if (value < 0){
+                        isPositive = false;
+                    }
+                }
+                return isPositive;
+            }
             return false;
         }
     },
     BETWEEN_ZERO_AND_ONE {
         @Override
         public boolean check(ArchSimpleExpressionSymbol exp) {
+            if (exp.getDoubleValue().isPresent()){
+                return exp.getDoubleValue().get() >= 0 && exp.getDoubleValue().get() <= 1;
+            }
+            else if (exp.getDoubleTupleValues().isPresent()){
+                boolean isPositive = true;
+                for (double value : exp.getDoubleTupleValues().get()){
+                    if (value < 0 || value > 1){
+                        isPositive = false;
+                    }
+                }
+                return isPositive;
+            }
             return false;
         }
     };

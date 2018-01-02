@@ -33,7 +33,7 @@ public class IODeclarationSymbol extends CommonSymbol {
     private ASTElementType type;
     private ShapeSymbol shape;
     private boolean input; //true->input, false->output
-    private int arrayLength = 0;
+    private int arrayLength = 1;
 
 
     protected IODeclarationSymbol(String name) {

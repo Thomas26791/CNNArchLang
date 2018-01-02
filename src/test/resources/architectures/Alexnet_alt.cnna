@@ -18,11 +18,11 @@ architecture Alexnet_alt{
     Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
 
     (
-        Split(index=0, n=2) ->
+        SplitData(index=0, n=2) ->
         conv(filter=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75)
     |
-        Split(index=1, n=2) ->
+        SplitData(index=1, n=2) ->
         conv(filter=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75)
     ) ->
@@ -30,11 +30,11 @@ architecture Alexnet_alt{
     conv(filter=(3,3), channels=384 ,hasPool=false) ->
 
     (
-        Split(index=0, n=2) ->
+        SplitData(index=0, n=2) ->
         conv(filter=(3,3), channels=192, hasPool=false) ->
         conv(filter=(3,3), channels=128)
     |
-        Split(index=1, n=2) ->
+        SplitData(index=1, n=2) ->
         conv(filter=(3,3), channels=192, hasPool=false) ->
         conv(filter=(3,3), channels=128)
     ) ->

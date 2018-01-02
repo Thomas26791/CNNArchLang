@@ -40,6 +40,10 @@ public class AllCoCoTest extends AbstractCoCoTest {
         checkValid("architectures", "Alexnet_alt");
         checkValid("architectures", "ResNeXt50");
         checkValid("architectures", "ThreeInputCNN_M14");
+
+        checkValid("valid_tests", "Fixed_Alexnet");
+        checkValid("valid_tests", "Fixed_ResNeXt50");
+        checkValid("valid_tests", "Fixed_ThreeInputCNN_M14");
         /*checkValid("architectures", "Alexnet");
         checkValid("architectures", "Resnet34");
         checkValid("architectures", "ResNeXt50");

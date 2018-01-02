@@ -21,8 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
-import de.monticore.symboltable.MutableScope;
-import de.monticore.symboltable.Scope;
+import de.se_rwth.commons.Joiners;
 
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +34,7 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     private LayerSymbol inputLayer;
     private List<ShapeSymbol> outputShapes = null;
-    private Set<String> unresolvableNames = null;
+    private Set<VariableSymbol> unresolvableVariables = null;
 
     protected LayerSymbol(String name) {
         super(name, KIND);
@@ -86,37 +85,43 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         return false;
     }
 
-    public Set<String> getUnresolvableNames() {
-        if (unresolvableNames == null){
+    public Set<VariableSymbol> getUnresolvableVariables() {
+        if (unresolvableVariables == null){
             checkIfResolvable();
         }
-        return unresolvableNames;
+        return unresolvableVariables;
     }
 
-    protected void setUnresolvableNames(Set<String> unresolvableNames) {
-        this.unresolvableNames = unresolvableNames;
+    protected void setUnresolvableVariables(Set<VariableSymbol> unresolvableVariables) {
+        this.unresolvableVariables = unresolvableVariables;
     }
 
     public boolean isResolvable(){
-        return getUnresolvableNames().isEmpty();
+        return getUnresolvableVariables().isEmpty();
     }
 
     public void checkIfResolvable(){
-        setUnresolvableNames(computeUnresolvableNames());
+        checkIfResolvable(new HashSet<>());
+    }
+
+    protected void checkIfResolvable(Set<VariableSymbol> occurringVariables){
+        Set<VariableSymbol> unresolvableVariables = new HashSet<>();
+        computeUnresolvableVariables(unresolvableVariables, occurringVariables);
+        setUnresolvableVariables(unresolvableVariables);
     }
 
     public void resolveOrError(){
-        Set<String> names = resolve();
+        Set<VariableSymbol> names = resolve();
         if (!isResolved()){
-            throw new IllegalStateException("The following names could not be resolved: " + getUnresolvableNames());
+            throw new IllegalStateException("The following names could not be resolved: " + Joiners.COMMA.join(getUnresolvableVariables()));
         }
     }
 
-    abstract public Set<String> resolve();
+    abstract public Set<VariableSymbol> resolve();
 
     abstract protected List<ShapeSymbol> computeOutputShapes();
 
-    abstract protected Set<String> computeUnresolvableNames();
+    abstract protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables);
 
     abstract public boolean isResolved();
 
@@ -140,12 +145,12 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         }
     }
 
-    /*abstract protected void putInScope(MutableScope scope);*/
-
     //deepCopy for LayerSymbols, ArgumentSymbol and ArchExpressionSymbols but does not copy math expressions or scope and ast information.
     abstract public LayerSymbol copy();
 
     abstract protected void putInScope(LayerScope scope);
 
     abstract protected void resolveExpressions();
+
+    abstract public void reset();
 }

@@ -21,7 +21,6 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.MutableScope;
-import de.monticore.symboltable.Scope;
 
 import java.util.*;
 
@@ -48,6 +47,16 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
     }
 
     @Override
+    public void reset() {
+        for (List<ArchSimpleExpressionSymbol> serialElements : _getElements()){
+            for (ArchSimpleExpressionSymbol element : serialElements){
+                element.reset();
+            }
+        }
+        setUnresolvableVariables(null);
+    }
+
+    @Override
     public boolean isSerialSequence(){
         boolean isSerial = !isParallelSequence();
         for (List<ArchSimpleExpressionSymbol> serialElement : _getElements()){
@@ -64,10 +73,9 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
     }
 
     @Override
-    public Set<String> resolve() {
-        if (!isResolved()){
-            checkIfResolvable();
-            if (isResolvable()){
+    public Set<VariableSymbol> resolve() {
+        if (!isResolved()) {
+            if (isResolvable()) {
 
                 for (List<ArchSimpleExpressionSymbol> serialList : _getElements()) {
                     for (ArchSimpleExpressionSymbol element : serialList) {
@@ -76,7 +84,7 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
                 }
             }
         }
-        return getUnresolvableNames();
+        return getUnresolvableVariables();
     }
 
     @Override
@@ -93,14 +101,13 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
     }
 
     @Override
-    protected Set<String> computeUnresolvableNames() {
-        Set<String> unresolvableNames = new HashSet<>();
+    protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables) {
         for (List<ArchSimpleExpressionSymbol> serialElements : _getElements()){
             for (ArchSimpleExpressionSymbol element : serialElements){
-                unresolvableNames.addAll(element.computeUnresolvableNames());
+                element.checkIfResolvable(allVariables);
+                unresolvableVariables.addAll(element.getUnresolvableVariables());
             }
         }
-        return unresolvableNames;
     }
 
     public ArchSequenceExpressionSymbol copy(){
@@ -114,7 +121,7 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
             elementsCopy.add(serialListCopy);
         }
         copy.setElements(getElements().get());
-        copy.setUnresolvableNames(getUnresolvableNames());
+        copy.setUnresolvableVariables(getUnresolvableVariables());
         return copy;
     }
 

@@ -13,12 +13,12 @@ architecture Alexnet{
         Dropout()
     }
     def split1(i, groups){
-        Split(index=i, n=groups) ->
+        SplitData(index=i, n=groups) ->
         conv(filter=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75)
     }
     def split2(i, groups){
-        Split(index=i, n=groups) ->
+        SplitData(index=i, n=groups) ->
         conv(filter=(3,3), channels=192, hasPool=false) ->
         conv(filter=(3,3), channels=128)
     }

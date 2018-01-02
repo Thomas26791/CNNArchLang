@@ -21,7 +21,6 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.ErrorMessages;
-import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
@@ -66,13 +65,32 @@ public class IOLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public Set<String> resolve() {
-        checkIfResolvable();
-        if (isResolvable()){
-            resolveExpressions();
-            getDefinition().getShape().resolve();
+    public boolean isInput(){
+        return getDefinition().isInput();
+    }
+
+    @Override
+    public boolean isOutput(){
+        return getDefinition().isOutput();
+    }
+
+    @Override
+    public void reset() {
+        setUnresolvableVariables(null);
+        if (getArrayAccess().isPresent()){
+            getArrayAccess().get().reset();
         }
-        return getUnresolvableNames();
+    }
+
+    @Override
+    public Set<VariableSymbol> resolve() {
+        if (!isResolved()) {
+            if (isResolvable()) {
+                resolveExpressions();
+                getDefinition().getShape().resolve();
+            }
+        }
+        return getUnresolvableVariables();
     }
 
     @Override
@@ -84,20 +102,20 @@ public class IOLayerSymbol extends LayerSymbol {
             }
         }
         //todo getShape().isResolved
-        if (!getDefinition().getShape().computeUnresolvableNames().isEmpty()){
+        if (!getDefinition().getShape().isResolved()){
             isResolved = false;
         }
         return isResolved;
     }
 
     @Override
-    protected Set<String> computeUnresolvableNames() {
-        HashSet<String> unresolvableNames = new HashSet<>();
+    protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables) {
         if (getArrayAccess().isPresent()){
-            unresolvableNames.addAll(getArrayAccess().get().computeUnresolvableNames());
+            getArrayAccess().get().checkIfResolvable(allVariables);
+            unresolvableVariables.addAll(getArrayAccess().get().getUnresolvableVariables());
         }
-        unresolvableNames.addAll(getDefinition().getShape().computeUnresolvableNames());
-        return unresolvableNames;
+        getDefinition().getShape().checkIfResolvable(allVariables);
+        unresolvableVariables.addAll(getDefinition().getShape().getUnresolvableVariables());
     }
 
     @Override
@@ -145,7 +163,7 @@ public class IOLayerSymbol extends LayerSymbol {
             arrayAccessCopy = getArrayAccess().get().copy();
         }
         IOLayerSymbol copy = new Builder()
-                .name(getName())
+                .definition(getDefinition())
                 .arrayAccess(arrayAccessCopy)
                 .build();
         return copy;
@@ -160,7 +178,7 @@ public class IOLayerSymbol extends LayerSymbol {
 
     public static class Builder{
         private ArchSimpleExpressionSymbol arrayAccess = null;
-        private String name;
+        private IODeclarationSymbol definition;
 
         public Builder arrayAccess(ArchSimpleExpressionSymbol arrayAccess){
             this.arrayAccess = arrayAccess;
@@ -172,16 +190,16 @@ public class IOLayerSymbol extends LayerSymbol {
             return this;
         }
 
-        public Builder name(String name){
-            this.name = name;
+        public Builder definition(IODeclarationSymbol definition){
+            this.definition = definition;
             return this;
         }
 
         public IOLayerSymbol build(){
-            if (name == null || name.equals("")){
-                throw new IllegalStateException("Missing or empty name for IOLayerSymbol");
+            if (definition == null){
+                throw new IllegalStateException("Missing or definition for IOLayerSymbol");
             }
-            IOLayerSymbol sym = new IOLayerSymbol(name);
+            IOLayerSymbol sym = new IOLayerSymbol(definition.getName());
             sym.setArrayAccess(arrayAccess);
             return sym;
         }

@@ -21,6 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.Constraint;
+import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
@@ -90,8 +91,8 @@ public class VariableSymbol extends CommonSymbol {
         return getCurrentExpression().isPresent() || getDefaultExpression().isPresent();
     }
 
-    public void setExpression(ArchSimpleExpressionSymbol value){
-        currentExpression = value;
+    protected void setExpression(ArchSimpleExpressionSymbol expression){
+        currentExpression = expression;
     }
 
     public ArchSimpleExpressionSymbol getExpression(){

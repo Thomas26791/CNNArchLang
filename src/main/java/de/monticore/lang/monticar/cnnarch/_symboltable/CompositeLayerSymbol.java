@@ -20,7 +20,6 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 
 import java.util.*;
@@ -83,15 +82,24 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public Set<String> resolve() {
-        checkIfResolvable();
-        if (isResolvable()){
-            List<LayerSymbol> resolvedLayers = new ArrayList<>();
-            for (LayerSymbol layer : getLayers()){
-                layer.resolve();
+    public void reset() {
+        for (LayerSymbol layer : getLayers()){
+            layer.reset();
+        }
+        setUnresolvableVariables(null);
+    }
+
+    @Override
+    public Set<VariableSymbol> resolve() {
+        if (!isResolved()) {
+            if (isResolvable()) {
+                List<LayerSymbol> resolvedLayers = new ArrayList<>();
+                for (LayerSymbol layer : getLayers()) {
+                    layer.resolve();
+                }
             }
         }
-        return getUnresolvableNames();
+        return getUnresolvableVariables();
     }
 
     @Override
@@ -113,13 +121,11 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected Set<String> computeUnresolvableNames() {
-        Set<String> unresolvableSet = new HashSet<>();
+    protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables) {
         for (LayerSymbol layer : getLayers()){
-            layer.checkIfResolvable();
-            unresolvableSet.addAll(layer.getUnresolvableNames());
+            layer.checkIfResolvable(allVariables);
+            unresolvableVariables.addAll(layer.getUnresolvableVariables());
         }
-        return unresolvableSet;
     }
 
     @Override
@@ -139,6 +145,9 @@ public class CompositeLayerSymbol extends LayerSymbol {
                 return outputShapes;
             }
             else {
+                for (LayerSymbol layer : getLayers()){
+                    layer.getOutputShapes();
+                }
                 return getLayers().get(getLayers().size() - 1).getOutputShapes();
             }
         }

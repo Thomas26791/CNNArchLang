@@ -25,8 +25,6 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
-import de.monticore.symboltable.MutableScope;
-import de.monticore.symboltable.Symbol;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -69,6 +67,11 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
             this.parameters.add(forParam);
             forParam.putInScope(getSpannedScope());
         }
+        if (!getParameter(PredefinedVariables.CARDINALITY_NAME).isPresent()){
+            VariableSymbol forParam = PredefinedVariables.createCardinalityParameter();
+            this.parameters.add(forParam);
+            forParam.putInScope(getSpannedScope());
+        }
     }
 
     public CompositeLayerSymbol getBody() {
@@ -103,30 +106,41 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
 
 
     public LayerSymbol call(MethodLayerSymbol layer) {
+        checkForSequence(layer.getArguments());
+
+        if (isPredefined()){
+            return layer;
+        }
+        else {
+            set(layer.getArguments());
+            getBody().resolveOrError();
+            CompositeLayerSymbol copy = getBody().copy();
+            reset();
+            return copy;
+        }
+    }
+
+    private void reset(){
+        for (VariableSymbol param : getParameters()){
+            param.reset();
+        }
+        getBody().reset();
+    }
+
+    private void set(List<ArgumentSymbol> arguments){
+        for (ArgumentSymbol arg : arguments){
+            arg.set();
+        }
+    }
+
+    private void checkForSequence(List<ArgumentSymbol> arguments){
         boolean valid = true;
-        for (ArgumentSymbol arg : layer.getArguments()){
+        for (ArgumentSymbol arg : arguments){
             if (arg.getRhs() instanceof  ArchAbstractSequenceExpression){
                 valid = false;
             }
         }
-
-        if (valid){
-            if (isPredefined()){
-                return layer;
-            }
-            else {
-                for (VariableSymbol param : getParameters()){
-                    param.reset();
-                }
-                for (ArgumentSymbol arg : layer.getArguments()){
-                    arg.set();
-                }
-
-                getBody().resolveOrError();
-                return getBody().copy();
-            }
-        }
-        else {
+        if (!valid){
             throw new IllegalArgumentException("Arguments with sequence expressions have to be resolved first before calling the method.");
         }
     }

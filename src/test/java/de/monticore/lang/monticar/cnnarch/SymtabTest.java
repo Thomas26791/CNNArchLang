@@ -41,28 +41,55 @@ public class SymtabTest extends AbstractSymtabTest {
 
     @Test
     public void testAlexnet(){
+        Scope symTab = createSymTab("src/test/resources/architectures");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "Alexnet",
+                ArchitectureSymbol.KIND).orElse(null);
+        assertNotNull(a);
+        a.resolve();
+    }
+
+    @Test
+    public void testThreeInput(){
+        Scope symTab = createSymTab("src/test/resources/architectures");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "ThreeInputCNN_M14",
+                ArchitectureSymbol.KIND).orElse(null);
+        assertNotNull(a);
+        a.resolve();
+    }
+
+    @Test
+    public void testFixedAlexnet(){
         Scope symTab = createSymTab("src/test/resources/valid_tests");
         ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
                 "Fixed_Alexnet",
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
-        a.getBody().resolve();
+        a.resolve();
         List<ShapeSymbol> asd = a.getBody().getOutputShapes();
-        boolean f = true;
     }
 
     @Test
-    public void testRes(){
+    public void testFixedResNeXt(){
         Scope symTab = createSymTab("src/test/resources/valid_tests");
         ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
                 "Fixed_ResNeXt50",
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
-        a.getBody().resolve();
+        a.resolve();
         List<ShapeSymbol> asd = a.getBody().getOutputShapes();
-        boolean f = true;
     }
 
-
+    @Test
+    public void testFixedThreeInput(){
+        Scope symTab = createSymTab("src/test/resources/valid_tests");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "Fixed_ThreeInputCNN_M14",
+                ArchitectureSymbol.KIND).orElse(null);
+        assertNotNull(a);
+        a.resolve();
+        List<ShapeSymbol> asd = a.getBody().getOutputShapes();
+    }
 
 }
