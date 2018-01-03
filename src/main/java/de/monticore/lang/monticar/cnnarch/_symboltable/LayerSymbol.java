@@ -21,6 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
+import de.monticore.symboltable.MutableScope;
 import de.se_rwth.commons.Joiners;
 
 import java.util.HashSet;
@@ -148,9 +149,9 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
     //deepCopy for LayerSymbols, ArgumentSymbol and ArchExpressionSymbols but does not copy math expressions or scope and ast information.
     abstract public LayerSymbol copy();
 
-    abstract protected void putInScope(LayerScope scope);
+    abstract protected void putInScope(MutableScope scope);
 
     abstract protected void resolveExpressions();
 
-    abstract public void reset();
+    /*abstract public void reset();*/
 }

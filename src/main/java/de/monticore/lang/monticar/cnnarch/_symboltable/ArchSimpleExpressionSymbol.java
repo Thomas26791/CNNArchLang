@@ -20,14 +20,16 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.math.math._symboltable.expression.*;
+import de.monticore.lang.math.math._symboltable.expression.MathArithmeticExpressionSymbol;
+import de.monticore.lang.math.math._symboltable.expression.MathCompareExpressionSymbol;
+import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
+import de.monticore.lang.math.math._symboltable.expression.MathNameExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.Calculator;
 import de.monticore.lang.monticar.cnnarch.helper.ExpressionHelper;
-import de.monticore.lang.monticar.interfaces.TextualExpression;
 
 import java.util.*;
 
-public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements TextualExpression {
+public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
 
     private MathExpressionSymbol mathExpression = null;
     private Object value = null;
@@ -69,7 +71,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
     @Override
     public boolean isBoolean() {
         if (getMathExpression().isPresent() && !(getMathExpression().get() instanceof MathNameExpressionSymbol)){
-            return getMathExpression().get() instanceof MathCompareExpressionSymbol;
+            return getMathExpression().get().getRealMathExpressionSymbol() instanceof MathCompareExpressionSymbol;
         }
         else {
             return getBooleanValue().isPresent();
@@ -79,7 +81,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
     @Override
     public boolean isNumber() {
         if (getMathExpression().isPresent() && !(getMathExpression().get() instanceof MathNameExpressionSymbol)){
-            return getMathExpression().get() instanceof MathArithmeticExpressionSymbol;
+            return getMathExpression().get().getRealMathExpressionSymbol() instanceof MathArithmeticExpressionSymbol;
         }
         else {
             return getDoubleValue().isPresent();
@@ -89,7 +91,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
     @Override
     public boolean isTuple() {
         if (getMathExpression().isPresent() && !(getMathExpression().get() instanceof MathNameExpressionSymbol)){
-            return getMathExpression().get() instanceof TupleExpressionSymbol;
+            return getMathExpression().get().getRealMathExpressionSymbol() instanceof TupleExpressionSymbol;
         }
         else {
             return getTupleValues().isPresent();
@@ -105,7 +107,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
                     //todo: implement coco to check isPresent()
                     if (!allVariables.contains(variable.get())) {
                         allVariables.add(variable.get());
-                        if (variable.get().hasValue()) {
+                        if (variable.get().hasExpression()) {
                             if (!variable.get().getExpression().isResolved()) {
                                 variable.get().getExpression().computeUnresolvableVariables(unresolvableVariables, allVariables);
                             }
@@ -122,9 +124,11 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
     @Override
     public Set<VariableSymbol> resolve() {
         if (!isResolved()) {
-            if (getMathExpression().isPresent() && isResolvable()) {
-                Object value = computeValue();
-                setValue(value);
+            if (isResolvable()) {
+                if (getMathExpression().isPresent() && isResolvable()) {
+                    Object value = computeValue();
+                    setValue(value);
+                }
             }
         }
         return getUnresolvableVariables();
@@ -204,10 +208,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol implements 
 
     public ArchSimpleExpressionSymbol copy(){
         ArchSimpleExpressionSymbol copy = new ArchSimpleExpressionSymbol();
-        //copy.setMathExpression(mathExpression);
-        if (!getValue().isPresent()){
-            throw new IllegalStateException();
-        }
+        copy.setMathExpression(mathExpression);
         copy.setValue(value);
         copy.setUnresolvableVariables(getUnresolvableVariables());
         return copy;

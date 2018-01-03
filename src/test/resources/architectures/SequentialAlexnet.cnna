@@ -1,38 +1,33 @@
-architecture SequentialAlexnet {
-    def input image
-    def output predictions
+architecture SequentialAlexnet{
+    def input Z(0:255)^{h,w,c} image
+    def output Q(0:1)^{classes} predictions
+    h = 256
+    w = 256
+    c = 3
+    classes = 10
+
+    def conv(filter, channels, hasPool=true, convStride=(1,1)){
+        Convolution(kernel=filter, channels=channels, stride=convStride) ->
+        Relu() ->
+        MaxPooling(kernel=(3,3), stride=(2,2), If=hasPool)
+    }
+    def fc(){
+        FullyConnected(units=4096) ->
+        Relu() ->
+        Dropout()
+    }
 
     image ->
-    convolution(filters=96, kernel=11, stride=4)
-    activation.relu()
-    lrn(nsize=5, alpha=0.0001, beta=0.75)
-    pooling.max(kernel=3, stride=2)
-
-    convolution(filters=256, kernel=5)
-    activation.relu()
-    lrn(nsize=5, alpha=0.0001, beta=0.75)
-    pooling.max(kernel=3, stride=2)
-
-    convolution(filters=384, kernel=3)
-    activation.relu()
-
-    convolution(filters=384, kernel=3)
-    activation.relu()
-
-    convolution(filters=256, kernel=3)
-    activation.relu()
-    pooling.max(kernel=3, stride=2)
-
-    fullyConnected(units=4096)
-    activation.relu()
-    dropout(p=0.5)
-
-    fullyConnected(units=4096)
-    activation.relu()
-    dropout(p=0.5)
-
-    output{
-        fullyConnected()
-        activation.softmax()
-    } -> predictions
+    conv(filter=(11,11), channels=96, convStride=(4,4)) ->
+    Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
+    conv(filter=(5,5), channels=256, convStride=(4,4)) ->
+    Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
+    conv(filter=(3,3), channels=384, hasPool=false) ->
+    conv(filter=(3,3), channels=384, hasPool=false) ->
+    conv(filter=(3,3), channels=256) ->
+    fc() ->
+    fc() ->
+    FullyConnected(units=classes) ->
+    Softmax() ->
+    predictions
 }

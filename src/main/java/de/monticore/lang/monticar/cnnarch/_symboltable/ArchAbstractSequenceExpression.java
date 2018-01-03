@@ -74,5 +74,4 @@ abstract public class ArchAbstractSequenceExpression extends ArchExpressionSymbo
     public boolean isTuple(){
         return false;
     }
-
 }

@@ -18,13 +18,38 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch._ast;
 
+import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 
-public class CNNArchCocos {
+public class ASTPredefinedArgument extends ASTPredefinedArgumentTOP {
 
-    public static CNNArchCoCoChecker createChecker() {
-        return new CNNArchCoCoChecker()
-                .addCoCo(new CheckVariableConstraints());
+    public ASTPredefinedArgument() {
+    }
+
+    public ASTPredefinedArgument(ASTArchExpression rhs2, String serial, String parallel, String name, ASTArchExpression rhs) {
+        super(rhs2, serial, parallel, name, rhs);
+    }
+
+    @Override
+    public void setRhs2(ASTArchExpression rhs2) {
+        super.setRhs2(rhs2);
+        setRhs(rhs2);
+    }
+
+    @Override
+    public void setParallel(String parallel) {
+        super.setParallel(parallel);
+        if (parallel != null && !parallel.isEmpty()){
+            setName(PredefinedVariables.CARDINALITY_NAME);
+        }
+    }
+
+    @Override
+    public void setSerial(String serial) {
+        super.setSerial(serial);
+        if (serial != null && !serial.isEmpty()) {
+            setName(PredefinedVariables.FOR_NAME);
+        }
     }
 }

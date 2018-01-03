@@ -34,16 +34,13 @@ public class ErrorMessages {
     public static final String MISSING_ARG_CODE = "x06021";
     public static final String MISSING_ARG_MSG = "0"+MISSING_ARG_CODE+" Missing argument. ";
 
-    public static final String PLACEHOLDER_ARG_CODE = "x0303B";
-    public static final String PLACEHOLDER_ARG_MSG = "0"+PLACEHOLDER_ARG_CODE+" \"_placeholder\" is not an argument. ";
     public static final String DUPLICATE_ARG_CODE = "x03031";
     public static final String DUPLICATE_ARG_MSG = "0"+DUPLICATE_ARG_CODE+" Multiple assignments of the same argument are not allowed. ";
 
     public static final String MISSING_VAR_VALUE_CODE = "x02572";
 
 
-    public static final String INCORRECT_ARG_TYPE_CODE = "x03444";
-    public static final String INCORRECT_ARG_TYPE_MSG = "0"+INCORRECT_ARG_TYPE_CODE+" Incorrect argument type. ";
+    public static final String ILLEGAL_ASSIGNMENT_CODE = "x03444";
 
     public static final String OUTPUT_MISSING_VAR_FC_CODE = "x06068";
     public static final String OUTPUT_MISSING_VAR_FC_MSG = "0" + OUTPUT_MISSING_VAR_FC_CODE +
@@ -57,6 +54,6 @@ public class ErrorMessages {
     public static final String ILLEGAL_SEQUENCE_LENGTH_CODE = "x24772";
     public static final String ILLEGAL_SEQUENCE_LENGTH_MSG = "0" + ILLEGAL_SEQUENCE_LENGTH_CODE + " Illegal sequence length. ";
 
-
+    public static final String ILLEGAL_NAME_CODE = "x93567";
 
 }

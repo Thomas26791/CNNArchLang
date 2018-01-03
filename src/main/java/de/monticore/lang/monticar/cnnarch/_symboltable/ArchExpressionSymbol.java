@@ -37,7 +37,7 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
     }
 
 
-    protected Boolean isResolvable(){
+    public Boolean isResolvable(){
         Set<VariableSymbol> set = getUnresolvableVariables();
         return set != null && set.isEmpty();
     }
@@ -302,9 +302,12 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
     public void resolveOrError(){
         resolve();
         if (!isResolved()){
-            throw new IllegalStateException("The following names could not be resolved: " + getUnresolvableVariables());
+            throw new IllegalStateException("The following expression could not be resolved: " + getTextualRepresentation() +
+                    ". The following names are unresolvable: " + getUnresolvableVariables());
         }
     }
+
+    abstract public String getTextualRepresentation();
 
     /**
      * This method returns the result of the expression if it is already resolved.

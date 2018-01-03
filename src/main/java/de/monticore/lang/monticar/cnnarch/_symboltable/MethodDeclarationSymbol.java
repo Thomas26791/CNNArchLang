@@ -26,7 +26,10 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
@@ -113,8 +116,13 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         }
         else {
             set(layer.getArguments());
-            getBody().resolveOrError();
+
             CompositeLayerSymbol copy = getBody().copy();
+            copy.putInScope(getSpannedScope());
+            copy.resolveOrError();
+            getSpannedScope().remove(copy);
+            getSpannedScope().removeSubScope(copy.getSpannedScope());
+
             reset();
             return copy;
         }
@@ -124,7 +132,7 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         for (VariableSymbol param : getParameters()){
             param.reset();
         }
-        getBody().reset();
+        //getBody().reset();
     }
 
     private void set(List<ArgumentSymbol> arguments){

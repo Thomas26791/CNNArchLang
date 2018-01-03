@@ -1,11 +1,15 @@
 architecture Alexnet{
     def input Z(0:255)^{h,w,c} image
     def output Q(0:1)^{classes} predictions
+    h = 256
+    w = 256
+    c = 3
+    classes = 10
 
-    def conv(filter, channels, hasPool=true, convStride=1){
+    def conv(filter, channels, hasPool=true, convStride=(1,1)){
         Convolution(kernel=filter, channels=channels, stride=convStride) ->
         Relu() ->
-        MaxPooling(kernel=(3,3), stride=2, _if=hasPool)
+        MaxPooling(kernel=(3,3), stride=(2,2), If=hasPool)
     }
     def fc(){
         FullyConnected(units=4096) ->
@@ -24,16 +28,12 @@ architecture Alexnet{
     }
 
     image ->
-    conv(filter=(11,11), channels=96, convStride=4) ->
+    conv(filter=(11,11), channels=96, convStride=(4,4)) ->
     Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-
     split1(i=[0|1], groups=2) ->
-
     conv(filter=(3,3), channels=384 ,hasPool=false) ->
-
     split2(i=[0|1], groups=2) ->
-
-    fc(_for=[1->2]) ->
+    fc(->=2) ->
     FullyConnected(units=classes) ->
     Softmax() ->
     predictions

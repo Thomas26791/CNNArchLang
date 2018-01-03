@@ -20,7 +20,6 @@
  */
 package de.monticore.lang.monticar.cnnarch.cocos;
 
-import de.monticore.lang.monticar.cnnarch._cocos.*;
 import de.se_rwth.commons.logging.Log;
 import org.junit.Test;
 
@@ -37,13 +36,22 @@ public class AllCoCoTest extends AbstractCoCoTest {
     public void testValidCoCos() throws IOException {
 
         checkValid("architectures", "Alexnet");
-        checkValid("architectures", "Alexnet_alt");
         checkValid("architectures", "ResNeXt50");
+        checkValid("architectures", "Resnet34");
+        checkValid("architectures", "SequentialAlexnet");
         checkValid("architectures", "ThreeInputCNN_M14");
+        checkValid("architectures", "VGG16");
 
         checkValid("valid_tests", "Fixed_Alexnet");
         checkValid("valid_tests", "Fixed_ResNeXt50");
         checkValid("valid_tests", "Fixed_ThreeInputCNN_M14");
+        checkValid("valid_tests", "ThreeInputCNN_M14_alternative");
+        checkValid("valid_tests", "Alexnet_alt");
+        checkValid("valid_tests", "SimpleNetworkSoftmax");
+        checkValid("valid_tests", "SimpleNetworkSigmoid");
+        checkValid("valid_tests", "SimpleNetworkLinear");
+        checkValid("valid_tests", "SimpleNetworkRelu");
+        checkValid("valid_tests", "SimpleNetworkTanh");
         /*checkValid("architectures", "Alexnet");
         checkValid("architectures", "Resnet34");
         checkValid("architectures", "ResNeXt50");
@@ -52,11 +60,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
         checkValid("architectures", "ThreeInputCNN_M14_alternative");
         checkValid("architectures", "VGG16");
 
-        checkValid("valid_tests", "SimpleNetworkSoftmax");
-        checkValid("valid_tests", "SimpleNetworkSigmoid");
-        checkValid("valid_tests", "SimpleNetworkLinear");
-        checkValid("valid_tests", "SimpleNetworkRelu");
-        checkValid("valid_tests", "SimpleNetworkTanh");
+
         checkValid("valid_tests", "GroupTest");
         checkValid("valid_tests", "MultiOutputTest");
         checkValid("valid_tests", "MultiOutputArrayTest");

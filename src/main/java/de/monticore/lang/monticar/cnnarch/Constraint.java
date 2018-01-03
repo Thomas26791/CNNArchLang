@@ -21,7 +21,13 @@
 package de.monticore.lang.monticar.cnnarch;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.TupleExpressionSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArgumentSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
+import de.se_rwth.commons.logging.Log;
+
+import java.util.List;
+
+import static de.monticore.lang.monticar.cnnarch.ErrorMessages.ILLEGAL_ASSIGNMENT_CODE;
 
 public enum Constraint {
     NUMBER {
@@ -29,11 +35,19 @@ public enum Constraint {
         public boolean check(ArchSimpleExpressionSymbol exp) {
             return exp.isNumber();
         }
+        @Override
+        public String msgString() {
+            return "a number";
+        }
     },
     INTEGER {
         @Override
         public boolean check(ArchSimpleExpressionSymbol exp) {
             return exp.isInt().get();
+        }
+        @Override
+        public String msgString() {
+            return "an integer";
         }
     },
     BOOLEAN {
@@ -41,17 +55,29 @@ public enum Constraint {
         public boolean check(ArchSimpleExpressionSymbol exp) {
             return exp.isBoolean();
         }
+        @Override
+        public String msgString() {
+            return "a boolean";
+        }
     },
     TUPLE {
         @Override
         public boolean check(ArchSimpleExpressionSymbol exp) {
             return exp.isTuple();
         }
+        @Override
+        public String msgString() {
+            return "a tuple";
+        }
     },
     INTEGER_TUPLE {
         @Override
         public boolean check(ArchSimpleExpressionSymbol exp) {
             return exp.isIntTuple().get();
+        }
+        @Override
+        public String msgString() {
+            return "a tuple of integers";
         }
     },
     POSITIVE {
@@ -71,6 +97,10 @@ public enum Constraint {
             }
             return false;
         }
+        @Override
+        public String msgString() {
+            return "a positive number";
+        }
     },
     NON_NEGATIVE {
         @Override
@@ -88,6 +118,10 @@ public enum Constraint {
                 return isPositive;
             }
             return false;
+        }
+        @Override
+        public String msgString() {
+            return "a non-negative number";
         }
     },
     BETWEEN_ZERO_AND_ONE {
@@ -107,11 +141,38 @@ public enum Constraint {
             }
             return false;
         }
+        @Override
+        public String msgString() {
+            return "between one and zero";
+        }
     };
 
     abstract public boolean check(ArchSimpleExpressionSymbol exp);
 
-    public boolean check(Constraint constraint, ArchSimpleExpressionSymbol exp){
-        return constraint.check(exp);
+    abstract protected String msgString();
+
+    public static void check(VariableSymbol variable){
+        for (Constraint constraint : variable.getConstraints()) {
+            if (!constraint.check(variable.getExpression())){
+                Log.error("0"+ ILLEGAL_ASSIGNMENT_CODE +" Illegal assignment. The variable '"
+                                + variable.getName()  +"' must be " + constraint.msgString() + "."
+                        , variable.getSourcePosition());
+            }
+        }
+    }
+
+    public static void check(ArgumentSymbol argument){
+        VariableSymbol variable = argument.getParameter();
+        for (List<ArchSimpleExpressionSymbol> expList : argument.getRhs().getElements().get()){
+            for (ArchSimpleExpressionSymbol exp : expList){
+                for (Constraint constraint : variable.getConstraints()) {
+                    if (!constraint.check(exp)){
+                        Log.error("0"+ ILLEGAL_ASSIGNMENT_CODE +" Illegal assignment. This parameter '"
+                                        + variable.getName()  +"' must be " + constraint.msgString() + "."
+                                , argument.getSourcePosition());
+                    }
+                }
+            }
+        }
     }
 }

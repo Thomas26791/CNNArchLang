@@ -11,7 +11,8 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     interface ArchDeclaration;
     interface ArchitectureElement;
-    interface Variable;
+    interface Nameable;
+    interface Variable extends Nameable;
 
     IODeclaration implements ArchDeclaration = "def"
                                                (in:"input" | out:"output")
@@ -27,12 +28,12 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     IOVariable implements Variable = Name&;
 
-    Constant implements Variable = Name& "=" rhs:ArchSimpleExpression;
+    VariableAssignment implements Variable,ArchDeclaration = Name& "=" rhs:ArchSimpleExpression;
 
-    MethodDeclaration implements ArchDeclaration = "def"
-                                                   Name& "("
-                                                   parameters:(Parameter || ",")* ")" "{"
-                                                   body:ArchBody "}";
+    MethodDeclaration implements ArchDeclaration,Nameable = "def"
+                                                            Name& "("
+                                                            parameters:(Parameter || ",")* ")" "{"
+                                                            body:ArchBody "}";
 
     Parameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
 
@@ -43,6 +44,8 @@ grammar CNNArch extends de.monticore.lang.math.Math {
     MethodLayer implements ArchitectureElement = Name& "(" arguments:(Argument || ",")* ")";
 
     Argument = Name "=" rhs:ArchExpression;
+
+    PredefinedArgument extends Argument = (serial:"->" | parallel:"|") "=" rhs2:ArchExpression;
 
     ParallelLayer implements ArchitectureElement = "(" groups:ArchBody "|" groups:(ArchBody || "|")+ ")";
 

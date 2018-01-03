@@ -20,9 +20,14 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import com.google.common.base.Joiner;
 import de.monticore.symboltable.MutableScope;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression {
 
@@ -123,6 +128,15 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
         copy.setElements(getElements().get());
         copy.setUnresolvableVariables(getUnresolvableVariables());
         return copy;
+    }
+
+    @Override
+    public String getTextualRepresentation() {
+        List<String> parallelExpressions = new ArrayList<>();
+        for ( List<ArchSimpleExpressionSymbol> serialElements : _getElements()){
+            parallelExpressions.add(Joiner.on("->").skipNulls().join(serialElements.stream().map(ArchSimpleExpressionSymbol::getTextualRepresentation).collect(Collectors.toList())));
+        }
+        return Joiner.on('|').skipNulls().join(parallelExpressions);
     }
 
     @Override

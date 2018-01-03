@@ -1,12 +1,13 @@
 architecture SimpleNetworkTanh{
-    def input in
-    def output out
-    
+    def input Q(-oo:+oo)^{inputs} in
+    def output Q(0:1)^{classes} out
+    inputs = 10
+    classes = 2
+
     in ->
-    fullyConnected(units=64, no_bias=true)
-    activation.tanh()
-    output {
-        fullyConnected(no_bias=true)
-        activation.tanh()
-    } -> out
+    FullyConnected(units=64, no_bias=true) ->
+    Tanh() ->
+    FullyConnected(units=classes, no_bias=true) ->
+    Tanh() ->
+    out
 }

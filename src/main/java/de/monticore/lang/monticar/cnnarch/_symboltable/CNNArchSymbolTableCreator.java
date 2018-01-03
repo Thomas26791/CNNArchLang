@@ -24,9 +24,11 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 import de.monticore.lang.math.math._ast.ASTMathExpression;
 import de.monticore.lang.math.math._symboltable.MathSymbolTableCreator;
 import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
+import de.monticore.lang.monticar.cnnarch.Constraint;
 import de.monticore.lang.monticar.cnnarch.PredefinedMethods;
 import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.lang.monticar.cnnarch._ast.*;
+import de.monticore.lang.monticar.cnnarch._visitor.CNNArchInheritanceVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CNNArchVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CommonCNNArchDelegatorVisitor;
 import de.monticore.lang.monticar.types2._ast.ASTType;
@@ -36,7 +38,7 @@ import de.se_rwth.commons.logging.Log;
 import java.util.*;
 
 public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSymbolTableCreator
-        implements CNNArchVisitor {
+        implements CNNArchInheritanceVisitor {
 
     private String compilationUnitPackage = "";
 
@@ -210,12 +212,21 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
     @Override
     public void endVisit(ASTIOVariable node) {
-        VariableSymbol ioVariable = new VariableSymbol.Builder()
-                .name(node.getName())
-                .type(VariableType.IOVariable)
-                .build();
-        addToScope(ArchSimpleExpressionSymbol.of(ioVariable));
-        addToScopeAndLinkWithNode(ioVariable, node);
+        Optional<VariableSymbol> optVariable = currentScope().get().resolve(node.getName(), VariableSymbol.KIND);
+        if (optVariable.isPresent()){
+            node.setSymbol(optVariable.get());
+            node.setEnclosingScope(currentScope().get());
+            optVariable.get().addConstraint(Constraint.INTEGER, Constraint.POSITIVE);
+        }
+        else {
+            VariableSymbol variable = new VariableSymbol.Builder()
+                    .name(node.getName())
+                    .type(VariableType.GLOBAL)
+                    .constraints(Constraint.INTEGER, Constraint.POSITIVE)
+                    .build();
+            //addToScope(ArchSimpleExpressionSymbol.of(variable));
+            addToScopeAndLinkWithNode(variable, node);
+        }
     }
 
     @Override
@@ -255,16 +266,22 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     }
 
     @Override
-    public void visit(ASTConstant node) {
-        VariableSymbol constant = new VariableSymbol(node.getName());
-        constant.setType(VariableType.CONSTANT);
-        addToScopeAndLinkWithNode(constant, node);
-    }
-
-    @Override
-    public void endVisit(ASTConstant node) {
-        VariableSymbol constant = (VariableSymbol) node.getSymbol().get();
-        constant.setDefaultExpression((ArchSimpleExpressionSymbol) node.getRhs().getSymbol().get());
+    public void endVisit(ASTVariableAssignment node) {
+        Optional<VariableSymbol> optVariable = currentScope().get().resolve(node.getName(), VariableSymbol.KIND);
+        if (optVariable.isPresent()){
+            VariableSymbol variable = optVariable.get();
+            ArchSimpleExpressionSymbol rhs = (ArchSimpleExpressionSymbol) node.getRhs().getSymbol().get();
+            rhs.resolveOrError();
+            variable.setDefaultExpression(rhs);
+            node.setEnclosingScope(currentScope().get());
+            node.setSymbol(variable);
+        }
+        else {
+            VariableSymbol variable = new VariableSymbol(node.getName());
+            variable.setType(VariableType.GLOBAL);
+            variable.setDefaultExpression((ArchSimpleExpressionSymbol) node.getRhs().getSymbol().get());
+            addToScopeAndLinkWithNode(variable, node);
+        }
     }
 
     @Override
@@ -396,11 +413,11 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
     @Override
     public void endVisit(ASTArgument node) {
-        ArgumentSymbol argument;
-        ArchExpressionSymbol value = (ArchExpressionSymbol) node.getRhs().getSymbol().get();
+        ArchExpressionSymbol value;
+        value = (ArchExpressionSymbol) node.getRhs().getSymbol().get();
 
         MethodLayerSymbol methodLayer = (MethodLayerSymbol) currentScope().get().getSpanningSymbol().get();
-        argument = new ArgumentSymbol.Builder()
+        ArgumentSymbol argument = new ArgumentSymbol.Builder()
                 .parameter(methodLayer.getMethod().getParameter(node.getName()).get())
                 .value(value)
                 .build();

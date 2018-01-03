@@ -18,25 +18,10 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._symboltable;
+package de.monticore.lang.monticar.cnnarch._ast;
 
-public enum VariableType {
-    PARAMETER{
-        @Override
-        public String toString(){
-            return "parameter";
-        }
-    },
-    GLOBAL {
-        @Override
-        public String toString(){
-            return "globalVariable";
-        }
-    },
-    CONSTANT {
-        @Override
-        public String toString(){
-            return "constant";
-        }
-    };
+public interface ASTNameable extends ASTNameableTOP {
+
+    String getName();
+
 }

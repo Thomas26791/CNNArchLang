@@ -25,15 +25,16 @@ import de.monticore.lang.monticar.cnnarch._symboltable.VariableType;
 
 public class PredefinedVariables {
 
-    public static final String IF_NAME = "_if";
-    public static final String FOR_NAME = "_for";
-    public static final String CARDINALITY_NAME = "_cardinality";
+    public static final String IF_NAME = "If";
+    public static final String FOR_NAME = "For";
+    public static final String CARDINALITY_NAME = "Cardinality";
     public static final String TRUE_NAME = "true";
     public static final String FALSE_NAME = "false";
 
     public static VariableSymbol createIfParameter(){
         return new VariableSymbol.Builder()
                 .name(IF_NAME)
+                .type(VariableType.PARAMETER)
                 .constraints(Constraint.BOOLEAN)
                 .defaultValue(true)
                 .build();
@@ -42,6 +43,7 @@ public class PredefinedVariables {
     public static VariableSymbol createForParameter(){
         return new VariableSymbol.Builder()
                 .name(FOR_NAME)
+                .type(VariableType.PARAMETER)
                 .defaultValue(1)
                 .build();
     }
@@ -49,6 +51,7 @@ public class PredefinedVariables {
     public static VariableSymbol createCardinalityParameter(){
         return new VariableSymbol.Builder()
                 .name(CARDINALITY_NAME)
+                .type(VariableType.PARAMETER)
                 .defaultValue(1)
                 .build();
     }

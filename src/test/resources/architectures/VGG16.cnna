@@ -1,46 +1,35 @@
 architecture VGG16{
-    def input image
-    def output out
+    def input Z(0:255)^{h,w,c} image
+    def output Q(0:1)^{classes} predictions
+    h = 224
+    w = 224
+    c = 3
+    classes = 1000
+
+    def conv(filter, channels){
+        Convolution(kernel=(filter,filter), channels=channels) ->
+        Relu()
+    }
+    def fc(){
+        FullyConnected(units=4096) ->
+        Relu() ->
+        Dropout(p=0.5)
+    }
 
     image ->
-    repeat 2{
-        convolution(kernel=3, filters=64)
-        activation.relu()
-    }
-    pooling.max(kernel=2, stride=2)
-    
-    repeat 2{
-        convolution(kernel=3, filters=128)
-        activation.relu()
-    }
-    pooling.max(kernel=2, stride=2)
-    
-    repeat 3{
-        convolution(kernel=3, filters=256)
-        activation.relu()
-    }
-    pooling.max(kernel=2, stride=2)
-    
-    repeat 3{
-        convolution(kernel=3, filters=512)
-        activation.relu()
-    }
-    pooling.max(kernel=2, stride=2)
-    
-    repeat 3{
-        convolution(kernel=3, filters=512)
-        activation.relu()
-    }
-    pooling.max(kernel=2, stride=2)  
-    
-    repeat 2{
-        fullyConnected(units=4096)
-        activation.relu()
-        dropout(p=0.5)
-    }
-    
-    output{
-        fullyConnected()
-        activation.softmax()
-    } -> out
+    conv(filter=3, channels=64, ->=2) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+    conv(filter=3, channels=128, ->=2) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+    conv(filter=3, channels=256, ->=3) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+    conv(filter=3, channels=512, ->=3) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+    conv(filter=3, channels=512, ->=3) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+    fc() ->
+    fc() ->
+    FullyConnected(units=classes) ->
+    Softmax() ->
+    predictions
 }

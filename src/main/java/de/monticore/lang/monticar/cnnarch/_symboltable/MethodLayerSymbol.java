@@ -23,6 +23,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.ErrorMessages;
 import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
+import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
@@ -30,7 +31,6 @@ import de.se_rwth.commons.logging.Log;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class MethodLayerSymbol extends LayerSymbol {
 
@@ -63,9 +63,6 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     private void setMethod(MethodDeclarationSymbol method) {
-        /*if (method.isPredefined()){
-            setResolvedThis(this);
-        }*/
         this.method = method;
     }
 
@@ -104,13 +101,13 @@ public class MethodLayerSymbol extends LayerSymbol {
     @Override
     public void setInputLayer(LayerSymbol inputLayer) {
         super.setInputLayer(inputLayer);
-        if (getResolvedThis().isPresent()){
+        if (getResolvedThis().isPresent() && getResolvedThis().get() != this){
             getResolvedThis().get().setInputLayer(inputLayer);
         }
     }
 
     @Override
-    protected void putInScope(LayerScope scope){
+    protected void putInScope(MutableScope scope){
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)){
             scope.add(this);
@@ -123,17 +120,17 @@ public class MethodLayerSymbol extends LayerSymbol {
         }
     }
 
-    @Override
+    /*@Override
     public void reset() {
-        /*if (getResolvedThis().isPresent() && getResolvedThis().get() != this && getResolvedThis().get().getMaxSerialLength().get() != 0){
+        if (getResolvedThis().isPresent() && getResolvedThis().get() != this && getResolvedThis().get().getMaxSerialLength().get() != 0){
             getSpannedScope().remove(getResolvedThis().get());
-        }*/
+        }
         setResolvedThis(null);
         setUnresolvableVariables(null);
         for (ArgumentSymbol arg : getArguments()){
             arg.getRhs().reset();
         }
-    }
+    }*/
 
     @Override
     public boolean isMethod(){
@@ -418,9 +415,9 @@ public class MethodLayerSymbol extends LayerSymbol {
         }
         copy.setArguments(args);
         copy.setMethod(getMethod());
-        if (getResolvedThis().isPresent() && getResolvedThis().get() != this) {
+        /*if (getResolvedThis().isPresent() && getResolvedThis().get() != this) {
             copy.setResolvedThis(getResolvedThis().get().copy());
-        }
+        }*/
         return copy;
     }
 

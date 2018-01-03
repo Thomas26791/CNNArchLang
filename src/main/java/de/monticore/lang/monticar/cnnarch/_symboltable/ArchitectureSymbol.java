@@ -23,9 +23,6 @@
 
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.symboltable.SymbolKind;
-
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -68,10 +65,12 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
         this.outputs = outputs;
     }
 
-    public Set<VariableSymbol> resolve(){
+    public void resolve(){
         getBody().checkIfResolvable();
         Set<VariableSymbol> set = getBody().resolve();
-        return set;
+        /*if (getBody().isResolved()){
+            getBody().getOutputShapes();
+        }*/
     }
 
     public boolean isResolved(){

@@ -21,6 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.ErrorMessages;
+import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
@@ -74,13 +75,13 @@ public class IOLayerSymbol extends LayerSymbol {
         return getDefinition().isOutput();
     }
 
-    @Override
+    /*@Override
     public void reset() {
         setUnresolvableVariables(null);
         if (getArrayAccess().isPresent()){
             getArrayAccess().get().reset();
         }
-    }
+    }*/
 
     @Override
     public Set<VariableSymbol> resolve() {
@@ -146,7 +147,7 @@ public class IOLayerSymbol extends LayerSymbol {
 
 
     @Override
-    protected void putInScope(LayerScope scope) {
+    protected void putInScope(MutableScope scope) {
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)) {
             scope.add(this);

@@ -20,6 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 
 import java.util.*;
@@ -81,13 +82,13 @@ public class CompositeLayerSymbol extends LayerSymbol {
         return true;
     }
 
-    @Override
+    /*@Override
     public void reset() {
         for (LayerSymbol layer : getLayers()){
             layer.reset();
         }
         setUnresolvableVariables(null);
-    }
+    }*/
 
     @Override
     public Set<VariableSymbol> resolve() {
@@ -174,7 +175,7 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected void putInScope(LayerScope scope) {
+    protected void putInScope(MutableScope scope) {
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)) {
             scope.add(this);

@@ -5,7 +5,7 @@ architecture Fixed_Alexnet{
     def conv(filter, channels, hasPool=true, convStride=(1,1)){
         Convolution(kernel=filter, channels=channels, stride=convStride) ->
         Relu() ->
-        MaxPooling(kernel=(3,3), stride=(2,2), _if=hasPool)
+        MaxPooling(kernel=(3,3), stride=(2,2), If=hasPool)
     }
     def fc(){
         FullyConnected(units=4096) ->
@@ -33,7 +33,7 @@ architecture Fixed_Alexnet{
 
     split2(i=[0|1], groups=2) ->
 
-    fc(_for=[1->2]) ->
+    fc(-> = [1->2]) ->
     FullyConnected(units=10) ->
     Softmax() ->
     predictions

@@ -22,7 +22,10 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.MutableScope;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -161,6 +164,12 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
         copy.setEndSymbol(getEndSymbol().copy());
         copy.setUnresolvableVariables(getUnresolvableVariables());
         return copy;
+    }
+
+    @Override
+    public String getTextualRepresentation() {
+        String separator = isParallel() ? "|" : "->";
+        return getStartSymbol().getTextualRepresentation() + separator + ".." + separator + getEndSymbol().getTextualRepresentation();
     }
 
     @Override

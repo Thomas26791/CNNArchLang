@@ -21,12 +21,10 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.Constraint;
-import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
-import org.jscience.mathematics.number.Rational;
 
 import java.util.*;
 
@@ -74,12 +72,18 @@ public class VariableSymbol extends CommonSymbol {
         this.constraints = constraints;
     }
 
-    public boolean isConstant(){
-        return type == VariableType.CONSTANT;
+    public void addConstraint(Constraint... constraints) {
+        for (int i = 0; i < constraints.length; i++){
+            getConstraints().add(constraints[i]);
+        }
     }
 
-    public boolean isIOVariable(){
-        return type == VariableType.IOVariable;
+    public boolean isGlobalVariable(){
+        return type == VariableType.GLOBAL;
+    }
+
+    public boolean isConstant(){
+        return type == VariableType.CONSTANT;
     }
 
     public boolean isParameter(){
@@ -87,17 +91,19 @@ public class VariableSymbol extends CommonSymbol {
     }
 
 
-    public boolean hasValue(){
+    public boolean hasExpression(){
         return getCurrentExpression().isPresent() || getDefaultExpression().isPresent();
     }
 
     protected void setExpression(ArchSimpleExpressionSymbol expression){
-        currentExpression = expression;
+        if (getType() != VariableType.CONSTANT){
+            currentExpression = expression;
+        }
     }
 
     public ArchSimpleExpressionSymbol getExpression(){
         ArchSimpleExpressionSymbol value = null;
-        if (hasValue()){
+        if (hasExpression()){
             if (getCurrentExpression().isPresent()){
                 value = getCurrentExpression().get();
             }
@@ -106,7 +112,7 @@ public class VariableSymbol extends CommonSymbol {
             }
         }
         else {
-            String msg = "0" + MISSING_VAR_VALUE_CODE + " The variable " + getName() + " has no value.";
+            String msg = "0" + MISSING_VAR_VALUE_CODE + " Missing value for variable  " + getName() + ".";
             if (getAstNode().isPresent()){
                 Log.error(msg, getAstNode().get().get_SourcePositionStart());
             }

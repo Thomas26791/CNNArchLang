@@ -24,7 +24,8 @@ import de.monticore.lang.monticar.cnnarch.AbstractSymtabTest;
 import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchNode;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
-import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCocos;
+import de.monticore.lang.monticar.cnnarch._cocos.CNNArchPostResolveCocos;
+import de.monticore.lang.monticar.cnnarch._cocos.CNNArchPreResolveCocos;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.symboltable.Scope;
 import de.se_rwth.commons.logging.Finding;
@@ -45,13 +46,13 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
 
     private static final String MODEL_PATH = "src/test/resources/";
 
-    protected static ASTCNNArchNode getAstNode(String modelPath, String model) {
+    protected static ASTArchitecture getAstNode(String modelPath, String model) {
         Scope symTab = createSymTab(MODEL_PATH + modelPath);
         ArchitectureSymbol comp = symTab.<ArchitectureSymbol> resolve(
                 model, ArchitectureSymbol.KIND).orElse(null);
         assertNotNull("Could not resolve model " + model, comp);
 
-        return (ASTCNNArchNode) comp.getAstNode().get();
+        return (ASTArchitecture) comp.getAstNode().get();
     }
 
     /**
@@ -64,7 +65,7 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
 
         ASTCNNArchNode node = getAstNode(modelPath, model);
 
-        CNNArchCocos.createChecker().checkAll(node);
+        CNNArchPreResolveCocos.createChecker().checkAll(node);
     }
 
     /**
@@ -73,7 +74,13 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
      */
     protected static void checkValid(String modelPath, String model) {
         Log.getFindings().clear();
-        CNNArchCocos.createChecker().checkAll(getAstNode(modelPath, model));
+        ASTArchitecture node = getAstNode(modelPath, model);
+        CNNArchPreResolveCocos.createChecker().checkAll(node);
+        if (node.getSymbol().isPresent()){
+            ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
+            architecture.resolve();
+        }
+        CNNArchPostResolveCocos.createChecker().checkAll(node);
         new ExpectedErrorInfo().checkOnlyExpectedPresent(Log.getFindings());
     }
 
@@ -82,18 +89,29 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
      * the expected errors are present; once only with the given cocos, checking that no addditional
      * errors are present.
      */
-    protected static void checkInvalid(CNNArchCoCoChecker cocos, ASTCNNArchNode node,
+    protected static void checkInvalid(CNNArchCoCoChecker preResolveCocos, CNNArchCoCoChecker postResolveCocos, ASTArchitecture node,
                                        ExpectedErrorInfo expectedErrors) {
 
         // check whether all the expected errors are present when using all cocos
         Log.getFindings().clear();
-        CNNArchCocos.createChecker().checkAll(node);
+        CNNArchPreResolveCocos.createChecker().checkAll(node);
+        if (node.getSymbol().isPresent()){
+            ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
+            architecture.resolve();
+        }
+        CNNArchPostResolveCocos.createChecker().checkAll(node);
         expectedErrors.checkExpectedPresent(Log.getFindings(), "Got no findings when checking all "
                 + "cocos. Did you forget to add the new coco to MontiArcCocos?");
 
+
         // check whether only the expected errors are present when using only the given cocos
         Log.getFindings().clear();
-        cocos.checkAll(node);
+        preResolveCocos.checkAll(node);
+        if (node.getSymbol().isPresent()){
+            ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
+            architecture.resolve();
+        }
+        postResolveCocos.checkAll(node);
         expectedErrors.checkOnlyExpectedPresent(Log.getFindings(), "Got no findings when checking only "
                 + "the given coco. Did you pass an empty coco checker?");
     }

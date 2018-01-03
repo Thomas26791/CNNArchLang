@@ -20,6 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.lang.monticar.cnnarch.Constraint;
 import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
@@ -82,7 +83,9 @@ public class ArgumentSymbol extends CommonSymbol {
     //do not call if value is a sequence
     public void set(){
         if (getRhs().isSimpleValue()){
-            getParameter().setExpression((ArchSimpleExpressionSymbol) getRhs().copy());
+            getRhs().resolveOrError();
+            Constraint.check(this);
+            getParameter().setExpression((ArchSimpleExpressionSymbol) getRhs());
         }
         else {
             throw new IllegalStateException("The value of the parameter is set to a sequence. This should never happen.");
@@ -161,6 +164,9 @@ public class ArgumentSymbol extends CommonSymbol {
                 .parameter(getParameter())
                 .value(getRhs().copy())
                 .build();
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
         return copy;
     }
 

@@ -1,5 +1,5 @@
 architecture Fixed_ThreeInputCNN_M14{
-    def input Z(0:255)^{256,256,3} image[3]
+    def input Z(0:255)^{200,300,3} image[3]
     def output Q(0:1)^{3} predictions
 
     def conv(filter, channels){
@@ -9,7 +9,7 @@ architecture Fixed_ThreeInputCNN_M14{
 
     def inputGroup(index){
         [index] ->
-        conv(filter=(3,3), channels=32, _for=3) ->
+        conv(filter=(3,3), channels=32, ->=3) ->
         MaxPooling(kernel=(2,2), stride=(2,2))
     }
 
