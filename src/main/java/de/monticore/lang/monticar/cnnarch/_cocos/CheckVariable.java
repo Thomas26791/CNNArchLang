@@ -20,42 +20,56 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch.ErrorMessages;
-import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
-import de.monticore.lang.monticar.cnnarch._ast.ASTMethodDeclaration;
-import de.monticore.lang.monticar.cnnarch._ast.ASTNameable;
+import de.monticore.lang.monticar.cnnarch._ast.ASTParameter;
+import de.monticore.lang.monticar.cnnarch._ast.ASTVariable;
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
+import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CheckNames implements CNNArchASTNameableCoCo {
+public class CheckVariable implements CNNArchASTVariableCoCo {
 
-    Set<String> methodNames = new HashSet<>();
+    Set<String> variableNames = new HashSet<>();
+
 
     @Override
-    public void check(ASTNameable node) {
+    public void check(ASTVariable node) {
         String name = node.getName();
         if (name.isEmpty() || !Character.isLowerCase(name.codePointAt(0))){
-            Log.error("0" + ErrorMessages.ILLEGAL_NAME_CODE + " Illegal name: " + name +
-                    ". All new variable and method names have to start with a lowercase letter. "
+            Log.error("0" + ErrorCodes.ILLEGAL_NAME_CODE + " Illegal name: " + name +
+                            ". All new variable and method names have to start with a lowercase letter. "
                     , node.get_SourcePositionStart());
         }
         if (name.equals(PredefinedVariables.TRUE_NAME) || name.equals(PredefinedVariables.FALSE_NAME)){
-            Log.error("0" + ErrorMessages.ILLEGAL_NAME_CODE + " Illegal name: " + name +
-                            ". No method or variable can be named 'true' or 'false'"
+            Log.error("0" + ErrorCodes.ILLEGAL_NAME_CODE + " Illegal name: " + name +
+                            ". No variable can be named 'true' or 'false'"
                     , node.get_SourcePositionStart());
         }
 
-        if (node instanceof ASTMethodDeclaration){
-            if (methodNames.contains(name)){
-                Log.error("0" + ErrorMessages.ILLEGAL_NAME_CODE + " Duplicated name: " + name +
-                        ". This name was defined multiple times."
-                        , node.get_SourcePositionStart());
+        boolean duplicated = false;
+        if (variableNames.contains(name)){
+            if (node instanceof ASTParameter){
+                Collection<Symbol> collection = ((ASTParameter) node).getEnclosingScope().get().getLocalSymbols().get(name);
+                if (collection.size() > 1){
+                    duplicated = true;
+                }
             }
             else {
-                methodNames.add(name);
+                duplicated = true;
             }
+        }
+        else{
+            variableNames.add(name);
+        }
+
+        if (duplicated){
+            Log.error("0" + ErrorCodes.DUPLICATED_NAME_CODE + " Duplicated name: " + name +
+                            ". This name is already defined."
+                    , node.get_SourcePositionStart());
         }
     }
 

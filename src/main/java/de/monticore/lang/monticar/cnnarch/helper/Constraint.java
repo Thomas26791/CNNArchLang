@@ -18,7 +18,7 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch;
+package de.monticore.lang.monticar.cnnarch.helper;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArgumentSymbol;
@@ -27,7 +27,7 @@ import de.se_rwth.commons.logging.Log;
 
 import java.util.List;
 
-import static de.monticore.lang.monticar.cnnarch.ErrorMessages.ILLEGAL_ASSIGNMENT_CODE;
+import static de.monticore.lang.monticar.cnnarch.helper.ErrorCodes.ILLEGAL_ASSIGNMENT_CODE;
 
 public enum Constraint {
     NUMBER {

@@ -20,7 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.Constraint;
+import de.monticore.lang.monticar.cnnarch.helper.Constraint;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
@@ -28,7 +28,7 @@ import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
 
-import static de.monticore.lang.monticar.cnnarch.ErrorMessages.MISSING_VAR_VALUE_CODE;
+import static de.monticore.lang.monticar.cnnarch.helper.ErrorCodes.MISSING_VAR_VALUE_CODE;
 
 public class VariableSymbol extends CommonSymbol {
 
@@ -57,7 +57,12 @@ public class VariableSymbol extends CommonSymbol {
     }
 
     protected void setDefaultExpression(ArchSimpleExpressionSymbol defaultExpression) {
-        this.defaultExpression = defaultExpression;
+        if (this.defaultExpression != null && (getType() == VariableType.CONSTANT || getType() == VariableType.IOVARIABLE)){
+            throw new IllegalStateException("Invalid constant or io variable assignment.");
+        }
+        else {
+            this.defaultExpression = defaultExpression;
+        }
     }
 
     protected Optional<ArchSimpleExpressionSymbol> getCurrentExpression() {
@@ -82,6 +87,10 @@ public class VariableSymbol extends CommonSymbol {
         return type == VariableType.GLOBAL;
     }
 
+    public boolean isIOVariable(){
+        return type == VariableType.IOVARIABLE;
+    }
+
     public boolean isConstant(){
         return type == VariableType.CONSTANT;
     }
@@ -96,7 +105,10 @@ public class VariableSymbol extends CommonSymbol {
     }
 
     protected void setExpression(ArchSimpleExpressionSymbol expression){
-        if (getType() != VariableType.CONSTANT){
+        if (getType() == VariableType.GLOBAL){
+            setDefaultExpression(expression);
+        }
+        else if (getType() != VariableType.CONSTANT){
             currentExpression = expression;
         }
     }

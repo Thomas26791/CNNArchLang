@@ -23,7 +23,7 @@
 
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
 
 import java.util.ArrayList;

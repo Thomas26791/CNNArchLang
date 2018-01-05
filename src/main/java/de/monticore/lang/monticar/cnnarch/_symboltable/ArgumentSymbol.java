@@ -20,8 +20,8 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.Constraint;
-import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.helper.Constraint;
+import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
@@ -43,12 +43,21 @@ public class ArgumentSymbol extends CommonSymbol {
     }
 
     public VariableSymbol getParameter() {
+        if (parameter == null){
+            Optional<VariableSymbol> optParam = getMethodLayer().getMethod().getParameter(getName());
+            optParam.ifPresent(this::setParameter);
+        }
         return parameter;
     }
 
     protected void setParameter(VariableSymbol parameter) {
         this.parameter = parameter;
     }
+
+    public MethodLayerSymbol getMethodLayer() {
+        return (MethodLayerSymbol) getEnclosingScope().getSpanningSymbol().get();
+    }
+
 
     public ArchExpressionSymbol getRhs() {
         return rhs;

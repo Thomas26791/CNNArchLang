@@ -20,7 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._ast;
 
-import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
 
 public class ASTPredefinedArgument extends ASTPredefinedArgumentTOP {
 

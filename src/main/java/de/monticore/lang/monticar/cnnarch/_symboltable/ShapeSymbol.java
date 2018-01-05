@@ -20,10 +20,8 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.math.math._symboltable.expression.MathNameExpressionSymbol;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
-import de.monticore.symboltable.Symbol;
 
 import java.util.*;
 
@@ -38,10 +36,10 @@ public class ShapeSymbol extends CommonSymbol {
     public static final int CHANNEL_INDEX = 3;
 
     private List<ArchSimpleExpressionSymbol> dimensions =
-            Arrays.asList(ArchSimpleExpressionSymbol.of(-1),
-                    ArchSimpleExpressionSymbol.of(-1),
-                    ArchSimpleExpressionSymbol.of(-1),
-                    ArchSimpleExpressionSymbol.of(-1));
+            Arrays.asList(ArchSimpleExpressionSymbol.of(1),
+                    ArchSimpleExpressionSymbol.of(1),
+                    ArchSimpleExpressionSymbol.of(1),
+                    ArchSimpleExpressionSymbol.of(1));
 
     public ShapeSymbol() {
         super("", KIND);

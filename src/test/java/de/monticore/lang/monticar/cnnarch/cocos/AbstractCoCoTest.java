@@ -76,11 +76,14 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
         Log.getFindings().clear();
         ASTArchitecture node = getAstNode(modelPath, model);
         CNNArchPreResolveCocos.createChecker().checkAll(node);
-        if (node.getSymbol().isPresent()){
+        if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
             ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
             architecture.resolve();
+            if (architecture.isResolved()){
+                architecture.getBody().getOutputShapes();
+            }
+            CNNArchPostResolveCocos.createChecker().checkAll(node);
         }
-        CNNArchPostResolveCocos.createChecker().checkAll(node);
         new ExpectedErrorInfo().checkOnlyExpectedPresent(Log.getFindings());
     }
 
@@ -95,11 +98,14 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
         // check whether all the expected errors are present when using all cocos
         Log.getFindings().clear();
         CNNArchPreResolveCocos.createChecker().checkAll(node);
-        if (node.getSymbol().isPresent()){
+        if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
             ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
             architecture.resolve();
+            if (architecture.isResolved()){
+                architecture.getBody().getOutputShapes();
+            }
+            CNNArchPostResolveCocos.createChecker().checkAll(node);
         }
-        CNNArchPostResolveCocos.createChecker().checkAll(node);
         expectedErrors.checkExpectedPresent(Log.getFindings(), "Got no findings when checking all "
                 + "cocos. Did you forget to add the new coco to MontiArcCocos?");
 
@@ -107,11 +113,14 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
         // check whether only the expected errors are present when using only the given cocos
         Log.getFindings().clear();
         preResolveCocos.checkAll(node);
-        if (node.getSymbol().isPresent()){
+        if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
             ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
             architecture.resolve();
+            if (architecture.isResolved()){
+                architecture.getBody().getOutputShapes();
+            }
+            postResolveCocos.checkAll(node);
         }
-        postResolveCocos.checkAll(node);
         expectedErrors.checkOnlyExpectedPresent(Log.getFindings(), "Got no findings when checking only "
                 + "the given coco. Did you pass an empty coco checker?");
     }

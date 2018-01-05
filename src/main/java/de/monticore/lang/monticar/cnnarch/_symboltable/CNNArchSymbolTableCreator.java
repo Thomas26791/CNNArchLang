@@ -24,13 +24,13 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 import de.monticore.lang.math.math._ast.ASTMathExpression;
 import de.monticore.lang.math.math._symboltable.MathSymbolTableCreator;
 import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
-import de.monticore.lang.monticar.cnnarch.Constraint;
-import de.monticore.lang.monticar.cnnarch.PredefinedMethods;
-import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
 import de.monticore.lang.monticar.cnnarch._ast.*;
 import de.monticore.lang.monticar.cnnarch._visitor.CNNArchInheritanceVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CNNArchVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CommonCNNArchDelegatorVisitor;
+import de.monticore.lang.monticar.cnnarch.helper.Constraint;
+import de.monticore.lang.monticar.cnnarch.helper.PredefinedMethods;
+import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
 import de.monticore.lang.monticar.types2._ast.ASTType;
 import de.monticore.symboltable.*;
 import de.se_rwth.commons.logging.Log;
@@ -212,21 +212,18 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
     @Override
     public void endVisit(ASTIOVariable node) {
-        Optional<VariableSymbol> optVariable = currentScope().get().resolve(node.getName(), VariableSymbol.KIND);
-        if (optVariable.isPresent()){
-            node.setSymbol(optVariable.get());
-            node.setEnclosingScope(currentScope().get());
-            optVariable.get().addConstraint(Constraint.INTEGER, Constraint.POSITIVE);
+        ArchSimpleExpressionSymbol defaultValue = null;
+        if (node.getIntRhs().isPresent()){
+            defaultValue = ArchSimpleExpressionSymbol.of(node.getIntRhs().get().getNumber().get().getDividend().intValue());
         }
-        else {
-            VariableSymbol variable = new VariableSymbol.Builder()
-                    .name(node.getName())
-                    .type(VariableType.GLOBAL)
-                    .constraints(Constraint.INTEGER, Constraint.POSITIVE)
-                    .build();
-            //addToScope(ArchSimpleExpressionSymbol.of(variable));
-            addToScopeAndLinkWithNode(variable, node);
-        }
+        VariableSymbol variable = new VariableSymbol.Builder()
+                .name(node.getName())
+                .type(VariableType.IOVARIABLE)
+                .defaultValue(defaultValue)
+                .constraints(Constraint.INTEGER, Constraint.POSITIVE)
+                .build();
+        //addToScope(ArchSimpleExpressionSymbol.of(variable));
+        addToScopeAndLinkWithNode(variable, node);
     }
 
     @Override
@@ -267,21 +264,10 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
     @Override
     public void endVisit(ASTVariableAssignment node) {
-        Optional<VariableSymbol> optVariable = currentScope().get().resolve(node.getName(), VariableSymbol.KIND);
-        if (optVariable.isPresent()){
-            VariableSymbol variable = optVariable.get();
-            ArchSimpleExpressionSymbol rhs = (ArchSimpleExpressionSymbol) node.getRhs().getSymbol().get();
-            rhs.resolveOrError();
-            variable.setDefaultExpression(rhs);
-            node.setEnclosingScope(currentScope().get());
-            node.setSymbol(variable);
-        }
-        else {
-            VariableSymbol variable = new VariableSymbol(node.getName());
-            variable.setType(VariableType.GLOBAL);
-            variable.setDefaultExpression((ArchSimpleExpressionSymbol) node.getRhs().getSymbol().get());
-            addToScopeAndLinkWithNode(variable, node);
-        }
+        VariableSymbol variable = new VariableSymbol(node.getName());
+        variable.setType(VariableType.CONSTANT);
+        variable.setDefaultExpression((ArchSimpleExpressionSymbol) node.getRhs().getSymbol().get());
+        addToScopeAndLinkWithNode(variable, node);
     }
 
     @Override
@@ -404,7 +390,8 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
         List<ArgumentSymbol> arguments = new ArrayList<>(6);
         for (ASTArgument astArgument : ast.getArguments()){
-            arguments.add((ArgumentSymbol) astArgument.getSymbol().get());
+            Optional<ArgumentSymbol> optArgument = astArgument.getSymbol().map(e -> (ArgumentSymbol)e);
+            optArgument.ifPresent(arguments::add);
         }
         methodLayer.setArguments(arguments);
 
@@ -416,19 +403,18 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         ArchExpressionSymbol value;
         value = (ArchExpressionSymbol) node.getRhs().getSymbol().get();
 
-        MethodLayerSymbol methodLayer = (MethodLayerSymbol) currentScope().get().getSpanningSymbol().get();
-        ArgumentSymbol argument = new ArgumentSymbol.Builder()
-                .parameter(methodLayer.getMethod().getParameter(node.getName()).get())
-                .value(value)
-                .build();
-
+        ArgumentSymbol argument = new ArgumentSymbol(node.getName());
+        argument.setRhs(value);
         addToScopeAndLinkWithNode(argument, node);
     }
 
     @Override
     public void visit(ASTIOLayer node) {
-        IODeclarationSymbol IODef = (IODeclarationSymbol) currentScope().get().resolve(node.getName(), IODeclarationSymbol.KIND).get();
-        int arrayLength = IODef.getArrayLength();
+        Optional<IODeclarationSymbol> optIODef = currentScope().get().resolve(node.getName(), IODeclarationSymbol.KIND);
+        int arrayLength = 1;
+        if (optIODef.isPresent()){
+            arrayLength = optIODef.get().getArrayLength();
+        }
 
         if (!node.getIndex().isPresent() && arrayLength > 1){
             List<LayerSymbol> ioLayers = new ArrayList<>(arrayLength);
@@ -448,6 +434,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
             for (LayerSymbol layer : ioLayers){
                 addToScope(layer);
+                layer.setAstNode(node);
             }
         }
         else {

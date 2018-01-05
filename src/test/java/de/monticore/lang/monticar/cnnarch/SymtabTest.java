@@ -46,6 +46,7 @@ public class SymtabTest extends AbstractSymtabTest {
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
+        a.getBody().getOutputShapes();
     }
 
     @Ignore

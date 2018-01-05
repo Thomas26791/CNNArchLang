@@ -68,9 +68,6 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
     public void resolve(){
         getBody().checkIfResolvable();
         Set<VariableSymbol> set = getBody().resolve();
-        /*if (getBody().isResolved()){
-            getBody().getOutputShapes();
-        }*/
     }
 
     public boolean isResolved(){

@@ -18,18 +18,21 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch;
+package de.monticore.lang.monticar.cnnarch.helper;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodDeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
-import org.jscience.mathematics.number.Rational;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 public class PredefinedMethods {
 
+    //predefined method names
     public static final String FULLY_CONNECTED_NAME = "FullyConnected";
     public static final String CONVOLUTION_NAME = "Convolution";
     public static final String SOFTMAX_NAME = "Softmax";
@@ -45,6 +48,23 @@ public class PredefinedMethods {
     public static final String GET_NAME = "Get";
     public static final String ADD_NAME = "Add";
     public static final String CONCATENATE_NAME = "Concatenate";
+
+    //predefined argument names
+    public static final String KERNEL_NAME = "kernel";
+    public static final String CHANNELS_NAME = "channels";
+    public static final String STRIDE_NAME = "stride";
+    public static final String UNITS_NAME = "units";
+    public static final String NOBIAS_NAME = "no_bias";
+    public static final String GLOBAL_NAME = "global";
+    public static final String P_NAME = "p";
+    public static final String INDEX_NAME = "index";
+    public static final String N_NAME = "n";
+    public static final String AXIS_NAME = "axis";
+    public static final String FIX_GAMMA_NAME = "fix_gamma";
+    public static final String NSIZE_NAME = "nsize";
+    public static final String KNORM_NAME = "knorm";
+    public static final String ALPHA_NAME = "alpha";
+    public static final String BETA_NAME = "beta";
 
     public static final List<String> NAME_LIST = Arrays.asList(
             FULLY_CONNECTED_NAME,
@@ -89,11 +109,11 @@ public class PredefinedMethods {
                 .name(FULLY_CONNECTED_NAME)
                 .parameters(
                         new VariableSymbol.Builder()
-                                .name("units")
+                                .name(UNITS_NAME)
                                 .constraints(Constraint.INTEGER, Constraint.POSITIVE)
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("no_bias")
+                                .name(NOBIAS_NAME)
                                 .constraints(Constraint.BOOLEAN)
                                 .defaultValue(false)
                                 .build()
@@ -111,20 +131,20 @@ public class PredefinedMethods {
                 .name(CONVOLUTION_NAME)
                 .parameters(
                         new VariableSymbol.Builder()
-                                .name("kernel")
+                                .name(KERNEL_NAME)
                                 .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("channels")
+                                .name(CHANNELS_NAME)
                                 .constraints(Constraint.INTEGER, Constraint.POSITIVE)
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("stride")
+                                .name(STRIDE_NAME)
                                 .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
                                 .defaultValue(Arrays.asList(1, 1))
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("no_bias")
+                                .name(NOBIAS_NAME)
                                 .constraints(Constraint.BOOLEAN)
                                 .defaultValue(false)
                                 .build()
@@ -169,7 +189,7 @@ public class PredefinedMethods {
                 .name(DROPOUT_NAME)
                 .parameters(
                         new VariableSymbol.Builder()
-                                .name("p")
+                                .name(P_NAME)
                                 .constraints(Constraint.NUMBER, Constraint.BETWEEN_ZERO_AND_ONE)
                                 .defaultValue(0.5)
                                 .build()
@@ -183,16 +203,16 @@ public class PredefinedMethods {
                 .name(MAX_POOLING_NAME)
                 .parameters(
                         new VariableSymbol.Builder()
-                                .name("kernel")
+                                .name(KERNEL_NAME)
                                 .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("stride")
+                                .name(STRIDE_NAME)
                                 .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
                                 .defaultValue(Arrays.asList(1, 1))
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("global")
+                                .name(GLOBAL_NAME)
                                 .constraints(Constraint.BOOLEAN)
                                 .defaultValue(false)
                                 .build()
@@ -209,16 +229,16 @@ public class PredefinedMethods {
                 .name(AVG_POOLING_NAME)
                 .parameters(
                         new VariableSymbol.Builder()
-                                .name("kernel")
+                                .name(KERNEL_NAME)
                                 .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("stride")
+                                .name(STRIDE_NAME)
                                 .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
                                 .defaultValue(Arrays.asList(1, 1))
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("global")
+                                .name(GLOBAL_NAME)
                                 .constraints(Constraint.BOOLEAN)
                                 .defaultValue(false)
                                 .build()
@@ -235,21 +255,21 @@ public class PredefinedMethods {
                 .name(LRN_NAME)
                 .parameters(
                         new VariableSymbol.Builder()
-                                .name("nsize")
+                                .name(NSIZE_NAME)
                                 .constraints(Constraint.INTEGER, Constraint.NON_NEGATIVE)
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("knorm")
+                                .name(KNORM_NAME)
                                 .constraints(Constraint.NUMBER)
                                 .defaultValue(2)
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("alpha")
+                                .name(ALPHA_NAME)
                                 .constraints(Constraint.NUMBER)
                                 .defaultValue(0.0001)
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("beta")
+                                .name(BETA_NAME)
                                 .constraints(Constraint.NUMBER)
                                 .defaultValue(0.75)
                                 .build()
@@ -263,12 +283,12 @@ public class PredefinedMethods {
                 .name(BATCHNORM_NAME)
                 .parameters(
                         new VariableSymbol.Builder()
-                                .name("fix_gamma")
+                                .name(FIX_GAMMA_NAME)
                                 .constraints(Constraint.BOOLEAN)
                                 .defaultValue(true)
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("axis")
+                                .name(AXIS_NAME)
                                 .constraints(Constraint.INTEGER, Constraint.NON_NEGATIVE)
                                 .defaultValue(ShapeSymbol.CHANNEL_INDEX)
                                 .build()
@@ -282,11 +302,11 @@ public class PredefinedMethods {
                 .name(SPLIT_NAME)
                 .parameters(
                         new VariableSymbol.Builder()
-                                .name("index")
+                                .name(INDEX_NAME)
                                 .constraints(Constraint.INTEGER, Constraint.NON_NEGATIVE)
                                 .build(),
                         new VariableSymbol.Builder()
-                                .name("n")
+                                .name(N_NAME)
                                 .constraints(Constraint.INTEGER, Constraint.POSITIVE)
                                 .build()
                 )
@@ -299,7 +319,7 @@ public class PredefinedMethods {
                 .name(GET_NAME)
                 .parameters(
                         new VariableSymbol.Builder()
-                                .name("index")
+                                .name(INDEX_NAME)
                                 .constraints(Constraint.INTEGER, Constraint.NON_NEGATIVE)
                                 .build()
                 )
@@ -323,7 +343,7 @@ public class PredefinedMethods {
     }
 
     private static List<ShapeSymbol> strideShapeFunction(ShapeSymbol inputShape, MethodLayerSymbol method, int channels) {
-        Optional<Boolean> optGlobal = method.getBooleanValue("global");
+        Optional<Boolean> optGlobal = method.getBooleanValue(GLOBAL_NAME);
         if (optGlobal.isPresent() && optGlobal.get()){
             return Collections.singletonList(new ShapeSymbol.Builder()
                     .height(1)
@@ -332,16 +352,16 @@ public class PredefinedMethods {
                     .build());
         }
         else{
-            int strideHeight = method.getIntTupleValue("stride").get().get(0);
-            int strideWidth = method.getIntTupleValue("stride").get().get(1);
-            int kernelHeight = method.getIntTupleValue("kernel").get().get(0);
-            int kernelWidth = method.getIntTupleValue("kernel").get().get(1);
+            int strideHeight = method.getIntTupleValue(STRIDE_NAME).get().get(0);
+            int strideWidth = method.getIntTupleValue(STRIDE_NAME).get().get(1);
+            int kernelHeight = method.getIntTupleValue(KERNEL_NAME).get().get(0);
+            int kernelWidth = method.getIntTupleValue(KERNEL_NAME).get().get(1);
             int inputHeight = inputShape.getHeight().get();
             int inputWidth = inputShape.getWidth().get();
 
             //assume padding with border_mode='same'
-            int outputWidth = inputWidth  / strideWidth;
-            int outputHeight = inputHeight / strideHeight;
+            int outputWidth = (inputWidth + strideWidth - 1) / strideWidth;
+            int outputHeight = (inputHeight + strideWidth - 1) / strideHeight;
 
             //border_mode=valid
             //int outputWidth = 1 + Math.max(0, ((inputWidth - kernelWidth + strideWidth - 1) / strideWidth));
@@ -356,8 +376,8 @@ public class PredefinedMethods {
     }
 
     private static List<ShapeSymbol> splitShapeFunction(ShapeSymbol inputShape, MethodLayerSymbol method) {
-        int numberOfSplits = method.getIntValue("n").get();
-        int groupIndex = method.getIntValue("index").get();
+        int numberOfSplits = method.getIntValue(N_NAME).get();
+        int groupIndex = method.getIntValue(INDEX_NAME).get();
         int inputChannels = inputShape.getChannels().get();
 
         int outputChannels = inputChannels / numberOfSplits;

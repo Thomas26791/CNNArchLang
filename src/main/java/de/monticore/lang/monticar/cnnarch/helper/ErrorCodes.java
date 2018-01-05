@@ -18,9 +18,9 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch;
+package de.monticore.lang.monticar.cnnarch.helper;
 
-public class ErrorMessages {
+public class ErrorCodes {
 
     public static final String OUTPUT_UNDEFINED_CODE = "x0601D";
     public static final String OUTPUT_UNDEFINED_MSG = "0" + OUTPUT_UNDEFINED_CODE + " Undefined output. ";
@@ -31,8 +31,6 @@ public class ErrorMessages {
     public static final String OUTPUT_DUPLICATE_CODE = "x0601B";
     public static final String OUTPUT_DUPLICATE_MSG = "0"+OUTPUT_DUPLICATE_CODE+" ";
 
-    public static final String MISSING_ARG_CODE = "x06021";
-    public static final String MISSING_ARG_MSG = "0"+MISSING_ARG_CODE+" Missing argument. ";
 
     public static final String DUPLICATE_ARG_CODE = "x03031";
     public static final String DUPLICATE_ARG_MSG = "0"+DUPLICATE_ARG_CODE+" Multiple assignments of the same argument are not allowed. ";
@@ -48,12 +46,16 @@ public class ErrorMessages {
                         "This is because the number of outputs is variable for all architectures. " +
                         "Example: output{ fullyConnected() activation.softmax() } -> out";
 
-    public static final String UNKNOWN_NAME_CODE = "x32585";
-    public static final String UNKNOWN_NAME_MSG = "0" + UNKNOWN_NAME_CODE + " Unknown method error. ";
 
     public static final String ILLEGAL_SEQUENCE_LENGTH_CODE = "x24772";
     public static final String ILLEGAL_SEQUENCE_LENGTH_MSG = "0" + ILLEGAL_SEQUENCE_LENGTH_CODE + " Illegal sequence length. ";
 
+    public static final String UNKNOWN_IO_CODE = "x32487";
+    public static final String UNKNOWN_METHOD_CODE = "x32585";
     public static final String ILLEGAL_NAME_CODE = "x93567";
+    public static final String UNKNOWN_ARGUMENT_CODE = "x93527";
+    public static final String DUPLICATED_NAME_CODE = "x93569";
+    public static final String MISSING_ARGUMENT_CODE = "x06021";
+    public static final String RECURSION_ERROR_CODE = "x25833";
 
 }

@@ -20,10 +20,8 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.ErrorMessages;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
-import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
 
@@ -51,14 +49,14 @@ public class IOLayerSymbol extends LayerSymbol {
     public IODeclarationSymbol getDefinition() {
         if (definition == null){
             Optional<IODeclarationSymbol> optDef = getEnclosingScope().resolve(getName(), IODeclarationSymbol.KIND);
-            if (optDef.isPresent()){
-                setDefinition(optDef.get());
-            }
-            else {
-                Log.error(ErrorMessages.UNKNOWN_NAME_MSG + "IOVariable with name " + getName() + " could not be resolved", getSourcePosition());
-            }
+            optDef.ifPresent(this::setDefinition);
         }
         return definition;
+    }
+
+    @Override
+    public boolean isResolvable() {
+        return super.isResolvable() && getDefinition() != null;
     }
 
     private void setDefinition(IODeclarationSymbol definition) {

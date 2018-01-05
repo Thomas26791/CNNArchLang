@@ -1,10 +1,6 @@
 architecture ResNeXt50{
-    def input Z(0:255)^{h,w,c} image
-    def output Q(0:1)^{classes} predictions
-    h = 224
-    w = 224
-    c = 3
-    classes = 1000
+    def input Z(0:255)^{h=224,w=224,c=3} image
+    def output Q(0:1)^{classes=1000} predictions
 
     def conv(filter, channels, stride=1, act=true){
         Convolution(kernel=filter, channels=channels, stride=(stride,stride)) ->
@@ -35,7 +31,7 @@ architecture ResNeXt50{
     }
     def resStructure(innerChannels, outChannels, resLayers, firstLayerStride){
         resLayer(innerChannels=innerChannels, outChannels=outChannels, stride=firstLayerStride) ->
-        resLayer(innerChannels=innerChannels, outChannels=outChannels, -> =resLayers - 1)
+        resLayer(innerChannels=innerChannels, outChannels=outChannels, -> = resLayers - 1)
     }
 
     image ->

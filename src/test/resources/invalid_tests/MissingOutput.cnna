@@ -1,6 +1,0 @@
-architecture MissingOutput{
-    def input in
-
-    in ->
-    fullyConnected(units=64)
-}

@@ -18,31 +18,23 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._symboltable;
+package de.monticore.lang.monticar.cnnarch._cocos;
 
-public enum VariableType {
-    PARAMETER{
-        @Override
-        public String toString(){
-            return "parameter";
-        }
-    },
-    GLOBAL {
-        @Override
-        public String toString(){
-            return "globalVariable";
-        }
-    },
-    IOVARIABLE {
-        @Override
-        public String toString(){
-            return "ioVariable";
-        }
-    },
-    CONSTANT {
-        @Override
-        public String toString(){
-            return "constant";
+import de.monticore.lang.monticar.cnnarch._ast.ASTArgument;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArgumentSymbol;
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.se_rwth.commons.logging.Log;
+
+public class CheckArgument implements CNNArchASTArgumentCoCo {
+
+    @Override
+    public void check(ASTArgument node) {
+        ArgumentSymbol argument = (ArgumentSymbol) node.getSymbol().get();
+        if (argument.getParameter() ==  null){
+            Log.error("0"+ ErrorCodes.UNKNOWN_ARGUMENT_CODE + " Unknown Argument. " +
+                            "Parameter with name '" + node.getName() + "' does not exist."
+                    , node.get_SourcePositionStart());
         }
     }
+
 }

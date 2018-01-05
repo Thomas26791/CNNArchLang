@@ -11,8 +11,8 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     interface ArchDeclaration;
     interface ArchitectureElement;
-    interface Nameable;
-    interface Variable extends Nameable;
+    interface Variable;
+    ast Variable = method String getName(){};
 
     IODeclaration implements ArchDeclaration = "def"
                                                (in:"input" | out:"output")
@@ -26,14 +26,14 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     Dimension = IOVariable | intLiteral:UnitNumberResolution;
 
-    IOVariable implements Variable = Name&;
+    IOVariable implements Variable = Name& ("=" intRhs:UnitNumberResolution)?;
 
     VariableAssignment implements Variable,ArchDeclaration = Name& "=" rhs:ArchSimpleExpression;
 
-    MethodDeclaration implements ArchDeclaration,Nameable = "def"
-                                                            Name& "("
-                                                            parameters:(Parameter || ",")* ")" "{"
-                                                            body:ArchBody "}";
+    MethodDeclaration implements ArchDeclaration = "def"
+                                                   Name& "("
+                                                   parameters:(Parameter || ",")* ")" "{"
+                                                   body:ArchBody "}";
 
     Parameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
 

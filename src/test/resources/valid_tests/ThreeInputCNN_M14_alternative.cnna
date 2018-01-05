@@ -4,14 +4,8 @@ architecture ThreeInputCNN_M14_alternative{
      *Authors: Yu Sun, Lin Zhu, Guan Wang, and Fang Zhao.
      *Year: 2017*/
 
-    def input Z(0:255)^{h,w,c} image1
-    def input Z(0:255)^{h,w,c} image2
-    def input Z(0:255)^{h,w,c} image3
-    def output Q(0:1)^{classes} predictions
-    h = 200
-    w = 300
-    c = 3
-    classes = 3
+    def input Z(0:255)^{h=200,w=300,c=3} image[3]
+    def output Q(0:1)^{classes=3} predictions
 
     def conv(filter, channels){
         Convolution(kernel=filter, channels=channels) ->
@@ -24,7 +18,7 @@ architecture ThreeInputCNN_M14_alternative{
         MaxPooling(kernel=(2,2), stride=(2,2))
     }
 
-    (image1 | image2 | image3) ->
+    (image[1] | image[2] | image[3]) ->
     inputGroup(index=0|..|2) ->
     Concatenate() ->
     conv(filter=(3,3), channels=64) ->

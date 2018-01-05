@@ -4,12 +4,8 @@ architecture ThreeInputCNN_M14{
      *Authors: Yu Sun, Lin Zhu, Guan Wang, and Fang Zhao.
      *Year: 2017*/
 
-    def input Z(0:255)^{h,w,c} image[3]
-    def output Q(0:1)^{classes} predictions
-    h = 200
-    w = 300
-    c = 3
-    classes = 3
+    def input Z(0:255)^{h=200,w=300,c=3} image[3]
+    def output Q(0:1)^{classes=3} predictions
 
     def conv(filter, channels){
         Convolution(kernel=filter, channels=channels) ->

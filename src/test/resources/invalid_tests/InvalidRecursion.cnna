@@ -1,10 +1,11 @@
-architecture Resnet34{
+architecture InvalidRecursion{
     def input Z(0:255)^{h=224,w=224,c=3} image
     def output Q(0:1)^{classes=1000} predictions
 
     def conv(filter, channels, stride=1, act=true){
         Convolution(kernel=(filter,filter), channels=channels, stride=(stride,stride)) ->
         BatchNorm() ->
+        resLayer(channels = 8) ->
         Relu(If=act)
     }
     def skip(channels, stride){

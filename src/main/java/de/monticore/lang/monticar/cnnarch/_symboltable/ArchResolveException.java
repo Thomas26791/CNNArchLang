@@ -18,10 +18,8 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._ast;
+package de.monticore.lang.monticar.cnnarch._symboltable;
 
-public interface ASTNameable extends ASTNameableTOP {
-
-    String getName();
-
+public class ArchResolveException extends Exception {
+    //
 }

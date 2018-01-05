@@ -24,7 +24,6 @@ import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchCompilationUnit;
 import de.monticore.lang.monticar.cnnarch._parser.CNNArchParser;
 import de.se_rwth.commons.logging.Log;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -43,15 +42,7 @@ public class ParserTest {
     public static final boolean ENABLE_FAIL_QUICK = false;
     private static List<String> expectedParseErrorModels = Arrays.asList(
             // incorrect argument name for a layer
-            "src/test/resources/invalid_tests/WrongArgument.cnna",
-
-            "src/test/resources/invalid_tests/InvalidRepeatInput.cnna",
-
-            "src/test/resources/invalid_tests/MissingInput.cnna",
-
-            "src/test/resources/invalid_tests/WrongInputPosition.cnna",
-
-            "src/test/resources/invalid_tests/WrongActivationType.cnna")
+            "src/test/resources/invalid_tests/MissingParallelBrackets.cnna")
 
             .stream().map(s -> Paths.get(s).toString())
             .collect(Collectors.toList());
@@ -63,7 +54,6 @@ public class ParserTest {
         Log.enableFailQuick(ENABLE_FAIL_QUICK);
     }
 
-    @Ignore
     @Test
     public void testCNNArch() throws Exception {
         test("cnna");

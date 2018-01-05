@@ -20,6 +20,9 @@
  */
 package de.monticore.lang.monticar.cnnarch.cocos;
 
+import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
+import de.monticore.lang.monticar.cnnarch._cocos.CheckMethodDeclaration;
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.logging.Log;
 import org.junit.Test;
 
@@ -68,6 +71,14 @@ public class AllCoCoTest extends AbstractCoCoTest {
         checkValid("valid_tests", "DirectPerception");
         checkValid("valid_tests", "SafetyNetwork");*/
 
+    }
+
+    @Test
+    public void testInvalidMethodDeclaration(){
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodDeclaration()),
+                new CNNArchCoCoChecker(),
+                getAstNode("invalid_tests", "InvalidRecursion"),
+                new ExpectedErrorInfo(1, ErrorCodes.RECURSION_ERROR_CODE));
     }
 
     /*@Test

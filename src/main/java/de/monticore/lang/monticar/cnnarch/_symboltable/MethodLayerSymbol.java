@@ -21,8 +21,8 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 
-import de.monticore.lang.monticar.cnnarch.ErrorMessages;
-import de.monticore.lang.monticar.cnnarch.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.Joiners;
@@ -44,22 +44,15 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     public MethodDeclarationSymbol getMethod() {
         if (method == null){
-            setMethod(resolveMethodSymbolByName());
+            Optional<MethodDeclarationSymbol> optMethod = getEnclosingScope().resolve(getName(), MethodDeclarationSymbol.KIND);
+            optMethod.ifPresent(this::setMethod);
         }
         return method;
     }
 
-    private MethodDeclarationSymbol resolveMethodSymbolByName(){
-        MethodDeclarationSymbol method = null;
-        Optional<MethodDeclarationSymbol> optMethod = getEnclosingScope().resolve(getName(), MethodDeclarationSymbol.KIND);
-        if (optMethod.isPresent()){
-            method = optMethod.get();
-        }
-        else {
-            Log.error(ErrorMessages.UNKNOWN_NAME_MSG + "Method with name " + getName() + " could not be resolved", getSourcePosition());
-        }
-
-        return method;
+    @Override
+    public boolean isResolvable() {
+        return super.isResolvable() && getMethod() != null;
     }
 
     private void setMethod(MethodDeclarationSymbol method) {
@@ -143,9 +136,9 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     @Override
     public Set<VariableSymbol> resolve() {
-        //todo checkForRecursion()
         if (!isResolved()) {
             if (isResolvable()) {
+                getMethod();
                 resolveExpressions();
                 int parallelLength = getParallelLength().get();
                 int maxSerialLength = getMaxSerialLength().get();
@@ -309,7 +302,7 @@ public class MethodLayerSymbol extends LayerSymbol {
                         length = argLength;
                     }
                     else if (length != argLength) {
-                        Log.error(ErrorMessages.ILLEGAL_SEQUENCE_LENGTH_MSG +
+                        Log.error(ErrorCodes.ILLEGAL_SEQUENCE_LENGTH_MSG +
                                         "Length is " + argLength + " but it should be " + length + " or not a sequence. " +
                                         "All parallel sequences in the same method layer must be of the same size. "
                                 , argument.getSourcePosition());
@@ -374,7 +367,7 @@ public class MethodLayerSymbol extends LayerSymbol {
                 }
             }
             else if (argLength != 1 && argLength != serialLength){
-                Log.error(ErrorMessages.ILLEGAL_SEQUENCE_LENGTH_MSG +
+                Log.error(ErrorCodes.ILLEGAL_SEQUENCE_LENGTH_MSG +
                                 "Length of sequence dimension "+ serialIndex +" is " + argLength + " but it should be " + serialLength + " or not a sequence. " +
                                 "All serial sequences of the same paralle dimension in the same method layer must be of the same size. "
                         , getSourcePosition());
