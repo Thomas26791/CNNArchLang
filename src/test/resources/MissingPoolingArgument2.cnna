@@ -1,5 +1,0 @@
-Architecture MissingPoolingArgument2{
-    Convolution(num_filter=64, kernel=(5,5))
-    Pooling(kernel=(3, 3))
-    Output(type=softmax)
-}

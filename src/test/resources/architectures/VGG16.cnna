@@ -1,0 +1,31 @@
+architecture VGG16{
+    def input Z(0:255)^{h=224,w=224,c=3} image
+    def output Q(0:1)^{classes=1000} predictions
+
+    def conv(filter, channels){
+        Convolution(kernel=(filter,filter), channels=channels) ->
+        Relu()
+    }
+    def fc(){
+        FullyConnected(units=4096) ->
+        Relu() ->
+        Dropout(p=0.5)
+    }
+
+    image ->
+    conv(filter=3, channels=64, ->=2) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+    conv(filter=3, channels=128, ->=2) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+    conv(filter=3, channels=256, ->=3) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+    conv(filter=3, channels=512, ->=3) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+    conv(filter=3, channels=512, ->=3) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+    fc() ->
+    fc() ->
+    FullyConnected(units=classes) ->
+    Softmax() ->
+    predictions
+}

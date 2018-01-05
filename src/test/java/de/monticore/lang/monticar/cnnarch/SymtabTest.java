@@ -20,32 +20,89 @@
  */
 package de.monticore.lang.monticar.cnnarch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import de.monticore.lang.monticar.cnnarch._parser.CNNArchParser;
-import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.symboltable.Scope;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class SymtabTest extends AbstractSymtabTest {
 
     @Test
     public void testParsing() throws Exception {
         CNNArchParser parser = new CNNArchParser();
-        assertTrue(parser.parse("src/test/resources/SimpleNetwork2.cnna").isPresent());
+        assertTrue(parser.parse("src/test/resources/architectures/Alexnet.cnna").isPresent());
+    }
+
+    @Ignore
+    @Test
+    public void testAlexnet(){
+        Scope symTab = createSymTab("src/test/resources/architectures");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "Alexnet",
+                ArchitectureSymbol.KIND).orElse(null);
+        assertNotNull(a);
+        a.resolve();
+        a.getBody().getOutputShapes();
+    }
+
+    @Ignore
+    @Test
+    public void testFixedThreeInput(){
+        Scope symTab = createSymTab("src/test/resources/valid_tests");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "ThreeInputCNN_M14_alternative",
+                ArchitectureSymbol.KIND).orElse(null);
+        assertNotNull(a);
+        a.resolve();
+        a.getBody().getOutputShapes();
+    }
+
+    /*@Test
+    public void testThreeInput(){
+        Scope symTab = createSymTab("src/test/resources/architectures");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "ThreeInputCNN_M14",
+                ArchitectureSymbol.KIND).orElse(null);
+        assertNotNull(a);
+        a.resolve();
+        a.getBody().getOutputShapes();
     }
 
     @Test
-    public void testAlexnet(){
-        Scope symTab = createSymTab("src/test/resources");
-        CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
-                "Alexnet",
-                CNNArchCompilationUnitSymbol.KIND).orElse(null);
+    public void testFixedAlexnet(){
+        Scope symTab = createSymTab("src/test/resources/valid_tests");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "Fixed_Alexnet",
+                ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
-
+        a.resolve();
+        a.getBody().getOutputShapes();
     }
+
+    @Test
+    public void testFixedResNeXt(){
+        Scope symTab = createSymTab("src/test/resources/valid_tests");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "Fixed_ResNeXt50",
+                ArchitectureSymbol.KIND).orElse(null);
+        assertNotNull(a);
+        a.resolve();
+        a.getBody().getOutputShapes();
+    }
+
+    @Test
+    public void testFixedThreeInput(){
+        Scope symTab = createSymTab("src/test/resources/valid_tests");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "Fixed_ThreeInputCNN_M14",
+                ArchitectureSymbol.KIND).orElse(null);
+        assertNotNull(a);
+        a.resolve();
+        a.getBody().getOutputShapes();
+    }*/
 
 }

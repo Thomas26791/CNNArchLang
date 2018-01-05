@@ -42,7 +42,7 @@
  |
  | The sections in this sample file are intended to give you a running start at
  | getting the most out of your Maven installation. Where appropriate, the default
- | values (values used when the setting is not specified) are provided.
+ | elements (elements used when the setting is not specified) are provided.
  |
  |-->
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
@@ -57,7 +57,7 @@
 
   <!-- interactiveMode
    | This will determine whether maven prompts you when it needs input. If set to false,
-   | maven will use a sensible default value, perhaps based on some other setting, for
+   | maven will use a sensible default rhs, perhaps based on some other setting, for
    | the parameter in question.
    |
    | Default: true
@@ -205,9 +205,9 @@
    |
    | As noted above, profiles can be activated in a variety of ways. One way - the activeProfiles
    | section of this document (settings.xml) - will be discussed later. Another way essentially
-   | relies on the detection of a system property, either matching a particular value for the property,
+   | relies on the detection of a system property, either matching a particular rhs for the property,
    | or merely testing its existence. Profiles can also be activated by JDK version prefix, where a
-   | value of '1.4' might activate a profile when the build is executed on a JDK version of '1.4.2_07'.
+   | rhs of '1.4' might activate a profile when the build is executed on a JDK version of '1.4.2_07'.
    | Finally, the list of active profiles can be specified directly from the command line.
    |
    | NOTE: For profiles defined in the settings.xml, you are restricted to specifying only artifact
@@ -245,7 +245,7 @@
     -->
 
     <!--
-     | Here is another profile, activated by the system property 'target-env' with a value of 'dev',
+     | Here is another profile, activated by the system property 'target-env' with a rhs of 'dev',
      | which provides a specific path to the Tomcat instance. To use this, your plugin configuration
      | might hypothetically look like:
      |
@@ -261,14 +261,14 @@
      | ...
      |
      | NOTE: If you just wanted to inject this configuration whenever someone set 'target-env' to
-     |       anything, you could just leave off the <value/> inside the activation-property.
+     |       anything, you could just leave off the <rhs/> inside the activation-property.
      |
     <profile>
       <id>env-dev</id>
       <activation>
         <property>
           <name>target-env</name>
-          <value>dev</value>
+          <rhs>dev</rhs>
         </property>
       </activation>
       <properties>

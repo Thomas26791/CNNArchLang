@@ -1,0 +1,40 @@
+architecture InvalidRecursion{
+    def input Z(0:255)^{h=224,w=224,c=3} image
+    def output Q(0:1)^{classes=1000} predictions
+
+    def conv(filter, channels, stride=1, act=true){
+        Convolution(kernel=(filter,filter), channels=channels, stride=(stride,stride)) ->
+        BatchNorm() ->
+        resLayer(channels = 8) ->
+        Relu(If=act)
+    }
+    def skip(channels, stride){
+        Convolution(kernel=(1,1), channels=channels, stride=(stride,stride)) ->
+        BatchNorm()
+    }
+    def resLayer(channels, stride=1){
+        (
+            conv(filter=3, channels=channels, stride=stride) ->
+            conv(filter=3, channels=channels, stride=stride, act=false)
+        |
+            skip(channels=channels, stride=stride, If=(stride!=1))
+        ) ->
+        Add() ->
+        Relu()
+    }
+
+    image ->
+    conv(filter=7, channels=64, stride=2) ->
+    MaxPooling(kernel=(3,3), stride=(2,2)) ->
+    resLayer(channels=64, ->=3) ->
+    resLayer(channels=128, stride=2) ->
+    resLayer(channels=128, ->=3) ->
+    resLayer(channels=256, stride=2) ->
+    resLayer(channels=256, ->=5) ->
+    resLayer(channels=512, stride=2) ->
+    resLayer(channels=512, ->=2) ->
+    AveragePooling(global=true) ->
+    FullyConnected(units=classes) ->
+    Softmax() ->
+    predictions
+}

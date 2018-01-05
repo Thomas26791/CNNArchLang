@@ -20,42 +20,144 @@
  */
 package de.monticore.lang.monticar.cnnarch.cocos;
 
-import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCocos;
+import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
+import de.monticore.lang.monticar.cnnarch._cocos.CheckMethodDeclaration;
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.se_rwth.commons.logging.Log;
 import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertTrue;
-
 public class AllCoCoTest extends AbstractCoCoTest {
     String baseDir="src/test/resources";
+
+    public AllCoCoTest() {
+        Log.enableFailQuick(false);
+    }
+
     @Test
-    public void testCoCosSimulator() throws IOException {
-        testModel("SimpleNetwork");
-        testModel("SimpleNetwork2");
-        testModel("Alexnet");
+    public void testValidCoCos() throws IOException {
 
-        /*testInvalidModel("DuplicateArgument",1,"x03011");
-        testInvalidModel("IntegerArgumentTypeTest",9,"x03012");
+        checkValid("architectures", "Alexnet");
+        checkValid("architectures", "ResNeXt50");
+        checkValid("architectures", "Resnet34");
+        checkValid("architectures", "SequentialAlexnet");
+        checkValid("architectures", "ThreeInputCNN_M14");
+        checkValid("architectures", "VGG16");
+
+        checkValid("valid_tests", "Fixed_Alexnet");
+        checkValid("valid_tests", "Fixed_ResNeXt50");
+        checkValid("valid_tests", "Fixed_ThreeInputCNN_M14");
+        checkValid("valid_tests", "ThreeInputCNN_M14_alternative");
+        checkValid("valid_tests", "Alexnet_alt");
+        checkValid("valid_tests", "SimpleNetworkSoftmax");
+        checkValid("valid_tests", "SimpleNetworkSigmoid");
+        checkValid("valid_tests", "SimpleNetworkLinear");
+        checkValid("valid_tests", "SimpleNetworkRelu");
+        checkValid("valid_tests", "SimpleNetworkTanh");
+        /*checkValid("architectures", "Alexnet");
+        checkValid("architectures", "Resnet34");
+        checkValid("architectures", "ResNeXt50");
+        checkValid("architectures", "SequentialAlexnet");
+        checkValid("architectures", "ThreeInputCNN_M14");
+        checkValid("architectures", "ThreeInputCNN_M14_alternative");
+        checkValid("architectures", "VGG16");
+
+
+        checkValid("valid_tests", "GroupTest");
+        checkValid("valid_tests", "MultiOutputTest");
+        checkValid("valid_tests", "MultiOutputArrayTest");
+        checkValid("valid_tests", "VGG16_alternative");
+        checkValid("valid_tests", "DirectPerception");
+        checkValid("valid_tests", "SafetyNetwork");*/
+
+    }
+
+    @Test
+    public void testInvalidMethodDeclaration(){
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodDeclaration()),
+                new CNNArchCoCoChecker(),
+                getAstNode("invalid_tests", "InvalidRecursion"),
+                new ExpectedErrorInfo(1, ErrorCodes.RECURSION_ERROR_CODE));
+    }
+
+    /*@Test
+    public void testArgumentCoCos() throws IOException{
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentNameCheck())
+                , getAstNode("invalid_tests", "DuplicateArgument")
+                , new ExpectedErrorInfo(1,ArgumentNameCheck.DUPLICATE_ARG_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentTypeCheck())
+                , getAstNode("invalid_tests", "BooleanArgumentTypeTest")
+                , new ExpectedErrorInfo(3,ArgumentTypeCheck.INCORRECT_ARG_TYPE_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentTypeCheck())
+                , getAstNode("invalid_tests", "IntegerArgumentTypeTest")
+                , new ExpectedErrorInfo(7,ArgumentTypeCheck.INCORRECT_ARG_TYPE_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentMissingCheck())
+                , getAstNode("invalid_tests", "MissingConvolutionArgument1")
+                , new ExpectedErrorInfo(1,ArgumentMissingCheck.MISSING_ARG_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentMissingCheck())
+                , getAstNode("invalid_tests", "MissingConvolutionArgument2")
+                , new ExpectedErrorInfo(2, ArgumentMissingCheck.MISSING_ARG_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentMissingCheck())
+                , getAstNode("invalid_tests", "MissingFullyConnectedArgument")
+                , new ExpectedErrorInfo(1, ArgumentMissingCheck.MISSING_ARG_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentMissingCheck())
+                , getAstNode("invalid_tests", "MissingPoolingArgument1")
+                , new ExpectedErrorInfo(1, ArgumentMissingCheck.MISSING_ARG_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentMissingCheck())
+                , getAstNode("invalid_tests", "MissingLRNArgument")
+                , new ExpectedErrorInfo(1, ArgumentMissingCheck.MISSING_ARG_CODE));
+
+        *//*;
         testInvalidModel("InvalidActivationBeforeOutput1",1,"x03015");
-        testInvalidModel("InvalidLayerDimension",1,"x03018");
-        testInvalidModel("MissingConvolutionArgument1",1,"x0301A");
-        testInvalidModel("MissingConvolutionArgument2",1,"x0301A");
-        testInvalidModel("MissingFullyConnectedArgument",1,"x0301A");
-        testInvalidModel("MissingLRNArgument",1,"x0301A");
-        testInvalidModel("MissingPoolingArgument1",1,"x0301A");
-        testInvalidModel("MissingPoolingArgument2",1,"x0301A");*/
-
-
+        testInvalidModel("InvalidLayerDimension",1,"x03018");*//*
     }
 
-    private void testModel(String modelName) {
-        checkValid("",modelName);
+    @Test
+    public void testOutputCoCos() throws IOException{
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
+                , getAstNode("invalid_tests", "InvalidFixedOutputUnits")
+                , new ExpectedErrorInfo(1,OutputCheck.OUTPUT_MISSING_VAR_FC_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
+                , getAstNode("invalid_tests", "InvalidFixedOutputUnitsAndMissingArgument")
+                , new ExpectedErrorInfo(2,ArgumentMissingCheck.MISSING_ARG_CODE, OutputCheck.OUTPUT_MISSING_VAR_FC_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
+                , getAstNode("invalid_tests", "InvalidOutput1")
+                , new ExpectedErrorInfo(1,OutputCheck.OUTPUT_MISSING_VAR_FC_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
+                , getAstNode("invalid_tests", "InvalidOutput2")
+                , new ExpectedErrorInfo(1,OutputCheck.OUTPUT_MISSING_VAR_FC_CODE));
     }
 
-    private void testInvalidModel(String modelName, int numExpectedFindings, String... expectedErrorCodes) {
-        ExpectedErrorInfo errorInfo = new ExpectedErrorInfo(numExpectedFindings, expectedErrorCodes);
-        checkInvalid(CNNArchCocos.createChecker(), getAstNode("", modelName), errorInfo);
-    }
+    @Test
+    public void testArchitectureCoCos() throws  IOException{
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArchitectureCheck())
+                , getAstNode("invalid_tests", "MissingOutput")
+                , new ExpectedErrorInfo(1, ArchitectureCheck.OUTPUT_MISSING_CODE));
+
+        //todo: input def error
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArchitectureCheck())
+                , getAstNode("invalid_tests", "UndefinedOutput")
+                , new ExpectedErrorInfo(2, ArchitectureCheck.OUTPUT_UNDEFINED_CODE, ArchitectureCheck.OUTPUT_MISSING_CODE));
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArchitectureCheck())
+                , getAstNode("invalid_tests", "UnusedOutputDef")
+                , new ExpectedErrorInfo(1, ArchitectureCheck.OUTPUT_UNUSED_CODE));
+
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArchitectureCheck())
+                , getAstNode("invalid_tests", "DuplicateOutputAssignment")
+                , new ExpectedErrorInfo(1, ArchitectureCheck.OUTPUT_DUPLICATE_CODE));
+    }*/
 
 }

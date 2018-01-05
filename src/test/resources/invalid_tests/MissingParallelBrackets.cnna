@@ -1,0 +1,45 @@
+architecture MissingParallelBrackets{
+    def input Z(0:255)^{h=256,w=256,c=3} image
+    def output Q(0:1)^{classes=10} predictions
+
+    def conv(filter, channels, hasPool=true, convStride=(1,1)){
+        Convolution(kernel=filter, channels=channels, stride=convStride) ->
+        Relu() ->
+        MaxPooling(kernel=(3,3), stride=(2,2), If=hasPool)
+    }
+    def fc(){
+        FullyConnected(units=4096) ->
+        Relu() ->
+        Dropout()
+    }
+
+    image ->
+    conv(filter=(11,11), channels=96, convStride=(4,4)) ->
+    Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
+
+        SplitData(index=0, n=2) ->
+        conv(filter=(5,5), channels=128) ->
+        Lrn(nsize=5, alpha=0.0001, beta=0.75)
+    |
+        SplitData(index=1, n=2) ->
+        conv(filter=(5,5), channels=128) ->
+        Lrn(nsize=5, alpha=0.0001, beta=0.75)
+    ->
+
+    conv(filter=(3,3), channels=384 ,hasPool=false) ->
+
+        SplitData(index=0, n=2) ->
+        conv(filter=(3,3), channels=192, hasPool=false) ->
+        conv(filter=(3,3), channels=128)
+    |
+        SplitData(index=1, n=2) ->
+        conv(filter=(3,3), channels=192, hasPool=false) ->
+        conv(filter=(3,3), channels=128)
+    ->
+
+    fc() ->
+    fc() ->
+    FullyConnected(units=classes) ->
+    Softmax() ->
+    predictions
+}

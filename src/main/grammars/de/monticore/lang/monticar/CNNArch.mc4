@@ -2,98 +2,75 @@ package de.monticore.lang.monticar;
 
 grammar CNNArch extends de.monticore.lang.math.Math {
 
-    symbol scope CNNArchCompilationUnit = "Architecture" Name& "{" Architecture "}";
+    CNNArchCompilationUnit = Architecture;
 
-    Architecture = (MainLayer)+ OutputLayer;
+    symbol scope Architecture = "architecture"
+                                name:Name& "{"
+                                declarations:ArchDeclaration*
+                                body:ArchBody "}";
 
+    interface ArchDeclaration;
+    interface ArchitectureElement;
+    interface Variable;
+    ast Variable = method String getName(){};
 
-    interface Layer;
-    ast Layer = method ASTMethod getMethod(){};
-    interface Method;
-    interface MainLayerMethod extends Method;
-    interface OutputLayerMethod extends Method;
+    IODeclaration implements ArchDeclaration = "def"
+                                               (in:"input" | out:"output")
+                                               type:ArchType
+                                               Name&
+                                               (ArrayDeclaration)?;
 
-    interface ArgumentAssignment;
-    ast ArgumentAssignment = method public Enum getLhs(){}
-                             method public ASTArgumentRhs getRhs(){};
+    ArchType implements Type = ElementType "^" Shape;
 
-    ArgumentRhs = number:Number
-                | tuple:Tuple
-                | booleanVal:Boolean
-                | type:ArgumentKeyword;
-    Tuple = "(" values:Number "," values:(Number || ",")+ ")";
-    enum Boolean = TRUE:"true" | FALSE:"false" | TRUE:"True" | FALSE:"False";
-    interface ArgumentKeyword;
-    ast ArgumentKeyword = method Optional<String> getName(){};
+    Shape = "{" (Dimension || ",")+ "}";
 
+    Dimension = IOVariable | intLiteral:UnitNumberResolution;
 
+    IOVariable implements Variable = Name& ("=" intRhs:UnitNumberResolution)?;
 
-    MainLayer implements Layer = method:MainLayerMethod;
-    OutputLayer implements Layer = method:OutputLayerMethod;
+    VariableAssignment implements Variable,ArchDeclaration = Name& "=" rhs:ArchSimpleExpression;
 
+    MethodDeclaration implements ArchDeclaration = "def"
+                                                   Name& "("
+                                                   parameters:(Parameter || ",")* ")" "{"
+                                                   body:ArchBody "}";
 
+    Parameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
 
-    ConvolutionMethod implements MainLayerMethod = name:"Convolution" "(" arguments:(ConvolutionArgumentAssignment || ",")* ")";
-    ConvolutionArgumentAssignment implements ArgumentAssignment = lhs:ConvolutionArgument "=" rhs:ArgumentRhs;
-    enum ConvolutionArgument = KERNEL:"kernel"               //required
-                             | NUMFILTER:"num_filter"        //required
-                             | STRIDE:"stride"
-                             | PAD:"pad"
-                             | NOBIAS:"no_bias";
+    scope ArchBody = elements:(ArchitectureElement || "->")*;
 
-    FullyConnectedMethod implements MainLayerMethod = name:"FullyConnected" "(" arguments:(FullyConnectedArgumentAssignment || ",")* ")";
-    FullyConnectedArgumentAssignment implements ArgumentAssignment = lhs:FullyConnectedArgument "=" rhs:ArgumentRhs;
-    enum FullyConnectedArgument = NUMHIDDEN:"units"     //required
-                                | NOBIAS:"no_bias";
+    IOLayer implements ArchitectureElement = Name& ("[" index:ArchSimpleExpression "]")?;
 
-    ActivationMethod implements MainLayerMethod = name:"Activation" "(" arguments:(ActivationArgumentAssignment || ",")* ")";
-    ActivationArgumentAssignment implements ArgumentAssignment = lhs:ActivationArgument "=" rhs:ArgumentRhs;
-    enum ActivationArgument = ACTTYPE:"type";            //required
-    ActivationType implements ArgumentKeyword = name:"relu"
-                                              | name:"sigmoid"
-                                              | name:"tanh"
-                                              | name:"softmax";
+    MethodLayer implements ArchitectureElement = Name& "(" arguments:(Argument || ",")* ")";
 
-    PoolingMethod implements MainLayerMethod = name:"Pooling" "(" arguments:(PoolingArgumentAssignment || ",")* ")";
-    PoolingArgumentAssignment implements ArgumentAssignment = lhs:PoolingArgument "=" rhs:ArgumentRhs;
-    enum PoolingArgument = KERNEL:"kernel"                   //required
-                         | POOLTYPE:"type"                   //required
-                         | POOLINGCONVENTION:"pooling_convention"
-                         | STRIDE:"stride"
-                         | PAD:"pad";
-    PoolingType implements ArgumentKeyword = name:"max"
-                                           | name:"avg"
-                                           | name:"sum";
-    PoolingConvention implements ArgumentKeyword = name:"full"
-                                                 | name:"valid";
+    Argument = Name "=" rhs:ArchExpression;
 
-    DropoutMethod implements MainLayerMethod = name:"Dropout" "(" arguments:(DropoutArgumentAssignment || ",")* ")";
-    DropoutArgumentAssignment implements ArgumentAssignment = lhs:DropoutArgument "=" rhs:ArgumentRhs;
-    enum DropoutArgument = P:"p";
+    PredefinedArgument extends Argument = (serial:"->" | parallel:"|") "=" rhs2:ArchExpression;
 
-    LRNMethod implements MainLayerMethod = name:"LRN" "(" arguments:(LRNArgumentAssignment || ",")* ")";
-    LRNArgumentAssignment implements ArgumentAssignment = lhs:LRNArgument "=" rhs:ArgumentRhs;
-    enum LRNArgument = ALPHA:"alpha"
-                     | BETA:"beta"
-                     | KNORM:"knorm"
-                     | NSIZE:"nsize";                         //required
+    ParallelLayer implements ArchitectureElement = "(" groups:ArchBody "|" groups:(ArchBody || "|")+ ")";
+
+    ArrayAccessLayer implements ArchitectureElement = "[" index:ArchSimpleExpression "]";
 
 
+    ArchExpression = (expression:ArchSimpleExpression | sequence:ArchValueSequence);
 
-    StandardOutputLayerMethod implements OutputLayerMethod = name:"Output" "(" arguments:(StandardOutputArgumentAssignment || ",")* ")";
-    StandardOutputArgumentAssignment implements ArgumentAssignment = lhs:StandardOutputArgument "=" rhs:ArgumentRhs;
-    enum StandardOutputArgument = GRADSCALE:"grad_scale"
-                                | TYPE:"type";
-    OutputType implements ArgumentKeyword = name:"softmax"
-                                          | name:"linear"
-                                          | name:"logistic"
-                                          | name:"mae";
+    interface ArchValueSequence;
+
+    ArchParallelSequence implements ArchValueSequence = "[" parallelValues:(ArchSerialSequence || "|")* "]";
+
+    ArchSerialSequence = serialValues:(ArchSimpleExpression || "->")+;
+
+    ArchValueRange implements ArchValueSequence = start:ArchSimpleExpression
+                                                  (serial:"->" | parallel:"|")
+                                                  ".."
+                                                  (serial2:"->" | parallel2:"|")
+                                                  end:ArchSimpleExpression;
 
 
-    //SVMOutputLayerMethod implements OutputLayerMethod = name:"SVMOutput" "("
-    //                                                        arguments:(SVMOutputArgumentAssignment || ",")* ")";
-    //SVMOutputArgumentAssignment implements ArgumentAssignment = lhs:SVMOutputArgument "=" rhs:ArgumentRhs;
-    //enum SVMOutputArgument = MARGIN:"margin"
-    //                       | REGULARIZATIONCOEFFICIENT:"regularization_coefficient"
-    //                       | USELINEAR:"use_linear";
+    ArchSimpleExpression = (arithmeticExpression:MathArithmeticExpression
+                         | booleanExpression:MathBooleanExpression
+                         | tupleExpression:TupleExpression);
+
+    TupleExpression implements MathExpression = "(" expressions:MathArithmeticExpression "," expressions:(MathArithmeticExpression || ",")* ")";
+
 }

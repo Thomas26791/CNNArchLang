@@ -1,6 +1,0 @@
-Architecture WrongActivationType {
-    FullyConnected(units=64)
-    Activation(type=maxs)
-    FullyConnected(units=64)
-    Output(type=linear)
-}

@@ -1,4 +1,0 @@
-Architecture SimpleNetwork{
-    FullyConnected(units=64, no_bias=true)
-    Output(type=linear)
-}

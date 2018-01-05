@@ -1,0 +1,32 @@
+architecture ThreeInputCNN_M14{
+    /*CNN used for flower grading. Model 14 of the paper.
+     *Title: Multi-Input Convolutional Neural Network for Flower Grading
+     *Authors: Yu Sun, Lin Zhu, Guan Wang, and Fang Zhao.
+     *Year: 2017*/
+
+    def input Z(0:255)^{h=200,w=300,c=3} image[3]
+    def output Q(0:1)^{classes=3} predictions
+
+    def conv(filter, channels){
+        Convolution(kernel=filter, channels=channels) ->
+        Relu()
+    }
+
+    def inputGroup(index){
+        [index] ->
+        conv(filter=(3,3), channels=32, ->=3) ->
+        MaxPooling(kernel=(2,2), stride=(2,2))
+    }
+
+    image ->
+    inputGroup(index=0|..|2) ->
+    Concatenate() ->
+    conv(filter=(3,3), channels=64) ->
+    MaxPooling(kernel=(2,2), stride=(2,2)) ->
+
+    FullyConnected(units=32) ->
+    Relu() ->
+    FullyConnected(units=classes) ->
+    Softmax() ->
+    predictions
+}
