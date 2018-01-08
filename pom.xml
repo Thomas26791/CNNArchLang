@@ -37,11 +37,11 @@
     <properties>
 
         <!-- .. SE-Libraries .................................................. -->
-        <monticore.version>4.5.3-SNAPSHOT</monticore.version>
+        <monticore.version>4.5.4-SNAPSHOT</monticore.version>
         <se-commons.version>1.7.7</se-commons.version>
-        <mc.grammars.assembly.version>0.0.6-SNAPSHOT</mc.grammars.assembly.version>
-        <SIUnit.version>0.0.6-SNAPSHOT</SIUnit.version>
-        <Common-MontiCar.version>0.0.3-SNAPSHOT</Common-MontiCar.version>
+        <mc.grammars.assembly.version>0.0.6</mc.grammars.assembly.version>
+        <SIUnit.version>0.0.10-SNAPSHOT</SIUnit.version>
+        <Common-MontiCar.version>0.0.10-SNAPSHOT</Common-MontiCar.version>
         <Math.version>0.0.10-SNAPSHOT</Math.version>
         <!-- .. Libraries .................................................. -->
         <guava.version>18.0</guava.version>
@@ -69,6 +69,13 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>4.7.1</version>
+        </dependency>
+
         <dependency>
             <groupId>de.se_rwth.commons</groupId>
             <artifactId>se-commons-logging</artifactId>
@@ -192,9 +199,7 @@
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.1</version>
                 <configuration>
-                    <altDeploymentRepository>
-                        internal.repo::default::file://${project.build.directory}/external-dependencies
-                    </altDeploymentRepository>
+                    <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/external-dependencies</altDeploymentRepository>
                 </configuration>
             </plugin>
             <plugin>
@@ -203,15 +208,11 @@
                 <version>0.12</version>
                 <configuration>
                     <server>github</server>
-                    <message>Maven artifacts for ${project.version} ${project.artifactId}
-                    </message>  <!-- git commit message -->
+                    <message>Maven artifacts for ${project.version} ${project.artifactId}</message>  <!-- git commit message -->
                     <noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
-                    <outputDirectory>${project.build.directory}/external-dependencies
-                    </outputDirectory> <!-- matches distribution management repository url above -->
+                    <outputDirectory>${project.build.directory}/external-dependencies</outputDirectory> <!-- matches distribution management repository url above -->
                     <branch>refs/heads/master</branch>                       <!-- remote branch name -->
-                    <includes>
-                        <include>**/*</include>
-                    </includes>
+                    <includes><include>**/*</include></includes>
                     <repositoryName>external-dependencies</repositoryName>      <!-- github repo name -->
                     <repositoryOwner>EmbeddedMontiArc</repositoryOwner>    <!-- github username  -->
                     <merge>true</merge>
@@ -226,11 +227,29 @@
                     </execution>
                 </executions>
             </plugin>
+
             <!-- MontiCore Generation -->
             <plugin>
                 <groupId>de.monticore.mojo</groupId>
                 <artifactId>monticore-maven-plugin</artifactId>
                 <version>${monticore.plugin}</version>
+                <configuration>
+                    <skip>false</skip>
+                    <script>de/monticore/monticore_noemf.groovy</script>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4</artifactId>
+                        <version>4.7.1</version>
+                    </dependency>
+                    <!-- https://mvnrepository.com/artifact/org.antlr/antlr4-runtime -->
+                    <dependency>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4-runtime</artifactId>
+                        <version>4.7.1</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <goals>

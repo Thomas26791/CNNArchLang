@@ -20,7 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.helper.Constraint;
+import de.monticore.lang.monticar.cnnarch.helper.Constraints;
 import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
@@ -58,7 +58,6 @@ public class ArgumentSymbol extends CommonSymbol {
         return (MethodLayerSymbol) getEnclosingScope().getSpanningSymbol().get();
     }
 
-
     public ArchExpressionSymbol getRhs() {
         return rhs;
     }
@@ -93,7 +92,7 @@ public class ArgumentSymbol extends CommonSymbol {
     public void set(){
         if (getRhs().isSimpleValue()){
             getRhs().resolveOrError();
-            Constraint.check(this);
+            Constraints.check(this);
             getParameter().setExpression((ArchSimpleExpressionSymbol) getRhs());
         }
         else {

@@ -29,7 +29,7 @@ import java.util.List;
 
 import static de.monticore.lang.monticar.cnnarch.helper.ErrorCodes.ILLEGAL_ASSIGNMENT_CODE;
 
-public enum Constraint {
+public enum Constraints {
     NUMBER {
         @Override
         public boolean check(ArchSimpleExpressionSymbol exp) {
@@ -152,7 +152,7 @@ public enum Constraint {
     abstract protected String msgString();
 
     public static void check(VariableSymbol variable){
-        for (Constraint constraint : variable.getConstraints()) {
+        for (Constraints constraint : variable.getConstraints()) {
             if (!constraint.check(variable.getExpression())){
                 Log.error("0"+ ILLEGAL_ASSIGNMENT_CODE +" Illegal assignment. The variable '"
                                 + variable.getName()  +"' must be " + constraint.msgString() + "."
@@ -165,7 +165,7 @@ public enum Constraint {
         VariableSymbol variable = argument.getParameter();
         for (List<ArchSimpleExpressionSymbol> expList : argument.getRhs().getElements().get()){
             for (ArchSimpleExpressionSymbol exp : expList){
-                for (Constraint constraint : variable.getConstraints()) {
+                for (Constraints constraint : variable.getConstraints()) {
                     if (!constraint.check(exp)){
                         Log.error("0"+ ILLEGAL_ASSIGNMENT_CODE +" Illegal assignment. This parameter '"
                                         + variable.getName()  +"' must be " + constraint.msgString() + "."

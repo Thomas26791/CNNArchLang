@@ -20,29 +20,31 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
-import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
+import de.monticore.lang.monticar.cnnarch._ast.ASTVariable;
+import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
+import de.monticore.lang.monticar.cnnarch.helper.Constraints;
 
-public class CheckVariableConstraints implements CNNArchASTArchitectureCoCo {
+import java.util.HashSet;
+import java.util.Set;
 
-    @Override
+public class CheckVariableConstraints implements CNNArchASTVariableCoCo {
+
+    /*@Override
     public void check(ASTArchitecture node) {
         ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
-    }
+    }*/
 
-    /*Set<VariableSymbol> variableSet = new HashSet<>();
+    Set<VariableSymbol> variableSet = new HashSet<>();
 
     @Override
     public void check(ASTVariable node) {
         VariableSymbol variable = (VariableSymbol) node.getSymbol().get();
         if (!variableSet.contains(variable)) {
-            if (variable.getType() == VariableType.GLOBAL) {
-                if (variable.hasExpression() && variable.getExpression().isResolvable()) {
-                    variable.getExpression().resolveOrError();
-                    Constraint.check(variable);
-                }
+            if (variable.hasExpression() && variable.getExpression().isResolvable()) {
+                variable.getExpression().resolveOrError();
+                Constraints.check(variable);
             }
         }
         variableSet.add(variable);
-    }*/
+    }
 }

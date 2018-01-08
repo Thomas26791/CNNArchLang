@@ -54,7 +54,7 @@ public class SymtabTest extends AbstractSymtabTest {
     public void testFixedThreeInput(){
         Scope symTab = createSymTab("src/test/resources/valid_tests");
         ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
-                "ThreeInputCNN_M14_alternative",
+                "Fixed_ThreeInputCNN_M14",
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();

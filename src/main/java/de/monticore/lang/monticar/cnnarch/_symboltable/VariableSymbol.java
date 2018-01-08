@@ -20,7 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.helper.Constraint;
+import de.monticore.lang.monticar.cnnarch.helper.Constraints;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
@@ -37,7 +37,7 @@ public class VariableSymbol extends CommonSymbol {
     private VariableType type;
     private ArchSimpleExpressionSymbol defaultExpression = null; //Optional
     private ArchSimpleExpressionSymbol currentExpression = null; //Optional
-    private Set<Constraint> constraints = new HashSet<>();
+    private Set<Constraints> constraints = new HashSet<>();
 
 
     protected VariableSymbol(String name) {
@@ -69,15 +69,15 @@ public class VariableSymbol extends CommonSymbol {
         return Optional.ofNullable(currentExpression);
     }
 
-    public Set<Constraint> getConstraints() {
+    public Set<Constraints> getConstraints() {
         return constraints;
     }
 
-    protected void setConstraints(Set<Constraint> constraints) {
+    protected void setConstraints(Set<Constraints> constraints) {
         this.constraints = constraints;
     }
 
-    public void addConstraint(Constraint... constraints) {
+    public void addConstraint(Constraints... constraints) {
         for (int i = 0; i < constraints.length; i++){
             getConstraints().add(constraints[i]);
         }
@@ -158,7 +158,7 @@ public class VariableSymbol extends CommonSymbol {
         private VariableType type = VariableType.PARAMETER;
         private ArchSimpleExpressionSymbol defaultValue = null;
         private String name = null;
-        private Set<Constraint> constraints = new HashSet<>();
+        private Set<Constraints> constraints = new HashSet<>();
 
         public Builder type(VariableType type){
             this.type = type;
@@ -195,7 +195,7 @@ public class VariableSymbol extends CommonSymbol {
             return this;
         }
 
-        public Builder constraints(Constraint... constraints){
+        public Builder constraints(Constraints... constraints){
             this.constraints = new HashSet<>(Arrays.asList(constraints));
             return this;
         }

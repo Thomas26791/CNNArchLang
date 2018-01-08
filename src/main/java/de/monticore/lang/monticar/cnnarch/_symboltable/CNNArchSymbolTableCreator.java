@@ -22,13 +22,17 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 
 import de.monticore.lang.math.math._ast.ASTMathExpression;
+import de.monticore.lang.math.math._ast.ASTMathFalseExpression;
+import de.monticore.lang.math.math._ast.ASTMathTrueExpression;
 import de.monticore.lang.math.math._symboltable.MathSymbolTableCreator;
 import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
+import de.monticore.lang.math.math._symboltable.expression.MathNameExpressionSymbol;
+import de.monticore.lang.math.math._visitor.MathVisitor;
 import de.monticore.lang.monticar.cnnarch._ast.*;
 import de.monticore.lang.monticar.cnnarch._visitor.CNNArchInheritanceVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CNNArchVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CommonCNNArchDelegatorVisitor;
-import de.monticore.lang.monticar.cnnarch.helper.Constraint;
+import de.monticore.lang.monticar.cnnarch.helper.Constraints;
 import de.monticore.lang.monticar.cnnarch.helper.PredefinedMethods;
 import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
 import de.monticore.lang.monticar.types2._ast.ASTType;
@@ -60,9 +64,8 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     }
 
     private void initSuperSTC(final ResolvingConfiguration resolvingConfig) {
-        this.mathSTC = new MathSymbolTableCreator(resolvingConfig, scopeStack);
+        this.mathSTC = new ModifiedMathSymbolTableCreator(resolvingConfig, scopeStack);
         CommonCNNArchDelegatorVisitor visitor = new CommonCNNArchDelegatorVisitor();
-
         visitor.set_de_monticore_lang_monticar_cnnarch__visitor_CNNArchVisitor(this);
         visitor.set_de_monticore_lang_math_math__visitor_MathVisitor(mathSTC);
 
@@ -84,6 +87,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
     private CNNArchVisitor realThis = this;
 
+    @Override
     public CNNArchVisitor getRealThis() {
         return realThis;
     }
@@ -220,7 +224,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
                 .name(node.getName())
                 .type(VariableType.IOVARIABLE)
                 .defaultValue(defaultValue)
-                .constraints(Constraint.INTEGER, Constraint.POSITIVE)
+                .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                 .build();
         //addToScope(ArchSimpleExpressionSymbol.of(variable));
         addToScopeAndLinkWithNode(variable, node);
@@ -268,6 +272,12 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         variable.setType(VariableType.CONSTANT);
         variable.setDefaultExpression((ArchSimpleExpressionSymbol) node.getRhs().getSymbol().get());
         addToScopeAndLinkWithNode(variable, node);
+    }
+
+    @Override
+    public void endVisit(ASTMathExpression node) {
+        boolean t = true;
+        boolean b = t;
     }
 
     @Override

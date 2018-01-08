@@ -110,11 +110,11 @@ public class PredefinedMethods {
                 .parameters(
                         new VariableSymbol.Builder()
                                 .name(UNITS_NAME)
-                                .constraints(Constraint.INTEGER, Constraint.POSITIVE)
+                                .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(NOBIAS_NAME)
-                                .constraints(Constraint.BOOLEAN)
+                                .constraints(Constraints.BOOLEAN)
                                 .defaultValue(false)
                                 .build()
                 )
@@ -132,20 +132,20 @@ public class PredefinedMethods {
                 .parameters(
                         new VariableSymbol.Builder()
                                 .name(KERNEL_NAME)
-                                .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
+                                .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(CHANNELS_NAME)
-                                .constraints(Constraint.INTEGER, Constraint.POSITIVE)
+                                .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(STRIDE_NAME)
-                                .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
+                                .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
                                 .defaultValue(Arrays.asList(1, 1))
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(NOBIAS_NAME)
-                                .constraints(Constraint.BOOLEAN)
+                                .constraints(Constraints.BOOLEAN)
                                 .defaultValue(false)
                                 .build()
                 )
@@ -190,7 +190,7 @@ public class PredefinedMethods {
                 .parameters(
                         new VariableSymbol.Builder()
                                 .name(P_NAME)
-                                .constraints(Constraint.NUMBER, Constraint.BETWEEN_ZERO_AND_ONE)
+                                .constraints(Constraints.NUMBER, Constraints.BETWEEN_ZERO_AND_ONE)
                                 .defaultValue(0.5)
                                 .build()
                 )
@@ -204,16 +204,16 @@ public class PredefinedMethods {
                 .parameters(
                         new VariableSymbol.Builder()
                                 .name(KERNEL_NAME)
-                                .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
+                                .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(STRIDE_NAME)
-                                .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
+                                .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
                                 .defaultValue(Arrays.asList(1, 1))
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(GLOBAL_NAME)
-                                .constraints(Constraint.BOOLEAN)
+                                .constraints(Constraints.BOOLEAN)
                                 .defaultValue(false)
                                 .build()
                 )
@@ -230,16 +230,16 @@ public class PredefinedMethods {
                 .parameters(
                         new VariableSymbol.Builder()
                                 .name(KERNEL_NAME)
-                                .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
+                                .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(STRIDE_NAME)
-                                .constraints(Constraint.INTEGER_TUPLE, Constraint.POSITIVE)
+                                .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
                                 .defaultValue(Arrays.asList(1, 1))
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(GLOBAL_NAME)
-                                .constraints(Constraint.BOOLEAN)
+                                .constraints(Constraints.BOOLEAN)
                                 .defaultValue(false)
                                 .build()
                 )
@@ -256,21 +256,21 @@ public class PredefinedMethods {
                 .parameters(
                         new VariableSymbol.Builder()
                                 .name(NSIZE_NAME)
-                                .constraints(Constraint.INTEGER, Constraint.NON_NEGATIVE)
+                                .constraints(Constraints.INTEGER, Constraints.NON_NEGATIVE)
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(KNORM_NAME)
-                                .constraints(Constraint.NUMBER)
+                                .constraints(Constraints.NUMBER)
                                 .defaultValue(2)
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(ALPHA_NAME)
-                                .constraints(Constraint.NUMBER)
+                                .constraints(Constraints.NUMBER)
                                 .defaultValue(0.0001)
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(BETA_NAME)
-                                .constraints(Constraint.NUMBER)
+                                .constraints(Constraints.NUMBER)
                                 .defaultValue(0.75)
                                 .build()
                 )
@@ -284,12 +284,12 @@ public class PredefinedMethods {
                 .parameters(
                         new VariableSymbol.Builder()
                                 .name(FIX_GAMMA_NAME)
-                                .constraints(Constraint.BOOLEAN)
+                                .constraints(Constraints.BOOLEAN)
                                 .defaultValue(true)
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(AXIS_NAME)
-                                .constraints(Constraint.INTEGER, Constraint.NON_NEGATIVE)
+                                .constraints(Constraints.INTEGER, Constraints.NON_NEGATIVE)
                                 .defaultValue(ShapeSymbol.CHANNEL_INDEX)
                                 .build()
                 )
@@ -303,11 +303,11 @@ public class PredefinedMethods {
                 .parameters(
                         new VariableSymbol.Builder()
                                 .name(INDEX_NAME)
-                                .constraints(Constraint.INTEGER, Constraint.NON_NEGATIVE)
+                                .constraints(Constraints.INTEGER, Constraints.NON_NEGATIVE)
                                 .build(),
                         new VariableSymbol.Builder()
                                 .name(N_NAME)
-                                .constraints(Constraint.INTEGER, Constraint.POSITIVE)
+                                .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                                 .build()
                 )
                 .shapeFunction((inputShapes, method) -> splitShapeFunction(inputShapes.get(0), method))
@@ -320,7 +320,7 @@ public class PredefinedMethods {
                 .parameters(
                         new VariableSymbol.Builder()
                                 .name(INDEX_NAME)
-                                .constraints(Constraint.INTEGER, Constraint.NON_NEGATIVE)
+                                .constraints(Constraints.INTEGER, Constraints.NON_NEGATIVE)
                                 .build()
                 )
                 .shapeFunction((inputShapes, method) ->

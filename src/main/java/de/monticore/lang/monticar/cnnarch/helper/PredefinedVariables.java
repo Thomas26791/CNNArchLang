@@ -35,7 +35,7 @@ public class PredefinedVariables {
         return new VariableSymbol.Builder()
                 .name(IF_NAME)
                 .type(VariableType.PARAMETER)
-                .constraints(Constraint.BOOLEAN)
+                .constraints(Constraints.BOOLEAN)
                 .defaultValue(true)
                 .build();
     }
@@ -44,6 +44,7 @@ public class PredefinedVariables {
         return new VariableSymbol.Builder()
                 .name(FOR_NAME)
                 .type(VariableType.PARAMETER)
+                .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                 .defaultValue(1)
                 .build();
     }
@@ -52,6 +53,7 @@ public class PredefinedVariables {
         return new VariableSymbol.Builder()
                 .name(CARDINALITY_NAME)
                 .type(VariableType.PARAMETER)
+                .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                 .defaultValue(1)
                 .build();
     }
