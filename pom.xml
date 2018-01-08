@@ -42,7 +42,7 @@
         <mc.grammars.assembly.version>0.0.6-SNAPSHOT</mc.grammars.assembly.version>
         <SIUnit.version>0.0.6-SNAPSHOT</SIUnit.version>
         <Common-MontiCar.version>0.0.3-SNAPSHOT</Common-MontiCar.version>
-        <Math.version>0.0.7.1</Math.version>
+        <Math.version>0.0.10-SNAPSHOT</Math.version>
         <!-- .. Libraries .................................................. -->
         <guava.version>18.0</guava.version>
         <junit.version>4.12</junit.version>
