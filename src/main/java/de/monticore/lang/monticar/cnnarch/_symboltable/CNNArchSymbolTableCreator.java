@@ -275,30 +275,21 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     }
 
     @Override
-    public void endVisit(ASTMathExpression node) {
-        boolean t = true;
-        boolean b = t;
-    }
-
-    @Override
-    public void visit(ASTArchSimpleExpression ast) {
-        ArchSimpleExpressionSymbol sym = new ArchSimpleExpressionSymbol();
-        addToScopeAndLinkWithNode(sym, ast);
-    }
-
-    @Override
     public void endVisit(ASTArchSimpleExpression ast) {
-        MathExpressionSymbol mathExp;
+        ArchSimpleExpressionSymbol sym = new ArchSimpleExpressionSymbol();
+        MathExpressionSymbol mathExp = null;
         if (ast.getArithmeticExpression().isPresent()) {
             mathExp = (MathExpressionSymbol) ast.getArithmeticExpression().get().getSymbol().get();
         }
         else if (ast.getBooleanExpression().isPresent()) {
             mathExp = (MathExpressionSymbol) ast.getBooleanExpression().get().getSymbol().get();
         }
-        else {
+        else if (ast.getTupleExpression().isPresent()){
             mathExp = (MathExpressionSymbol) ast.getTupleExpression().get().getSymbol().get();
         }
-        ArchSimpleExpressionSymbol sym = new ArchSimpleExpressionSymbol();
+        else {
+            sym.setValue(ast.getString().get().getValue());
+        }
         sym.setMathExpression(mathExp);
         addToScopeAndLinkWithNode(sym, ast);
     }
@@ -475,6 +466,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
                 .parameter(methodLayer.getMethod().getParameter("index").get())
                 .value((ArchSimpleExpressionSymbol) node.getIndex().getSymbol().get())
                 .build();
+        indexArgument.setAstNode(node.getIndex());
         addToScope(indexArgument);
         methodLayer.setArguments(Collections.singletonList(indexArgument));
 

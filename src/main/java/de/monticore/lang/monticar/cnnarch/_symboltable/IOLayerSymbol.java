@@ -20,6 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.lang.monticar.cnnarch.helper.Constraints;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 
@@ -82,7 +83,7 @@ public class IOLayerSymbol extends LayerSymbol {
     }*/
 
     @Override
-    public Set<VariableSymbol> resolve() {
+    public Set<VariableSymbol> resolve() throws ArchResolveException {
         if (!isResolved()) {
             if (isResolvable()) {
                 resolveExpressions();
@@ -100,7 +101,6 @@ public class IOLayerSymbol extends LayerSymbol {
                 isResolved = false;
             }
         }
-        //todo getShape().isResolved
         if (!getDefinition().getShape().isResolved()){
             isResolved = false;
         }
@@ -142,8 +142,6 @@ public class IOLayerSymbol extends LayerSymbol {
         return Optional.of(Collections.nCopies(getParallelLength().get(), 1));
     }
 
-
-
     @Override
     protected void putInScope(MutableScope scope) {
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
@@ -165,13 +163,22 @@ public class IOLayerSymbol extends LayerSymbol {
                 .definition(getDefinition())
                 .arrayAccess(arrayAccessCopy)
                 .build();
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
         return copy;
     }
 
     @Override
-    protected void resolveExpressions() {
+    protected void resolveExpressions() throws ArchResolveException {
         if (getArrayAccess().isPresent()){
             getArrayAccess().get().resolveOrError();
+            boolean valid = true;
+            valid = valid && Constraints.INTEGER.check(getArrayAccess().get(), getSourcePosition(), getName());
+            valid = valid && Constraints.NON_NEGATIVE.check(getArrayAccess().get(), getSourcePosition(), getName());
+            if (!valid){
+                throw new ArchResolveException();
+            }
         }
     }
 

@@ -22,6 +22,8 @@ package de.monticore.lang.monticar.cnnarch._cocos;
 
 import de.monticore.lang.monticar.cnnarch._ast.ASTParameter;
 import de.monticore.lang.monticar.cnnarch._ast.ASTVariable;
+import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
+import de.monticore.lang.monticar.cnnarch.helper.Constraints;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
 import de.monticore.symboltable.Symbol;
@@ -38,6 +40,14 @@ public class CheckVariable implements CNNArchASTVariableCoCo {
 
     @Override
     public void check(ASTVariable node) {
+
+        checkForIllegalNames(node);
+        checkForDuplicates(node);
+        checkConstraints(node);
+
+    }
+
+    private void checkForIllegalNames(ASTVariable node){
         String name = node.getName();
         if (name.isEmpty() || !Character.isLowerCase(name.codePointAt(0))){
             Log.error("0" + ErrorCodes.ILLEGAL_NAME_CODE + " Illegal name: " + name +
@@ -49,7 +59,10 @@ public class CheckVariable implements CNNArchASTVariableCoCo {
                             ". No variable can be named 'true' or 'false'"
                     , node.get_SourcePositionStart());
         }
+    }
 
+    private void checkForDuplicates(ASTVariable node){
+        String name = node.getName();
         boolean duplicated = false;
         if (variableNames.contains(name)){
             if (node instanceof ASTParameter){
@@ -70,6 +83,14 @@ public class CheckVariable implements CNNArchASTVariableCoCo {
             Log.error("0" + ErrorCodes.DUPLICATED_NAME_CODE + " Duplicated name: " + name +
                             ". This name is already defined."
                     , node.get_SourcePositionStart());
+        }
+    }
+
+    private void checkConstraints(ASTVariable node){
+        VariableSymbol variable = (VariableSymbol) node.getSymbol().get();
+        if (variable.hasExpression() && variable.getExpression().isResolvable()) {
+            variable.getExpression().resolveOrError();
+            Constraints.check(variable);
         }
     }
 

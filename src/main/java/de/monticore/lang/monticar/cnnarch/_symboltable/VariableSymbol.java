@@ -190,6 +190,11 @@ public class VariableSymbol extends CommonSymbol {
             return this;
         }
 
+        public Builder defaultValue(String defaultValue){
+            this.defaultValue = ArchSimpleExpressionSymbol.of(defaultValue);
+            return this;
+        }
+
         public Builder defaultValue(List<Object> tupleValues){
             this.defaultValue = ArchSimpleExpressionSymbol.of(tupleValues);
             return this;

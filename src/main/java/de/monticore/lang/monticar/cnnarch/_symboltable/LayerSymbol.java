@@ -111,14 +111,14 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         setUnresolvableVariables(unresolvableVariables);
     }
 
-    public void resolveOrError(){
+    public void resolveOrError() throws ArchResolveException{
         Set<VariableSymbol> names = resolve();
         if (!isResolved()){
             throw new IllegalStateException("The following names could not be resolved: " + Joiners.COMMA.join(getUnresolvableVariables()));
         }
     }
 
-    abstract public Set<VariableSymbol> resolve();
+    abstract public Set<VariableSymbol> resolve() throws ArchResolveException;
 
     abstract protected List<ShapeSymbol> computeOutputShapes();
 
@@ -151,7 +151,7 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     abstract protected void putInScope(MutableScope scope);
 
-    abstract protected void resolveExpressions();
+    abstract protected void resolveExpressions() throws ArchResolveException;
 
     /*abstract public void reset();*/
 }

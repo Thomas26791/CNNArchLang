@@ -91,7 +91,7 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }*/
 
     @Override
-    public Set<VariableSymbol> resolve() {
+    public Set<VariableSymbol> resolve() throws ArchResolveException {
         if (!isResolved()) {
             if (isResolvable()) {
                 List<LayerSymbol> resolvedLayers = new ArrayList<>();
@@ -104,7 +104,7 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected void resolveExpressions() {
+    protected void resolveExpressions() throws ArchResolveException {
         for (LayerSymbol layer : getLayers()){
             layer.resolveExpressions();
         }

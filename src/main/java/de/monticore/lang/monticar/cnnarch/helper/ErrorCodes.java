@@ -32,9 +32,6 @@ public class ErrorCodes {
     public static final String OUTPUT_DUPLICATE_MSG = "0"+OUTPUT_DUPLICATE_CODE+" ";
 
 
-    public static final String DUPLICATE_ARG_CODE = "x03031";
-    public static final String DUPLICATE_ARG_MSG = "0"+DUPLICATE_ARG_CODE+" Multiple assignments of the same argument are not allowed. ";
-
     public static final String MISSING_VAR_VALUE_CODE = "x02572";
 
 
@@ -55,6 +52,7 @@ public class ErrorCodes {
     public static final String ILLEGAL_NAME_CODE = "x93567";
     public static final String UNKNOWN_ARGUMENT_CODE = "x93527";
     public static final String DUPLICATED_NAME_CODE = "x93569";
+    public static final String DUPLICATED_ARG_CODE = "x03031";
     public static final String MISSING_ARGUMENT_CODE = "x06021";
     public static final String RECURSION_ERROR_CODE = "x25833";
 

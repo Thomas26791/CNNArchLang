@@ -20,31 +20,11 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTVariable;
-import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
-import de.monticore.lang.monticar.cnnarch.helper.Constraints;
+import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 
-import java.util.HashSet;
-import java.util.Set;
-
-public class CheckVariableConstraints implements CNNArchASTVariableCoCo {
-
-    /*@Override
-    public void check(ASTArchitecture node) {
-        ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
-    }*/
-
-    Set<VariableSymbol> variableSet = new HashSet<>();
-
+public class CheckLayerInputs implements CNNArchASTArchitectureCoCo {
     @Override
-    public void check(ASTVariable node) {
-        VariableSymbol variable = (VariableSymbol) node.getSymbol().get();
-        if (!variableSet.contains(variable)) {
-            if (variable.hasExpression() && variable.getExpression().isResolvable()) {
-                variable.getExpression().resolveOrError();
-                Constraints.check(variable);
-            }
-        }
-        variableSet.add(variable);
+    public void check(ASTArchitecture node) {
+        //todo:
     }
 }

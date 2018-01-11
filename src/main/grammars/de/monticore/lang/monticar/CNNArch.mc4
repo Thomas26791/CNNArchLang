@@ -69,8 +69,9 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     ArchSimpleExpression = (arithmeticExpression:MathArithmeticExpression
                          | booleanExpression:MathBooleanExpression
-                         | tupleExpression:TupleExpression);
+                         | tupleExpression:TupleExpression
+                         | string:StringLiteral);
 
-    TupleExpression implements MathExpression = "(" expressions:MathArithmeticExpression "," expressions:(MathArithmeticExpression || ",")* ")";
+    TupleExpression implements MathExpression = "(" expressions:MathExpression "," expressions:(MathExpression || ",")* ")";
 
 }

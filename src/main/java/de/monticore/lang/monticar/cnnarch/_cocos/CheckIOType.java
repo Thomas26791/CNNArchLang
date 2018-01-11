@@ -20,29 +20,13 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArgument;
-import de.monticore.lang.monticar.cnnarch._symboltable.ArgumentSymbol;
-import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.se_rwth.commons.logging.Log;
+import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 
-public class CheckArgument implements CNNArchASTArgumentCoCo {
+public class CheckIOType implements CNNArchASTArchitectureCoCo {
 
     @Override
-    public void check(ASTArgument node) {
-        ArgumentSymbol argument = (ArgumentSymbol) node.getSymbol().get();
-        if (argument.getParameter() ==  null){
-            Log.error("0"+ ErrorCodes.UNKNOWN_ARGUMENT_CODE + " Unknown Argument. " +
-                            "Parameter with name '" + node.getName() + "' does not exist."
-                    , node.get_SourcePositionStart());
-        }
-        else {
-            //check argument constraints before resolve.
-            if (argument.getRhs().isResolvable()) {
-                argument.getRhs().resolveOrError();
-                argument.checkConstraints();
-                argument.getRhs().reset();
-            }
-        }
+    public void check(ASTArchitecture node) {
+        //todo:
     }
 
 }

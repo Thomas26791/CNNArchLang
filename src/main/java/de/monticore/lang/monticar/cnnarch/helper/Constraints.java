@@ -20,19 +20,19 @@
  */
 package de.monticore.lang.monticar.cnnarch.helper;
 
-import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.ArgumentSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.*;
+import de.se_rwth.commons.SourcePosition;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.List;
+import java.util.Optional;
 
 import static de.monticore.lang.monticar.cnnarch.helper.ErrorCodes.ILLEGAL_ASSIGNMENT_CODE;
 
 public enum Constraints {
     NUMBER {
         @Override
-        public boolean check(ArchSimpleExpressionSymbol exp) {
+        public boolean isValid(ArchSimpleExpressionSymbol exp) {
             return exp.isNumber();
         }
         @Override
@@ -42,7 +42,7 @@ public enum Constraints {
     },
     INTEGER {
         @Override
-        public boolean check(ArchSimpleExpressionSymbol exp) {
+        public boolean isValid(ArchSimpleExpressionSymbol exp) {
             return exp.isInt().get();
         }
         @Override
@@ -52,7 +52,7 @@ public enum Constraints {
     },
     BOOLEAN {
         @Override
-        public boolean check(ArchSimpleExpressionSymbol exp) {
+        public boolean isValid(ArchSimpleExpressionSymbol exp) {
             return exp.isBoolean();
         }
         @Override
@@ -62,7 +62,7 @@ public enum Constraints {
     },
     TUPLE {
         @Override
-        public boolean check(ArchSimpleExpressionSymbol exp) {
+        public boolean isValid(ArchSimpleExpressionSymbol exp) {
             return exp.isTuple();
         }
         @Override
@@ -72,7 +72,7 @@ public enum Constraints {
     },
     INTEGER_TUPLE {
         @Override
-        public boolean check(ArchSimpleExpressionSymbol exp) {
+        public boolean isValid(ArchSimpleExpressionSymbol exp) {
             return exp.isIntTuple().get();
         }
         @Override
@@ -82,7 +82,7 @@ public enum Constraints {
     },
     POSITIVE {
         @Override
-        public boolean check(ArchSimpleExpressionSymbol exp) {
+        public boolean isValid(ArchSimpleExpressionSymbol exp) {
             if (exp.getDoubleValue().isPresent()){
                 return exp.getDoubleValue().get() > 0;
             }
@@ -104,7 +104,7 @@ public enum Constraints {
     },
     NON_NEGATIVE {
         @Override
-        public boolean check(ArchSimpleExpressionSymbol exp) {
+        public boolean isValid(ArchSimpleExpressionSymbol exp) {
             if (exp.getDoubleValue().isPresent()){
                 return exp.getDoubleValue().get() >= 0;
             }
@@ -126,7 +126,7 @@ public enum Constraints {
     },
     BETWEEN_ZERO_AND_ONE {
         @Override
-        public boolean check(ArchSimpleExpressionSymbol exp) {
+        public boolean isValid(ArchSimpleExpressionSymbol exp) {
             if (exp.getDoubleValue().isPresent()){
                 return exp.getDoubleValue().get() >= 0 && exp.getDoubleValue().get() <= 1;
             }
@@ -145,34 +145,67 @@ public enum Constraints {
         public String msgString() {
             return "between one and zero";
         }
+    },
+    PADDING_TYPE {
+        @Override
+        public boolean isValid(ArchSimpleExpressionSymbol exp) {
+            Optional<String> optString= exp.getStringValue();
+            if (optString.isPresent()){
+                if (optString.get().equals(PredefinedMethods.PADDING_VALID) || optString.get().equals(PredefinedMethods.PADDING_SAME)){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        protected String msgString() {
+            return PredefinedMethods.PADDING_VALID + " or " + PredefinedMethods.PADDING_SAME;
+        }
     };
 
-    abstract public boolean check(ArchSimpleExpressionSymbol exp);
+    protected abstract boolean isValid(ArchSimpleExpressionSymbol exp);
 
     abstract protected String msgString();
 
-    public static void check(VariableSymbol variable){
+    public static boolean check(VariableSymbol variable){
+        boolean valid = true;
         for (Constraints constraint : variable.getConstraints()) {
-            if (!constraint.check(variable.getExpression())){
-                Log.error("0"+ ILLEGAL_ASSIGNMENT_CODE +" Illegal assignment. The variable '"
-                                + variable.getName()  +"' must be " + constraint.msgString() + "."
-                        , variable.getSourcePosition());
-            }
+            valid = valid &&
+                    constraint.check(variable.getExpression(), variable.getSourcePosition(), variable.getName());
         }
+        return valid;
     }
 
-    public static void check(ArgumentSymbol argument){
+    public static boolean check(ArgumentSymbol argument){
+        boolean valid = true;
         VariableSymbol variable = argument.getParameter();
-        for (List<ArchSimpleExpressionSymbol> expList : argument.getRhs().getElements().get()){
-            for (ArchSimpleExpressionSymbol exp : expList){
-                for (Constraints constraint : variable.getConstraints()) {
-                    if (!constraint.check(exp)){
-                        Log.error("0"+ ILLEGAL_ASSIGNMENT_CODE +" Illegal assignment. This parameter '"
-                                        + variable.getName()  +"' must be " + constraint.msgString() + "."
-                                , argument.getSourcePosition());
-                    }
+        for (Constraints constraint : variable.getConstraints()) {
+            valid = valid &&
+                    constraint.check(argument.getRhs(), argument.getSourcePosition(), variable.getName());
+        }
+        return valid;
+    }
+
+    public boolean check(ArchExpressionSymbol exp, SourcePosition sourcePosition, String name){
+        if (exp instanceof ArchRangeExpressionSymbol){
+            ArchRangeExpressionSymbol range = (ArchRangeExpressionSymbol)exp;
+            if (!INTEGER.check(range.getStartSymbol(), sourcePosition, name)
+                    || !INTEGER.check(range.getEndSymbol(), sourcePosition, name)){
+                return false;
+            }
+        }
+        for (List<ArchSimpleExpressionSymbol> expList : exp.getElements().get()) {
+            for (ArchSimpleExpressionSymbol singleExp : expList) {
+                if (!isValid(singleExp)) {
+                    Log.error("0" + ILLEGAL_ASSIGNMENT_CODE + " Illegal assignment of '" + name + "'. " +
+                                    "Expression must be " + msgString() + "."
+                            , sourcePosition);
+                    return false;
                 }
             }
         }
+        return true;
     }
+
 }
