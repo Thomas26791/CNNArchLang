@@ -37,7 +37,7 @@ public class CheckMethodDeclaration implements CNNArchASTMethodDeclarationCoCo {
     Set<String> methodNames = new HashSet<>();
     //for recursion check
     Set<MethodDeclarationSymbol> seenMethods = new HashSet<>();
-    boolean done = false;
+    boolean done;
 
 
     @Override
@@ -58,6 +58,7 @@ public class CheckMethodDeclaration implements CNNArchASTMethodDeclarationCoCo {
             methodNames.add(name);
         }
 
+        done = false;
         MethodDeclarationSymbol method = (MethodDeclarationSymbol) node.getSymbol().get();
         checkForRecursion(method, method.getBody());
     }

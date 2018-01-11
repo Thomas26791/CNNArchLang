@@ -108,13 +108,14 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
     }
 
 
-    public LayerSymbol call(MethodLayerSymbol layer) {
+    public LayerSymbol call(MethodLayerSymbol layer) throws ArchResolveException{
         checkForSequence(layer.getArguments());
 
         if (isPredefined()){
             return layer;
         }
         else {
+            reset();
             set(layer.getArguments());
 
             CompositeLayerSymbol copy = getBody().copy();
@@ -132,7 +133,6 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         for (VariableSymbol param : getParameters()){
             param.reset();
         }
-        //getBody().reset();
     }
 
     private void set(List<ArgumentSymbol> arguments){

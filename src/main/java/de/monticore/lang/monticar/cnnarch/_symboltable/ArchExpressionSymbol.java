@@ -84,6 +84,13 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
      */
     abstract public boolean isTuple();
 
+    public boolean isString(){
+        if (getValue().isPresent()){
+            return getStringValue().isPresent();
+        }
+        return false;
+    }
+
     /**
      * Checks whether the value is an integer. This can only be checked if the expression is resolved.
      * If true getRhs() will return an Integer.
@@ -191,6 +198,14 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
         Optional<Object> optValue = getValue();
         if (optValue.isPresent() && (optValue.get() instanceof Boolean)){
             return Optional.of((Boolean) optValue.get());
+        }
+        return Optional.empty();
+    }
+
+    public Optional<String> getStringValue(){
+        Optional<Object> optValue = getValue();
+        if (optValue.isPresent() && (optValue.get() instanceof String)){
+            return Optional.of((String) optValue.get());
         }
         return Optional.empty();
     }

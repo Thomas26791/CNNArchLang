@@ -20,8 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch.cocos;
 
-import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
-import de.monticore.lang.monticar.cnnarch._cocos.CheckMethodDeclaration;
+import de.monticore.lang.monticar.cnnarch._cocos.*;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.logging.Log;
 import org.junit.Test;
@@ -75,10 +74,34 @@ public class AllCoCoTest extends AbstractCoCoTest {
 
     @Test
     public void testInvalidMethodDeclaration(){
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodLayer()),
+                new CNNArchCoCoChecker(),
+                getAstNode("invalid_tests", "DuplicatedArgument"),
+                new ExpectedErrorInfo(1, ErrorCodes.DUPLICATED_ARG_CODE));
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckArgument()).addCoCo(new CheckMethodLayer()),
+                new CNNArchCoCoChecker(),
+                getAstNode("invalid_tests", "WrongArgument"),
+                new ExpectedErrorInfo(4, ErrorCodes.UNKNOWN_ARGUMENT_CODE, ErrorCodes.MISSING_ARGUMENT_CODE));
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodDeclaration()),
                 new CNNArchCoCoChecker(),
                 getAstNode("invalid_tests", "InvalidRecursion"),
                 new ExpectedErrorInfo(1, ErrorCodes.RECURSION_ERROR_CODE));
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckArgument()).addCoCo(new CheckVariable()),
+                new CNNArchCoCoChecker(),
+                getAstNode("invalid_tests", "InvalidVariableType"),
+                new ExpectedErrorInfo(5, ErrorCodes.ILLEGAL_ASSIGNMENT_CODE));
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckArgument()).addCoCo(new CheckVariable()),
+                new CNNArchCoCoChecker(),
+                getAstNode("invalid_tests", "InvalidVariableType2"),
+                new ExpectedErrorInfo(1, ErrorCodes.ILLEGAL_ASSIGNMENT_CODE));
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodLayer()),
+                new CNNArchCoCoChecker(),
+                getAstNode("invalid_tests", "MissingArgument"),
+                new ExpectedErrorInfo(3, ErrorCodes.MISSING_ARGUMENT_CODE));
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckVariable()).addCoCo(new CheckMethodDeclaration()),
+                new CNNArchCoCoChecker(),
+                getAstNode("invalid_tests", "IllegalName"),
+                new ExpectedErrorInfo(2, ErrorCodes.ILLEGAL_NAME_CODE));
     }
 
     /*@Test
@@ -147,7 +170,6 @@ public class AllCoCoTest extends AbstractCoCoTest {
                 , getAstNode("invalid_tests", "MissingOutput")
                 , new ExpectedErrorInfo(1, ArchitectureCheck.OUTPUT_MISSING_CODE));
 
-        //todo: input def error
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArchitectureCheck())
                 , getAstNode("invalid_tests", "UndefinedOutput")
                 , new ExpectedErrorInfo(2, ArchitectureCheck.OUTPUT_UNDEFINED_CODE, ArchitectureCheck.OUTPUT_MISSING_CODE));

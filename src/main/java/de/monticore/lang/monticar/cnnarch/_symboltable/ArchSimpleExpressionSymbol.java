@@ -20,10 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.math.math._symboltable.expression.MathArithmeticExpressionSymbol;
-import de.monticore.lang.math.math._symboltable.expression.MathCompareExpressionSymbol;
-import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
-import de.monticore.lang.math.math._symboltable.expression.MathNameExpressionSymbol;
+import de.monticore.lang.math.math._symboltable.expression.*;
 import de.monticore.lang.monticar.cnnarch.helper.Calculator;
 import de.monticore.lang.monticar.cnnarch.helper.ExpressionHelper;
 
@@ -58,8 +55,10 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
     @Override
     public void reset(){
         if (getMathExpression().isPresent()){
-            setValue(null);
-            setUnresolvableVariables(null);
+            if (getMathExpression().isPresent()){
+                setValue(null);
+                setUnresolvableVariables(null);
+            }
         }
     }
 
@@ -71,31 +70,32 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
     @Override
     public boolean isBoolean() {
         if (getMathExpression().isPresent() && !(getMathExpression().get() instanceof MathNameExpressionSymbol)){
-            return getMathExpression().get().getRealMathExpressionSymbol() instanceof MathCompareExpressionSymbol;
+            if (getMathExpression().get().getRealMathExpressionSymbol() instanceof MathCompareExpressionSymbol){
+                return true;
+            }
         }
-        else {
-            return getBooleanValue().isPresent();
-        }
+        return getBooleanValue().isPresent();
     }
 
     @Override
     public boolean isNumber() {
-        if (getMathExpression().isPresent() && !(getMathExpression().get() instanceof MathNameExpressionSymbol)){
-            return getMathExpression().get().getRealMathExpressionSymbol() instanceof MathArithmeticExpressionSymbol;
+        if (getMathExpression().isPresent()){
+            MathExpressionSymbol mathExp = getMathExpression().get().getRealMathExpressionSymbol();
+            if (mathExp instanceof MathArithmeticExpressionSymbol || mathExp instanceof MathNumberExpressionSymbol){
+                return true;
+            }
         }
-        else {
-            return getDoubleValue().isPresent();
-        }
+        return getDoubleValue().isPresent();
     }
 
     @Override
     public boolean isTuple() {
         if (getMathExpression().isPresent() && !(getMathExpression().get() instanceof MathNameExpressionSymbol)){
-            return getMathExpression().get().getRealMathExpressionSymbol() instanceof TupleExpressionSymbol;
+            if (getMathExpression().get().getRealMathExpressionSymbol() instanceof TupleExpressionSymbol){
+                return true;
+            }
         }
-        else {
-            return getTupleValues().isPresent();
-        }
+        return getTupleValues().isPresent();
     }
 
     protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables) {
@@ -228,6 +228,12 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
     }
 
     public static ArchSimpleExpressionSymbol of(boolean value){
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol();
+        res.setValue(value);
+        return res;
+    }
+
+    public static ArchSimpleExpressionSymbol of(String value){
         ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol();
         res.setValue(value);
         return res;

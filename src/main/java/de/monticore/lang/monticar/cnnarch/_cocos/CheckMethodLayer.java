@@ -40,7 +40,7 @@ public class CheckMethodLayer implements CNNArchASTMethodLayerCoCo{
         for (ASTArgument argument : node.getArguments()){
             String name = argument.getName();
             if (nameSet.contains(name)){
-                Log.error("0" + ErrorCodes.DUPLICATED_NAME_CODE + " Duplicated name: " + name +
+                Log.error("0" + ErrorCodes.DUPLICATED_ARG_CODE + " Duplicated name: " + name +
                                 ". Multiple values assigned to the same argument."
                         , argument.get_SourcePositionStart());
             }

@@ -1,0 +1,11 @@
+architecture DuplicatedArgument{
+    def input Q(-oo:+oo)^{10} in
+    def output Q(0:1)^{2} out
+
+    in ->
+    FullyConnected(units=64, units=32) ->
+    Tanh() ->
+    FullyConnected(units=2) ->
+    Softmax() ->
+    out
+}

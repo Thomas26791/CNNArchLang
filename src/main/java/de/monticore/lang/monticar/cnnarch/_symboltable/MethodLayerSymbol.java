@@ -131,11 +131,16 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     public boolean isResolved(){
-        return getResolvedThis().isPresent();
+        if (getResolvedThis().isPresent() && getResolvedThis().get() != this){
+            return getResolvedThis().get().isResolved();
+        }
+        else {
+            return getResolvedThis().isPresent();
+        }
     }
 
     @Override
-    public Set<VariableSymbol> resolve() {
+    public Set<VariableSymbol> resolve() throws ArchResolveException {
         if (!isResolved()) {
             if (isResolvable()) {
                 getMethod();
@@ -172,9 +177,9 @@ public class MethodLayerSymbol extends LayerSymbol {
         }
     }
 
-    protected void resolveExpressions(){
+    protected void resolveExpressions() throws ArchResolveException{
         for (ArgumentSymbol argument : getArguments()){
-            argument.getRhs().resolveOrError();
+            argument.resolveExpression();
         }
     }
 
@@ -234,20 +239,24 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     @Override
     protected List<ShapeSymbol> computeOutputShapes() {
-        if (getMethod().isPredefined()){
-            BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction = getMethod().getShapeFunction();
-            return shapeFunction.apply(getInputLayer().get().getOutputShapes(), this);
-        }
-        else {
-            Set<VariableSymbol> unresolvableVariables = resolve();
-            if (unresolvableVariables.isEmpty()){
-                return getResolvedThis().get().computeOutputShapes();
+        if (getResolvedThis().isPresent()) {
+            if (getResolvedThis().get() == this) {
+                BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction = getMethod().getShapeFunction();
+                return shapeFunction.apply(getInputLayer().get().getOutputShapes(), this);
             }
             else {
-                throw new IllegalStateException("The output shape can only be computed if this and all previous layer are resolvable. " +
-                        "The following names cannot be resolved: " + Joiners.COMMA.join(unresolvableVariables));
-            }
+                Set<VariableSymbol> unresolvableVariables = getUnresolvableVariables();
+                if (unresolvableVariables.isEmpty()) {
+                    return getResolvedThis().get().computeOutputShapes();
+                } else {
+                    throw new IllegalStateException("The output shape can only be computed if this and all previous layer are resolvable. " +
+                            "The following names cannot be resolved: " + Joiners.COMMA.join(unresolvableVariables));
+                }
 
+            }
+        }
+        else {
+            throw new IllegalStateException("Output shape cannot be computed before the method is resolved");
         }
     }
 
@@ -270,6 +279,10 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     public Optional<Boolean> getBooleanValue(String argumentName){
         return getTValue(argumentName, ArchExpressionSymbol::getBooleanValue);
+    }
+
+    public Optional<String> getStringValue(String argumentName){
+        return getTValue(argumentName, ArchExpressionSymbol::getStringValue);
     }
 
     public Optional<Object> getValue(String argumentName){

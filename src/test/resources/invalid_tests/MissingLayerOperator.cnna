@@ -1,0 +1,11 @@
+architecture MissingLayerOperator{
+    def input Q(-oo:+oo)^{10} in
+    def output Q(0:1)^{2} out
+
+    in ->
+    FullyConnected(units=64, no_bias=true) ->
+    Tanh()
+    FullyConnected(units=2, no_bias=true)
+    Softmax() ->
+    out
+}

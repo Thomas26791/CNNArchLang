@@ -90,14 +90,24 @@ public class ArgumentSymbol extends CommonSymbol {
 
     //do not call if value is a sequence
     public void set(){
-        if (getRhs().isSimpleValue()){
-            getRhs().resolveOrError();
-            Constraints.check(this);
+        if (getRhs().isResolved() && getRhs().isSimpleValue()){
             getParameter().setExpression((ArchSimpleExpressionSymbol) getRhs());
         }
         else {
-            throw new IllegalStateException("The value of the parameter is set to a sequence. This should never happen.");
+            throw new IllegalStateException("The value of the parameter is set to a sequence or the expression is not resolved. This should never happen.");
         }
+    }
+
+    public void resolveExpression() throws ArchResolveException {
+        getRhs().resolveOrError();
+        boolean valid = Constraints.check(this);
+        if (!valid){
+            throw new ArchResolveException();
+        }
+    }
+
+    public void checkConstraints(){
+        Constraints.check(this);
     }
 
     public List<List<ArgumentSymbol>> split(){
@@ -116,6 +126,9 @@ public class ArgumentSymbol extends CommonSymbol {
                 }
 
                 ArgumentSymbol argument = new Builder().parameter(getParameter()).value(value).build();
+                if (getAstNode().isPresent()){
+                    argument.setAstNode(getAstNode().get());
+                }
                 serialArgumentList.add(argument);
             }
             arguments.add(serialArgumentList);

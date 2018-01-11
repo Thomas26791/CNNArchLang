@@ -1,40 +1,43 @@
 architecture Fixed_Alexnet{
-    def input Z(0:255)^{256,256,3} image
-    def output Q(0:1)^{10} predictions
+    def input Z(0:255)^{h=224,w=224,c=3} image
+    def output Q(0:1)^{classes=10} predictions
 
-    def conv(filter, channels, hasPool=true, convStride=(1,1)){
-        Convolution(kernel=filter, channels=channels, stride=convStride) ->
+    def group1(i){
+        [i] ->
+        Convolution(kernel=(5,5), channels=128) ->
+        Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
+        MaxPooling(kernel=(3,3), stride=(2,2), padding="valid") ->
+        Relu()
+    }
+    def group2(i){
+        [i] ->
+        Convolution(kernel=(3,3), channels=192) ->
         Relu() ->
-        MaxPooling(kernel=(3,3), stride=(2,2), If=hasPool)
+        Convolution(kernel=(3,3), channels=128) ->
+        MaxPooling(kernel=(3,3), stride=(2,2), padding="valid") ->
+        Relu()
     }
     def fc(){
         FullyConnected(units=4096) ->
         Relu() ->
         Dropout()
     }
-    def split1(i, groups){
-        SplitData(index=i, n=groups) ->
-        conv(filter=(5,5), channels=128) ->
-        Lrn(nsize=5, alpha=0.0001, beta=0.75)
-    }
-    def split2(i, groups){
-        SplitData(index=i, n=groups) ->
-        conv(filter=(3,3), channels=192, hasPool=false) ->
-        conv(filter=(3,3), channels=128)
-    }
 
     image ->
-    conv(filter=(11,11), channels=96, convStride=(4,4)) ->
+    Convolution(kernel=(11,11), channels=96, stride=(4,4), padding="valid") ->
     Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-
-    split1(i=[0|1], groups=2) ->
-
-    conv(filter=(3,3), channels=384 ,hasPool=false) ->
-
-    split2(i=[0|1], groups=2) ->
-
-    fc(-> = [1->2]) ->
-    FullyConnected(units=10) ->
+    MaxPooling(kernel=(3,3), stride=(2,2), padding="valid") ->
+    Relu() ->
+    Split(n=2) ->
+    group1(i=[0|1]) ->
+    Concatenate() ->
+    Convolution(kernel=(3,3), channels=384) ->
+    Relu() ->
+    Split(n=2) ->
+    group2(i=[0|1]) ->
+    Concatenate() ->
+    fc(->=2) ->
+    FullyConnected(units=classes) ->
     Softmax() ->
     predictions
 }
