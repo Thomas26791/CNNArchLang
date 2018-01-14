@@ -24,7 +24,7 @@ import de.monticore.lang.math.math._ast.ASTMathFalseExpression;
 import de.monticore.lang.math.math._ast.ASTMathTrueExpression;
 import de.monticore.lang.math.math._symboltable.MathSymbolTableCreator;
 import de.monticore.lang.math.math._symboltable.expression.MathNameExpressionSymbol;
-import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.ResolvingConfiguration;
 
@@ -45,14 +45,14 @@ public class ModifiedMathSymbolTableCreator extends MathSymbolTableCreator {
     //todo: only here because montimath true expression does not work at the moment
     @Override
     public void endVisit(ASTMathTrueExpression node){
-        MathNameExpressionSymbol symbol = new MathNameExpressionSymbol(PredefinedVariables.TRUE_NAME);
+        MathNameExpressionSymbol symbol = new MathNameExpressionSymbol(AllPredefinedVariables.TRUE_NAME);
         addToScopeAndLinkWithNode(symbol, node);
     }
 
     //todo: only here because montimath false expression does not work at the moment
     @Override
     public void endVisit(ASTMathFalseExpression node){
-        MathNameExpressionSymbol symbol = new MathNameExpressionSymbol(PredefinedVariables.FALSE_NAME);
+        MathNameExpressionSymbol symbol = new MathNameExpressionSymbol(AllPredefinedVariables.FALSE_NAME);
         addToScopeAndLinkWithNode(symbol, node);
     }
 }

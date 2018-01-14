@@ -55,7 +55,7 @@ public class ShapeSymbol extends CommonSymbol {
         dimensions.get(BATCH_SIZE_INDEX).setMathExpression(null);
     }
 
-    public void setBatchSize(ArchSimpleExpressionSymbol batchSize) {
+    protected void setBatchSize(ArchSimpleExpressionSymbol batchSize) {
         getDimensionSymbols().set(BATCH_SIZE_INDEX, batchSize);
     }
 
@@ -69,7 +69,7 @@ public class ShapeSymbol extends CommonSymbol {
         dimensions.get(HEIGHT_INDEX).setMathExpression(null);
     }
 
-    public void setHeight(ArchSimpleExpressionSymbol height) {
+    protected void setHeight(ArchSimpleExpressionSymbol height) {
         getDimensionSymbols().set(HEIGHT_INDEX, height);
     }
 
@@ -83,7 +83,7 @@ public class ShapeSymbol extends CommonSymbol {
         dimensions.get(WIDTH_INDEX).setMathExpression(null);
     }
 
-    public void setWidth(ArchSimpleExpressionSymbol width) {
+    protected void setWidth(ArchSimpleExpressionSymbol width) {
         getDimensionSymbols().set(WIDTH_INDEX, width);
     }
 
@@ -97,7 +97,7 @@ public class ShapeSymbol extends CommonSymbol {
         dimensions.get(CHANNEL_INDEX).setMathExpression(null);
     }
 
-    public void setChannels(ArchSimpleExpressionSymbol channels) {
+    protected void setChannels(ArchSimpleExpressionSymbol channels) {
         getDimensionSymbols().set(CHANNEL_INDEX, channels);
     }
 

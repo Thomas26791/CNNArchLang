@@ -18,9 +18,9 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch.helper;
+package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch._symboltable.*;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
 import de.se_rwth.commons.SourcePosition;
 import de.se_rwth.commons.logging.Log;
 
@@ -151,7 +151,9 @@ public enum Constraints {
         public boolean isValid(ArchSimpleExpressionSymbol exp) {
             Optional<String> optString= exp.getStringValue();
             if (optString.isPresent()){
-                if (optString.get().equals(PredefinedMethods.PADDING_VALID) || optString.get().equals(PredefinedMethods.PADDING_SAME)){
+                if (optString.get().equals(AllPredefinedMethods.PADDING_VALID)
+                        || optString.get().equals(AllPredefinedMethods.PADDING_SAME)
+                        || optString.get().equals(AllPredefinedMethods.PADDING_NO_LOSS)){
                     return true;
                 }
             }
@@ -160,7 +162,7 @@ public enum Constraints {
 
         @Override
         protected String msgString() {
-            return PredefinedMethods.PADDING_VALID + " or " + PredefinedMethods.PADDING_SAME;
+            return AllPredefinedMethods.PADDING_VALID + " or " + AllPredefinedMethods.PADDING_SAME;
         }
     };
 

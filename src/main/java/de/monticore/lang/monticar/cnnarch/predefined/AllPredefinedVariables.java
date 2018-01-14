@@ -18,12 +18,13 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch.helper;
+package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableType;
+import de.monticore.lang.monticar.cnnarch._symboltable.Constraints;
 
-public class PredefinedVariables {
+public class AllPredefinedVariables {
 
     public static final String IF_NAME = "If";
     public static final String FOR_NAME = "For";

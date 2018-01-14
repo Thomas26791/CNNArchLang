@@ -79,9 +79,8 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
         if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
             ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
             architecture.resolve();
-            CNNArchPostResolveCocos.createChecker().checkAll(node);
-            if (architecture.isResolved()){
-                architecture.getBody().getOutputShapes();
+            if (architecture.isResolved()) {
+                CNNArchPostResolveCocos.createChecker().checkAll(node);
             }
         }
         new ExpectedErrorInfo().checkOnlyExpectedPresent(Log.getFindings());
@@ -101,9 +100,8 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
         if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
             ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
             architecture.resolve();
-            CNNArchPostResolveCocos.createChecker().checkAll(node);
-            if (architecture.isResolved()){
-                architecture.getBody().getOutputShapes();
+            if (architecture.isResolved()) {
+                CNNArchPostResolveCocos.createChecker().checkAll(node);
             }
         }
         expectedErrors.checkExpectedPresent(Log.getFindings(), "Got no findings when checking all "
@@ -116,9 +114,8 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
         if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
             ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
             architecture.resolve();
-            postResolveCocos.checkAll(node);
-            if (architecture.isResolved()){
-                architecture.getBody().getOutputShapes();
+            if (architecture.isResolved()) {
+                postResolveCocos.checkAll(node);
             }
         }
         expectedErrors.checkOnlyExpectedPresent(Log.getFindings(), "Got no findings when checking only "

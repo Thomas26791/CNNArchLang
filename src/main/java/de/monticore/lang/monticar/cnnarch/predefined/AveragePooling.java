@@ -18,18 +18,17 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch.predefined;
 
+public class AveragePooling extends Pooling {
 
-public class CNNArchPreResolveCocos {
+    public AveragePooling() {
+        super(AllPredefinedMethods.AVG_POOLING_NAME);
+    }
 
-    public static CNNArchCoCoChecker createChecker() {
-        return new CNNArchCoCoChecker()
-                .addCoCo(new CheckMethodLayer())
-                .addCoCo(new CheckVariable())
-                .addCoCo(new CheckIODeclaration())
-                .addCoCo(new CheckIOLayer())
-                .addCoCo(new CheckArgument())
-                .addCoCo(new CheckMethodDeclaration());
+    public static AveragePooling create(){
+        AveragePooling method = new AveragePooling();
+        method.setParameters();
+        return method;
     }
 }

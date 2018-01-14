@@ -18,18 +18,34 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch.predefined;
 
+import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
+import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
 
-public class CNNArchPreResolveCocos {
+import java.util.ArrayList;
+import java.util.List;
 
-    public static CNNArchCoCoChecker createChecker() {
-        return new CNNArchCoCoChecker()
-                .addCoCo(new CheckMethodLayer())
-                .addCoCo(new CheckVariable())
-                .addCoCo(new CheckIODeclaration())
-                .addCoCo(new CheckIOLayer())
-                .addCoCo(new CheckArgument())
-                .addCoCo(new CheckMethodDeclaration());
+public class Sigmoid extends PredefinedMethodDeclaration {
+
+    private Sigmoid() {
+        super(AllPredefinedMethods.SIGMOID_NAME);
+    }
+
+    @Override
+    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
+        return inputShapes;
+    }
+
+    @Override
+    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
+        checkOneInput(inputShapes, layer);
+    }
+
+    public static Sigmoid create(){
+        Sigmoid method = new Sigmoid();
+        method.setParameters(new ArrayList<>());
+        return method;
     }
 }

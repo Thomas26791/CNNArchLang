@@ -20,9 +20,10 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.helper.Constraints;
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
+import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
 
@@ -74,13 +75,20 @@ public class IOLayerSymbol extends LayerSymbol {
         return getDefinition().isOutput();
     }
 
-    /*@Override
-    public void reset() {
-        setUnresolvableVariables(null);
-        if (getArrayAccess().isPresent()){
-            getArrayAccess().get().reset();
-        }
-    }*/
+    @Override
+    public boolean isAtomic(){
+        return true;
+    }
+
+    @Override
+    public List<LayerSymbol> getFirstAtomicLayers() {
+        return Collections.singletonList(this);
+    }
+
+    @Override
+    public List<LayerSymbol> getLastAtomicLayers() {
+        return Collections.singletonList(this);
+    }
 
     @Override
     public Set<VariableSymbol> resolve() throws ArchResolveException {
@@ -118,18 +126,41 @@ public class IOLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected List<ShapeSymbol> computeOutputShapes() {
+    public List<ShapeSymbol> computeOutputShapes() {
         List<ShapeSymbol> outputShapes;
         if (isInput()){
-            outputShapes = new ArrayList<>(getDefinition().getArrayLength());
-            for (int i = 0; i < getDefinition().getArrayLength(); i++){
-                outputShapes.add(getDefinition().getShape());
-            }
+            outputShapes = Collections.singletonList(getDefinition().getShape());
         }
         else {
             outputShapes = Collections.emptyList();
         }
         return outputShapes;
+    }
+
+    @Override
+    public void checkInputAndOutput() {
+        if (isOutput()){
+            List<ShapeSymbol> inputShapes = getInputShapes();
+            if (inputShapes.isEmpty()){
+                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT + " Invalid number of input streams. " +
+                                "The number of input streams to the output " + getName() + " is 0."
+                        , getSourcePosition());
+            }
+            else{
+                int size = getDefinition().getArrayLength();
+                if (getArrayAccess().isPresent()){
+                    size = 1;
+                }
+
+                if (inputShapes.size() != size){
+                    Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT + " Invalid number of input streams. " +
+                                    "The output " + getName() + " is an array of size " + size +
+                                    " but the number of input streams is " + inputShapes.size() + "."
+                            , getSourcePosition());
+                }
+            }
+            //todo check type
+        }
     }
 
     @Override

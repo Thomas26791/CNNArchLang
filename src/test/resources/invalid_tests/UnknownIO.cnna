@@ -1,0 +1,8 @@
+architecture UnknownIO{
+    in ->
+    FullyConnected(units=64) ->
+    Tanh() ->
+    FullyConnected(units=10) ->
+    Softmax() ->
+    out
+}

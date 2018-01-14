@@ -20,8 +20,10 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
+import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
 
@@ -51,15 +53,24 @@ public class CompositeLayerSymbol extends LayerSymbol {
         for (LayerSymbol current : layers){
             if (previous != null && !isParallel()){
                 current.setInputLayer(previous);
+                previous.setOutputLayer(current);
             }
             else {
                 if (getInputLayer().isPresent()){
                     current.setInputLayer(getInputLayer().get());
                 }
+                if (getOutputLayer().isPresent()){
+                    current.setOutputLayer(getOutputLayer().get());
+                }
             }
             previous = current;
         }
         this.layers = layers;
+    }
+
+    @Override
+    public boolean isAtomic() {
+        return getLayers().isEmpty();
     }
 
     @Override
@@ -78,17 +89,53 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public boolean isCompositeLayer(){
-        return true;
+    public void setOutputLayer(LayerSymbol outputLayer) {
+        super.setOutputLayer(outputLayer);
+        if (isParallel()){
+            for (LayerSymbol current : getLayers()){
+                current.setOutputLayer(outputLayer);
+            }
+        }
+        else {
+            if (!getLayers().isEmpty()){
+                getLayers().get(getLayers().size()-1).setOutputLayer(outputLayer);
+            }
+        }
     }
 
-    /*@Override
-    public void reset() {
-        for (LayerSymbol layer : getLayers()){
-            layer.reset();
+    @Override
+    public List<LayerSymbol> getFirstAtomicLayers() {
+        if (getLayers().isEmpty()){
+            return Collections.singletonList(this);
         }
-        setUnresolvableVariables(null);
-    }*/
+        else if (isParallel()){
+            List<LayerSymbol> firstLayers = new ArrayList<>();
+            for (LayerSymbol layer : getLayers()){
+                firstLayers.addAll(layer.getFirstAtomicLayers());
+            }
+            return firstLayers;
+        }
+        else {
+            return getLayers().get(0).getFirstAtomicLayers();
+        }
+    }
+
+    @Override
+    public List<LayerSymbol> getLastAtomicLayers() {
+        if (getLayers().isEmpty()){
+            return Collections.singletonList(this);
+        }
+        else if (isParallel()){
+            List<LayerSymbol> lastLayers = new ArrayList<>();
+            for (LayerSymbol layer : getLayers()){
+                lastLayers.addAll(layer.getLastAtomicLayers());
+            }
+            return lastLayers;
+        }
+        else {
+            return getLayers().get(getLayers().size()-1).getLastAtomicLayers();
+        }
+    }
 
     @Override
     public Set<VariableSymbol> resolve() throws ArchResolveException {
@@ -130,15 +177,14 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected List<ShapeSymbol> computeOutputShapes() {
-        if (layers.size() == 0){
+    public List<ShapeSymbol> computeOutputShapes() {
+        if (getLayers().isEmpty()){
             return getInputLayer().get().getOutputShapes();
         }
         else {
             if (isParallel()){
                 List<ShapeSymbol> outputShapes = new ArrayList<>(getLayers().size());
                 for (LayerSymbol layer : getLayers()){
-                    //todo: assure with coco that last layer in each parallel group has only one outputShape
                     if (layer.getOutputShapes().size() != 0){
                         outputShapes.add(layer.getOutputShapes().get(0));
                     }
@@ -150,6 +196,24 @@ public class CompositeLayerSymbol extends LayerSymbol {
                     layer.getOutputShapes();
                 }
                 return getLayers().get(getLayers().size() - 1).getOutputShapes();
+            }
+        }
+    }
+
+    @Override
+    public void checkInputAndOutput() {
+        if (!getLayers().isEmpty()){
+            if (isParallel()){
+                for (LayerSymbol layer : getLayers()){
+                    if (layer.getOutputShapes().size() > 1){
+                        Log.error("0" + ErrorCodes.MISSING_MERGE + " Missing merge layer (Add(), Concatenate, [i]). " +
+                                        "Each stream at the end of a parallel layer can only have one output stream. "
+                                , getSourcePosition());
+                    }
+                }
+            }
+            for (LayerSymbol layer : getLayers()){
+                layer.checkInputAndOutput();
             }
         }
     }
@@ -192,6 +256,9 @@ public class CompositeLayerSymbol extends LayerSymbol {
         List<LayerSymbol> layers = new ArrayList<>(getLayers().size());
         for (LayerSymbol layer : getLayers()){
             layers.add(layer.copy());
+        }
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
         }
         copy.setLayers(layers);
         return copy;

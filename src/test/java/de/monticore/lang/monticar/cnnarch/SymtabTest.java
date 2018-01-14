@@ -51,6 +51,18 @@ public class SymtabTest extends AbstractSymtabTest {
 
     @Ignore
     @Test
+    public void testResNeXt(){
+        Scope symTab = createSymTab("src/test/resources/architectures");
+        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+                "ResNeXt50",
+                ArchitectureSymbol.KIND).orElse(null);
+        assertNotNull(a);
+        a.resolve();
+        a.getBody().getOutputShapes();
+    }
+
+    @Ignore
+    @Test
     public void testFixedThreeInput(){
         Scope symTab = createSymTab("src/test/resources/valid_tests");
         ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(

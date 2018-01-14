@@ -23,13 +23,14 @@
 
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
@@ -38,7 +39,7 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
 
     private List<VariableSymbol> parameters;
     private CompositeLayerSymbol body;
-    private BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction = null;
+
 
     protected MethodDeclarationSymbol(String name) {
         super(name, KIND);
@@ -60,18 +61,18 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
 
     protected void setParameters(List<VariableSymbol> parameters) {
         this.parameters = parameters;
-        if (!getParameter(PredefinedVariables.IF_NAME).isPresent()){
-            VariableSymbol ifParam = PredefinedVariables.createIfParameter();
+        if (!getParameter(AllPredefinedVariables.IF_NAME).isPresent()){
+            VariableSymbol ifParam = AllPredefinedVariables.createIfParameter();
             this.parameters.add(ifParam);
             ifParam.putInScope(getSpannedScope());
         }
-        if (!getParameter(PredefinedVariables.FOR_NAME).isPresent()){
-            VariableSymbol forParam = PredefinedVariables.createForParameter();
+        if (!getParameter(AllPredefinedVariables.FOR_NAME).isPresent()){
+            VariableSymbol forParam = AllPredefinedVariables.createForParameter();
             this.parameters.add(forParam);
             forParam.putInScope(getSpannedScope());
         }
-        if (!getParameter(PredefinedVariables.CARDINALITY_NAME).isPresent()){
-            VariableSymbol forParam = PredefinedVariables.createCardinalityParameter();
+        if (!getParameter(AllPredefinedVariables.CARDINALITY_NAME).isPresent()){
+            VariableSymbol forParam = AllPredefinedVariables.createCardinalityParameter();
             this.parameters.add(forParam);
             forParam.putInScope(getSpannedScope());
         }
@@ -86,15 +87,8 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
     }
 
     public boolean isPredefined() {
-        return shapeFunction != null;
-    }
-
-    public BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> getShapeFunction() {
-        return shapeFunction;
-    }
-
-    protected void setShapeFunction(BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction) {
-        this.shapeFunction = shapeFunction;
+        //Override by PredefinedMethodDeclaration
+        return false;
     }
 
     public Optional<VariableSymbol> getParameter(String name) {
@@ -154,11 +148,10 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
     }
 
 
-    public static class Builder{
+    /*public static class Builder{
         private List<VariableSymbol> parameters = new ArrayList<>();
         private CompositeLayerSymbol body;
         private String name = "";
-        private BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction = (inputShape, method) -> inputShape;
 
         public Builder parameters(List<VariableSymbol> parameters) {
             this.parameters = parameters;
@@ -180,23 +173,20 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
             return this;
         }
 
-        public Builder shapeFunction(BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction){
-            this.shapeFunction = shapeFunction;
-            return this;
-        }
-
         public MethodDeclarationSymbol build(){
             if (name == null || name.equals("")){
                 throw new IllegalStateException("Missing or empty name for MethodDeclarationSymbol");
             }
             MethodDeclarationSymbol sym = new MethodDeclarationSymbol(name);
             sym.setBody(body);
+            if (body != null){
+                body.putInScope(sym.getSpannedScope());
+            }
             for (VariableSymbol param : parameters){
                 param.putInScope(sym.getSpannedScope());
             }
             sym.setParameters(parameters);
-            sym.setShapeFunction(shapeFunction);
             return sym;
         }
-    }
+    }*/
 }

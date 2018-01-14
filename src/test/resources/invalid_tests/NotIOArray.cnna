@@ -1,0 +1,11 @@
+architecture NotIOArray{
+    def input Q(-oo:+oo)^{inputs=10} in
+    def output Q(0:1)^{classes=2} out
+
+    in[0] ->
+    FullyConnected(units=64, no_bias=true) ->
+    Tanh() ->
+    FullyConnected(units=classes, no_bias=true) ->
+    Softmax() ->
+    out[0]
+}

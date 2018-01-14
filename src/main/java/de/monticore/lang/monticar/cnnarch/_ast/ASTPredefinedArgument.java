@@ -20,7 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._ast;
 
-import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 
 public class ASTPredefinedArgument extends ASTPredefinedArgumentTOP {
 
@@ -41,7 +41,7 @@ public class ASTPredefinedArgument extends ASTPredefinedArgumentTOP {
     public void setParallel(String parallel) {
         super.setParallel(parallel);
         if (parallel != null && !parallel.isEmpty()){
-            setName(PredefinedVariables.CARDINALITY_NAME);
+            setName(AllPredefinedVariables.CARDINALITY_NAME);
         }
     }
 
@@ -49,7 +49,7 @@ public class ASTPredefinedArgument extends ASTPredefinedArgumentTOP {
     public void setSerial(String serial) {
         super.setSerial(serial);
         if (serial != null && !serial.isEmpty()) {
-            setName(PredefinedVariables.FOR_NAME);
+            setName(AllPredefinedVariables.FOR_NAME);
         }
     }
 }

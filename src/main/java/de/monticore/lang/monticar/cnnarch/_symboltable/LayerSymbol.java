@@ -24,16 +24,14 @@ import de.monticore.symboltable.CommonScopeSpanningSymbol;
 import de.monticore.symboltable.MutableScope;
 import de.se_rwth.commons.Joiners;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     public static final LayerKind KIND = new LayerKind();
 
     private LayerSymbol inputLayer;
+    private LayerSymbol outputLayer;
     private List<ShapeSymbol> outputShapes = null;
     private Set<VariableSymbol> unresolvableVariables = null;
 
@@ -59,6 +57,15 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         this.inputLayer = inputLayer;
     }
 
+    public Optional<LayerSymbol> getOutputLayer() {
+        return Optional.ofNullable(outputLayer);
+    }
+
+    public void setOutputLayer(LayerSymbol outputLayer) {
+        this.outputLayer = outputLayer;
+    }
+
+    //only call after resolve
     public List<ShapeSymbol> getOutputShapes() {
         if (outputShapes == null){
             outputShapes = computeOutputShapes();
@@ -70,20 +77,46 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         this.outputShapes = outputShapes;
     }
 
+    public List<ShapeSymbol> getInputShapes() {
+        if (getInputLayer().isPresent()){
+            return getInputLayer().get().getOutputShapes();
+        }
+        else {
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * only call after resolve():
+     * @return returns the atomic layers which get the output of this layer as input.
+     */
+    public List<LayerSymbol> getNext(){
+        if (getOutputLayer().isPresent()){
+            return getOutputLayer().get().getFirstAtomicLayers();
+        }
+        else {
+            return new ArrayList<>();
+        }
+    }
+
     public boolean isInput(){
+        //override by IOLayerSymbol
         return false;
     }
 
     public boolean isOutput(){
+        //override by IOLayerSymbol
         return false;
     }
 
+    //convenience method for generation
     public boolean isCompositeLayer(){
-        return false;
+        return this instanceof CompositeLayerSymbol;
     }
 
+    //convenience method for generation
     public boolean isMethod(){
-        return false;
+        return this instanceof MethodLayerSymbol;
     }
 
     public Set<VariableSymbol> getUnresolvableVariables() {
@@ -118,9 +151,19 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         }
     }
 
+    /**
+     * resolves all expressions and underlying layers and handles method calls and sequences.
+     * If input and output shape have to be changed, this needs to be done before calling resolve().
+     * Resolves prepares the layers such that the output shapes of each layer can be calculated and checked.
+     * CNNArchPreResolveCocos have to be checked before calling resolve and CNNArchPostResolvesCocos have to be checked after calling resolve.
+     * @return returns the set of all variables which could not be resolved. Can be ignored.
+     * @throws ArchResolveException thrown to interrupt the recursive resolve process to avoid follow-up Runtime Exceptions in tests after an error was logged.
+     *                              Can be caught and ignored.
+     */
     abstract public Set<VariableSymbol> resolve() throws ArchResolveException;
 
-    abstract protected List<ShapeSymbol> computeOutputShapes();
+    //only call after resolve
+    protected abstract List<ShapeSymbol> computeOutputShapes();
 
     abstract protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables);
 
@@ -146,12 +189,36 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         }
     }
 
-    //deepCopy for LayerSymbols, ArgumentSymbol and ArchExpressionSymbols but does not copy math expressions or scope and ast information.
+    /**
+     * deepCopy for LayerSymbols, ArgumentSymbol and ArchExpressionSymbols but does not copy math expressions or scope and ast information.
+     * @return returns a copy of this object
+     */
     abstract public LayerSymbol copy();
 
     abstract protected void putInScope(MutableScope scope);
 
     abstract protected void resolveExpressions() throws ArchResolveException;
 
-    /*abstract public void reset();*/
+    /**
+     * only call after resolve.
+     * @return returns the first atomic layers which are contained in this layer or itself if it is atomic.
+     */
+    abstract public List<LayerSymbol> getFirstAtomicLayers();
+
+    /**
+     * only call after resolve.
+     * @return returns the last atomic layers which are contained in this layer or itself if it is atomic.
+     */
+    abstract public List<LayerSymbol> getLastAtomicLayers();
+
+    /**
+     * A layer is called atomic if it is either a active predefined method, an input, an output or an empty composite.
+     * This method only works correctly after a successful resolve().
+     * @return returns true iff this layer is atomic and resolved.
+     */
+    abstract public boolean isAtomic();
+
+    //only call after resolve
+    abstract public void checkInputAndOutput();
+
 }

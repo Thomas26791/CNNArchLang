@@ -1,0 +1,11 @@
+architecture InvalidInputShape{
+    def input Q(-oo:+oo)^{inputs=10} in[2]
+    def output Q(0:1)^{classes=2} out[2]
+
+    in ->
+    FullyConnected(units=64) ->
+    Tanh() ->
+    FullyConnected(units=classes) ->
+    Softmax() ->
+    out
+}
