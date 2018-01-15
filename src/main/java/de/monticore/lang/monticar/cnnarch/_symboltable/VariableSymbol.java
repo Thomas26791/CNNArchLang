@@ -20,7 +20,6 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.helper.Constraints;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
@@ -83,9 +82,9 @@ public class VariableSymbol extends CommonSymbol {
         }
     }
 
-    public boolean isGlobalVariable(){
+    /*public boolean isGlobalVariable(){
         return type == VariableType.GLOBAL;
-    }
+    }*/
 
     public boolean isIOVariable(){
         return type == VariableType.IOVARIABLE;
@@ -105,10 +104,10 @@ public class VariableSymbol extends CommonSymbol {
     }
 
     protected void setExpression(ArchSimpleExpressionSymbol expression){
-        if (getType() == VariableType.GLOBAL){
+        /*if (getType() == VariableType.GLOBAL){
             setDefaultExpression(expression);
         }
-        else if (getType() != VariableType.CONSTANT){
+        else*/ if (getType() != VariableType.CONSTANT){
             currentExpression = expression;
         }
     }
@@ -143,7 +142,7 @@ public class VariableSymbol extends CommonSymbol {
         currentExpression = null;
     }
 
-    protected void putInScope(MutableScope scope){
+    public void putInScope(MutableScope scope){
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)) {
             scope.add(this);

@@ -3,22 +3,22 @@ architecture Alexnet_alt{
     def output Q(0:1)^{classes=10} predictions
 
     image ->
-    Convolution(kernel=(11,11), channels=96, stride=(4,4), padding="valid") ->
+    Convolution(kernel=(11,11), channels=96, stride=(4,4), padding="no_loss") ->
     Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-    MaxPooling(kernel=(3,3), stride=(2,2), padding="valid") ->
+    MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
     Relu() ->
     Split(n=2) ->
     (
         [0] ->
         Convolution(kernel=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-        MaxPooling(kernel=(3,3), stride=(2,2), padding="valid") ->
+        MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     |
         [1] ->
         Convolution(kernel=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-        MaxPooling(kernel=(3,3), stride=(2,2), padding="valid") ->
+        MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     ) ->
     Concatenate() ->
@@ -30,14 +30,14 @@ architecture Alexnet_alt{
         Convolution(kernel=(3,3), channels=192) ->
         Relu() ->
         Convolution(kernel=(3,3), channels=128) ->
-        MaxPooling(kernel=(3,3), stride=(2,2), padding="valid") ->
+        MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     |
         [1] ->
         Convolution(kernel=(3,3), channels=192) ->
         Relu() ->
         Convolution(kernel=(3,3), channels=128) ->
-        MaxPooling(kernel=(3,3), stride=(2,2), padding="valid") ->
+        MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     ) ->
     Concatenate() ->

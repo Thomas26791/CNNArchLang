@@ -26,7 +26,7 @@ import de.monticore.lang.monticar.cnnarch._symboltable.MethodDeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.monticore.lang.monticar.cnnarch.helper.PredefinedMethods;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.HashSet;
@@ -64,8 +64,8 @@ public class CheckMethodLayer implements CNNArchASTMethodLayerCoCo{
             }
             for (ASTArgument argument : node.getArguments()){
                 requiredArguments.remove(argument.getName());
-                if (argument.getName().equals(PredefinedMethods.GLOBAL_NAME)){
-                    requiredArguments.remove(PredefinedMethods.KERNEL_NAME);
+                if (argument.getName().equals(AllPredefinedMethods.GLOBAL_NAME)){
+                    requiredArguments.remove(AllPredefinedMethods.KERNEL_NAME);
                 }
             }
 

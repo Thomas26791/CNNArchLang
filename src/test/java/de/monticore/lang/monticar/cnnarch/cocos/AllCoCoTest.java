@@ -39,13 +39,12 @@ public class AllCoCoTest extends AbstractCoCoTest {
 
         checkValid("architectures", "Alexnet");
         checkValid("architectures", "ResNeXt50");
-        checkValid("architectures", "Resnet34");
+        checkValid("architectures", "ResNet34");
         checkValid("architectures", "SequentialAlexnet");
         checkValid("architectures", "ThreeInputCNN_M14");
         checkValid("architectures", "VGG16");
 
         checkValid("valid_tests", "Fixed_Alexnet");
-        checkValid("valid_tests", "Fixed_ResNeXt50");
         checkValid("valid_tests", "Fixed_ThreeInputCNN_M14");
         checkValid("valid_tests", "ThreeInputCNN_M14_alternative");
         checkValid("valid_tests", "Alexnet_alt");
@@ -54,26 +53,17 @@ public class AllCoCoTest extends AbstractCoCoTest {
         checkValid("valid_tests", "SimpleNetworkLinear");
         checkValid("valid_tests", "SimpleNetworkRelu");
         checkValid("valid_tests", "SimpleNetworkTanh");
-        /*checkValid("architectures", "Alexnet");
-        checkValid("architectures", "Resnet34");
-        checkValid("architectures", "ResNeXt50");
-        checkValid("architectures", "SequentialAlexnet");
-        checkValid("architectures", "ThreeInputCNN_M14");
-        checkValid("architectures", "ThreeInputCNN_M14_alternative");
-        checkValid("architectures", "VGG16");
-
-
-        checkValid("valid_tests", "GroupTest");
-        checkValid("valid_tests", "MultiOutputTest");
-        checkValid("valid_tests", "MultiOutputArrayTest");
-        checkValid("valid_tests", "VGG16_alternative");
-        checkValid("valid_tests", "DirectPerception");
-        checkValid("valid_tests", "SafetyNetwork");*/
+        checkValid("valid_tests", "ResNeXt50_alt");
+        checkValid("valid_tests", "Alexnet_alt2");
 
     }
 
     @Test
-    public void testInvalidMethodDeclaration(){
+    public void testInvalidPreResolveCocos(){
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckIOLayer()),
+                new CNNArchCoCoChecker(),
+                getAstNode("invalid_tests", "UnknownIO"),
+                new ExpectedErrorInfo(2, ErrorCodes.UNKNOWN_IO_CODE));
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodLayer()),
                 new CNNArchCoCoChecker(),
                 getAstNode("invalid_tests", "DuplicatedArgument"),
@@ -104,82 +94,16 @@ public class AllCoCoTest extends AbstractCoCoTest {
                 new ExpectedErrorInfo(2, ErrorCodes.ILLEGAL_NAME_CODE));
     }
 
-    /*@Test
-    public void testArgumentCoCos() throws IOException{
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentNameCheck())
-                , getAstNode("invalid_tests", "DuplicateArgument")
-                , new ExpectedErrorInfo(1,ArgumentNameCheck.DUPLICATE_ARG_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentTypeCheck())
-                , getAstNode("invalid_tests", "BooleanArgumentTypeTest")
-                , new ExpectedErrorInfo(3,ArgumentTypeCheck.INCORRECT_ARG_TYPE_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentTypeCheck())
-                , getAstNode("invalid_tests", "IntegerArgumentTypeTest")
-                , new ExpectedErrorInfo(7,ArgumentTypeCheck.INCORRECT_ARG_TYPE_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentMissingCheck())
-                , getAstNode("invalid_tests", "MissingConvolutionArgument1")
-                , new ExpectedErrorInfo(1,ArgumentMissingCheck.MISSING_ARG_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentMissingCheck())
-                , getAstNode("invalid_tests", "MissingConvolutionArgument2")
-                , new ExpectedErrorInfo(2, ArgumentMissingCheck.MISSING_ARG_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentMissingCheck())
-                , getAstNode("invalid_tests", "MissingFullyConnectedArgument")
-                , new ExpectedErrorInfo(1, ArgumentMissingCheck.MISSING_ARG_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentMissingCheck())
-                , getAstNode("invalid_tests", "MissingPoolingArgument1")
-                , new ExpectedErrorInfo(1, ArgumentMissingCheck.MISSING_ARG_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArgumentMissingCheck())
-                , getAstNode("invalid_tests", "MissingLRNArgument")
-                , new ExpectedErrorInfo(1, ArgumentMissingCheck.MISSING_ARG_CODE));
-
-        *//*;
-        testInvalidModel("InvalidActivationBeforeOutput1",1,"x03015");
-        testInvalidModel("InvalidLayerDimension",1,"x03018");*//*
-    }
-
     @Test
-    public void testOutputCoCos() throws IOException{
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
-                , getAstNode("invalid_tests", "InvalidFixedOutputUnits")
-                , new ExpectedErrorInfo(1,OutputCheck.OUTPUT_MISSING_VAR_FC_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
-                , getAstNode("invalid_tests", "InvalidFixedOutputUnitsAndMissingArgument")
-                , new ExpectedErrorInfo(2,ArgumentMissingCheck.MISSING_ARG_CODE, OutputCheck.OUTPUT_MISSING_VAR_FC_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
-                , getAstNode("invalid_tests", "InvalidOutput1")
-                , new ExpectedErrorInfo(1,OutputCheck.OUTPUT_MISSING_VAR_FC_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new OutputCheck())
-                , getAstNode("invalid_tests", "InvalidOutput2")
-                , new ExpectedErrorInfo(1,OutputCheck.OUTPUT_MISSING_VAR_FC_CODE));
+    public void testInvalidPostResolveCocos(){
+        checkInvalid(new CNNArchCoCoChecker(),
+                new CNNArchCoCoChecker().addCoCo(new CheckLayerInputs()),
+                getAstNode("invalid_tests", "InvalidInputShape"),
+                new ExpectedErrorInfo(2, ErrorCodes.INVALID_LAYER_INPUT));
+        checkInvalid(new CNNArchCoCoChecker(),
+                new CNNArchCoCoChecker().addCoCo(new CheckLayerInputs()),
+                getAstNode("invalid_tests", "MissingMerge"),
+                new ExpectedErrorInfo(2, ErrorCodes.MISSING_MERGE));
     }
-
-    @Test
-    public void testArchitectureCoCos() throws  IOException{
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArchitectureCheck())
-                , getAstNode("invalid_tests", "MissingOutput")
-                , new ExpectedErrorInfo(1, ArchitectureCheck.OUTPUT_MISSING_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArchitectureCheck())
-                , getAstNode("invalid_tests", "UndefinedOutput")
-                , new ExpectedErrorInfo(2, ArchitectureCheck.OUTPUT_UNDEFINED_CODE, ArchitectureCheck.OUTPUT_MISSING_CODE));
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArchitectureCheck())
-                , getAstNode("invalid_tests", "UnusedOutputDef")
-                , new ExpectedErrorInfo(1, ArchitectureCheck.OUTPUT_UNUSED_CODE));
-
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new ArchitectureCheck())
-                , getAstNode("invalid_tests", "DuplicateOutputAssignment")
-                , new ExpectedErrorInfo(1, ArchitectureCheck.OUTPUT_DUPLICATE_CODE));
-    }*/
 
 }

@@ -27,12 +27,12 @@ public enum VariableType {
             return "parameter";
         }
     },
-    GLOBAL {
+    /*GLOBAL {
         @Override
         public String toString(){
             return "globalVariable";
         }
-    },
+    },*/
     IOVARIABLE {
         @Override
         public String toString(){

@@ -20,8 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.helper.Constraints;
-import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
@@ -67,7 +66,7 @@ public class ArgumentSymbol extends CommonSymbol {
     }
 
     protected void setRhs(ArchExpressionSymbol rhs) {
-        if (getName().equals(PredefinedVariables.FOR_NAME)
+        if (getName().equals(AllPredefinedVariables.FOR_NAME)
                 && rhs instanceof ArchSimpleExpressionSymbol
                 && (!rhs.getValue().isPresent() || !rhs.getValue().get().equals(1))){
             this.rhs = ArchRangeExpressionSymbol.of(
@@ -75,7 +74,7 @@ public class ArgumentSymbol extends CommonSymbol {
                     (ArchSimpleExpressionSymbol) rhs,
                     false);
         }
-        else if (getName().equals(PredefinedVariables.CARDINALITY_NAME)
+        else if (getName().equals(AllPredefinedVariables.CARDINALITY_NAME)
                 && rhs instanceof ArchSimpleExpressionSymbol
                 && (!rhs.getValue().isPresent() || !rhs.getValue().get().equals(1))) {
             this.rhs = ArchRangeExpressionSymbol.of(
@@ -121,7 +120,7 @@ public class ArgumentSymbol extends CommonSymbol {
             List<ArgumentSymbol> serialArgumentList = new ArrayList<>(serialElementList.size());
             for (ArchSimpleExpressionSymbol element : serialElementList){
                 ArchSimpleExpressionSymbol value = element;
-                if (getName().equals(PredefinedVariables.FOR_NAME) || getName().equals(PredefinedVariables.CARDINALITY_NAME)){
+                if (getName().equals(AllPredefinedVariables.FOR_NAME) || getName().equals(AllPredefinedVariables.CARDINALITY_NAME)){
                     value = ArchSimpleExpressionSymbol.of(1);
                 }
 

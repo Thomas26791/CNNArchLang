@@ -20,16 +20,13 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
+import de.monticore.lang.monticar.cnnarch._ast.ASTIODeclaration;
 
-public class CNNArchPreResolveCocos {
+public class CheckIODeclaration implements CNNArchASTIODeclarationCoCo {
 
-    public static CNNArchCoCoChecker createChecker() {
-        return new CNNArchCoCoChecker()
-                .addCoCo(new CheckMethodLayer())
-                .addCoCo(new CheckVariable())
-                .addCoCo(new CheckIODeclaration())
-                .addCoCo(new CheckIOLayer())
-                .addCoCo(new CheckArgument())
-                .addCoCo(new CheckMethodDeclaration());
+    @Override
+    public void check(ASTIODeclaration node) {
+        //todo: check io shape; only 1 and 3 is allowed
     }
+
 }

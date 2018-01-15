@@ -23,9 +23,9 @@ package de.monticore.lang.monticar.cnnarch._cocos;
 import de.monticore.lang.monticar.cnnarch._ast.ASTParameter;
 import de.monticore.lang.monticar.cnnarch._ast.ASTVariable;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
-import de.monticore.lang.monticar.cnnarch.helper.Constraints;
+import de.monticore.lang.monticar.cnnarch._symboltable.Constraints;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
@@ -54,9 +54,14 @@ public class CheckVariable implements CNNArchASTVariableCoCo {
                             ". All new variable and method names have to start with a lowercase letter. "
                     , node.get_SourcePositionStart());
         }
-        if (name.equals(PredefinedVariables.TRUE_NAME) || name.equals(PredefinedVariables.FALSE_NAME)){
+        else if (name.equals(AllPredefinedVariables.TRUE_NAME) || name.equals(AllPredefinedVariables.FALSE_NAME)){
             Log.error("0" + ErrorCodes.ILLEGAL_NAME_CODE + " Illegal name: " + name +
                             ". No variable can be named 'true' or 'false'"
+                    , node.get_SourcePositionStart());
+        }
+        else if (name.equals(AllPredefinedVariables.IF_NAME.toLowerCase())){
+            Log.error("0" + ErrorCodes.ILLEGAL_NAME_CODE + " Illegal name: " + name +
+                            ". No variable can be named 'if'"
                     , node.get_SourcePositionStart());
         }
     }

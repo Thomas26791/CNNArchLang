@@ -75,6 +75,13 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
         }
     }
 
+    public List<LayerSymbol> getFirstLayers(){
+        if (!getBody().isResolved()){
+            resolve();
+        }
+        return getBody().getFirstAtomicLayers();
+    }
+
     public boolean isResolved(){
         return getBody().isResolved();
     }

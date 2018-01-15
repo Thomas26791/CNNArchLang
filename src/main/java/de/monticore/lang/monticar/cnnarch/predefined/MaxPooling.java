@@ -18,18 +18,17 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._cocos;
+package de.monticore.lang.monticar.cnnarch.predefined;
 
+public class MaxPooling extends Pooling {
 
-public class CNNArchPreResolveCocos {
+    public MaxPooling() {
+        super(AllPredefinedMethods.MAX_POOLING_NAME);
+    }
 
-    public static CNNArchCoCoChecker createChecker() {
-        return new CNNArchCoCoChecker()
-                .addCoCo(new CheckMethodLayer())
-                .addCoCo(new CheckVariable())
-                .addCoCo(new CheckIODeclaration())
-                .addCoCo(new CheckIOLayer())
-                .addCoCo(new CheckArgument())
-                .addCoCo(new CheckMethodDeclaration());
+    public static MaxPooling create(){
+        MaxPooling method = new MaxPooling();
+        method.setParameters();
+        return method;
     }
 }

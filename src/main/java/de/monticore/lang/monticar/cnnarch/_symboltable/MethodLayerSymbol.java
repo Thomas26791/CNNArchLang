@@ -22,14 +22,13 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class MethodLayerSymbol extends LayerSymbol {
@@ -68,7 +67,7 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     public ArchExpressionSymbol getIfExpression(){
-        Optional<ArgumentSymbol> argument = getArgument(PredefinedVariables.IF_NAME);
+        Optional<ArgumentSymbol> argument = getArgument(AllPredefinedVariables.IF_NAME);
         if (argument.isPresent()){
             return argument.get().getRhs();
         }
@@ -87,6 +86,9 @@ public class MethodLayerSymbol extends LayerSymbol {
             if (getInputLayer().isPresent()){
                 resolvedThis.setInputLayer(getInputLayer().get());
             }
+            if (getOutputLayer().isPresent()){
+                resolvedThis.setOutputLayer(getOutputLayer().get());
+            }
         }
         this.resolvedThis = resolvedThis;
     }
@@ -96,6 +98,14 @@ public class MethodLayerSymbol extends LayerSymbol {
         super.setInputLayer(inputLayer);
         if (getResolvedThis().isPresent() && getResolvedThis().get() != this){
             getResolvedThis().get().setInputLayer(inputLayer);
+        }
+    }
+
+    @Override
+    public void setOutputLayer(LayerSymbol outputLayer) {
+        super.setOutputLayer(outputLayer);
+        if (getResolvedThis().isPresent() && getResolvedThis().get() != this){
+            getResolvedThis().get().setOutputLayer(outputLayer);
         }
     }
 
@@ -113,21 +123,29 @@ public class MethodLayerSymbol extends LayerSymbol {
         }
     }
 
-    /*@Override
-    public void reset() {
-        if (getResolvedThis().isPresent() && getResolvedThis().get() != this && getResolvedThis().get().getMaxSerialLength().get() != 0){
-            getSpannedScope().remove(getResolvedThis().get());
-        }
-        setResolvedThis(null);
-        setUnresolvableVariables(null);
-        for (ArgumentSymbol arg : getArguments()){
-            arg.getRhs().reset();
-        }
-    }*/
+    @Override
+    public boolean isAtomic(){
+        return getResolvedThis().isPresent() && getResolvedThis().get() == this;
+    }
 
     @Override
-    public boolean isMethod(){
-        return true;
+    public List<LayerSymbol> getFirstAtomicLayers() {
+        if (getResolvedThis().get() == this){
+            return Collections.singletonList(this);
+        }
+        else {
+            return getResolvedThis().get().getFirstAtomicLayers();
+        }
+    }
+
+    @Override
+    public List<LayerSymbol> getLastAtomicLayers() {
+        if (getResolvedThis().get() == this){
+            return Collections.singletonList(this);
+        }
+        else {
+            return getResolvedThis().get().getLastAtomicLayers();
+        }
     }
 
     public boolean isResolved(){
@@ -192,12 +210,18 @@ public class MethodLayerSymbol extends LayerSymbol {
                     .parallel(false)
                     .layers(serialLayers)
                     .build();
+            if (getAstNode().isPresent()){
+                serialComposite.setAstNode(getAstNode().get());
+            }
             serialComposites.add(serialComposite);
         }
         CompositeLayerSymbol parallelLayer = new CompositeLayerSymbol.Builder()
                 .parallel(true)
                 .layers(serialComposites)
                 .build();
+        if (getAstNode().isPresent()){
+            parallelLayer.setAstNode(getAstNode().get());
+        }
         return parallelLayer;
     }
 
@@ -222,6 +246,9 @@ public class MethodLayerSymbol extends LayerSymbol {
                         .method(getMethod())
                         .arguments(methodArguments)
                         .build();
+                if (getAstNode().isPresent()){
+                    method.setAstNode(getAstNode().get());
+                }
                 serialLayerList.add(method);
             }
             layers.add(serialLayerList);
@@ -238,11 +265,10 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected List<ShapeSymbol> computeOutputShapes() {
+    public List<ShapeSymbol> computeOutputShapes() {
         if (getResolvedThis().isPresent()) {
             if (getResolvedThis().get() == this) {
-                BiFunction<List<ShapeSymbol>, MethodLayerSymbol, List<ShapeSymbol>> shapeFunction = getMethod().getShapeFunction();
-                return shapeFunction.apply(getInputLayer().get().getOutputShapes(), this);
+                return ((PredefinedMethodDeclaration) getMethod()).computeOutputShapes(getInputShapes(), this);
             }
             else {
                 Set<VariableSymbol> unresolvableVariables = getUnresolvableVariables();
@@ -257,6 +283,18 @@ public class MethodLayerSymbol extends LayerSymbol {
         }
         else {
             throw new IllegalStateException("Output shape cannot be computed before the method is resolved");
+        }
+    }
+
+    @Override
+    public void checkInputAndOutput() {
+        if (getResolvedThis().isPresent()){
+            if (getResolvedThis().get() == this){
+                ((PredefinedMethodDeclaration) getMethod()).checkInput(getInputShapes(), this);
+            }
+            else {
+                getResolvedThis().get().checkInputAndOutput();
+            }
         }
     }
 
@@ -315,7 +353,7 @@ public class MethodLayerSymbol extends LayerSymbol {
                         length = argLength;
                     }
                     else if (length != argLength) {
-                        Log.error(ErrorCodes.ILLEGAL_SEQUENCE_LENGTH_MSG +
+                        Log.error("0" + ErrorCodes.ILLEGAL_SEQUENCE_LENGTH_CODE + " Illegal sequence length. " +
                                         "Length is " + argLength + " but it should be " + length + " or not a sequence. " +
                                         "All parallel sequences in the same method layer must be of the same size. "
                                 , argument.getSourcePosition());
@@ -380,7 +418,7 @@ public class MethodLayerSymbol extends LayerSymbol {
                 }
             }
             else if (argLength != 1 && argLength != serialLength){
-                Log.error(ErrorCodes.ILLEGAL_SEQUENCE_LENGTH_MSG +
+                Log.error("0" + ErrorCodes.ILLEGAL_SEQUENCE_LENGTH_CODE + " Illegal sequence length. " +
                                 "Length of sequence dimension "+ serialIndex +" is " + argLength + " but it should be " + serialLength + " or not a sequence. " +
                                 "All serial sequences of the same paralle dimension in the same method layer must be of the same size. "
                         , getSourcePosition());
@@ -421,9 +459,9 @@ public class MethodLayerSymbol extends LayerSymbol {
         }
         copy.setArguments(args);
         copy.setMethod(getMethod());
-        /*if (getResolvedThis().isPresent() && getResolvedThis().get() != this) {
-            copy.setResolvedThis(getResolvedThis().get().copy());
-        }*/
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
         return copy;
     }
 

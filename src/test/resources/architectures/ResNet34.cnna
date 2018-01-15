@@ -1,4 +1,4 @@
-architecture Resnet34{
+architecture ResNet34{
     def input Z(0:255)^{h=224,w=224,c=3} image
     def output Q(0:1)^{classes=1000} predictions
 
@@ -14,7 +14,7 @@ architecture Resnet34{
     def resLayer(channels, stride=1){
         (
             conv(filter=3, channels=channels, stride=stride) ->
-            conv(filter=3, channels=channels, stride=stride, act=false)
+            conv(filter=3, channels=channels, act=false)
         |
             skip(channels=channels, stride=stride, If=(stride!=1))
         ) ->

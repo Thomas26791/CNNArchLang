@@ -22,19 +22,14 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 
 import de.monticore.lang.math.math._ast.ASTMathExpression;
-import de.monticore.lang.math.math._ast.ASTMathFalseExpression;
-import de.monticore.lang.math.math._ast.ASTMathTrueExpression;
 import de.monticore.lang.math.math._symboltable.MathSymbolTableCreator;
 import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
-import de.monticore.lang.math.math._symboltable.expression.MathNameExpressionSymbol;
-import de.monticore.lang.math.math._visitor.MathVisitor;
 import de.monticore.lang.monticar.cnnarch._ast.*;
 import de.monticore.lang.monticar.cnnarch._visitor.CNNArchInheritanceVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CNNArchVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CommonCNNArchDelegatorVisitor;
-import de.monticore.lang.monticar.cnnarch.helper.Constraints;
-import de.monticore.lang.monticar.cnnarch.helper.PredefinedMethods;
-import de.monticore.lang.monticar.cnnarch.helper.PredefinedVariables;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.lang.monticar.types2._ast.ASTType;
 import de.monticore.symboltable.*;
 import de.se_rwth.commons.logging.Log;
@@ -140,12 +135,12 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     }
 
     private void createPredefinedConstants(){
-        addToScope(PredefinedVariables.createTrueConstant());
-        addToScope(PredefinedVariables.createFalseConstant());
+        addToScope(AllPredefinedVariables.createTrueConstant());
+        addToScope(AllPredefinedVariables.createFalseConstant());
     }
 
     private void createPredefinedMethods(){
-        for (MethodDeclarationSymbol sym : PredefinedMethods.createList()){
+        for (MethodDeclarationSymbol sym : AllPredefinedMethods.createList()){
             addToScope(sym);
         }
     }
@@ -413,11 +408,13 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     public void visit(ASTIOLayer node) {
         Optional<IODeclarationSymbol> optIODef = currentScope().get().resolve(node.getName(), IODeclarationSymbol.KIND);
         int arrayLength = 1;
+        boolean isInput = false;
         if (optIODef.isPresent()){
             arrayLength = optIODef.get().getArrayLength();
+            isInput = optIODef.get().isInput();
         }
 
-        if (!node.getIndex().isPresent() && arrayLength > 1){
+        if (!node.getIndex().isPresent() && arrayLength > 1 && isInput){
             List<LayerSymbol> ioLayers = new ArrayList<>(arrayLength);
             IOLayerSymbol ioLayer;
             for (int i = 0; i < arrayLength; i++){
@@ -455,7 +452,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
     @Override
     public void visit(ASTArrayAccessLayer node) {
-        MethodLayerSymbol methodLayer = new MethodLayerSymbol(PredefinedMethods.GET_NAME);
+        MethodLayerSymbol methodLayer = new MethodLayerSymbol(AllPredefinedMethods.GET_NAME);
         addToScopeAndLinkWithNode(methodLayer, node);
     }
 

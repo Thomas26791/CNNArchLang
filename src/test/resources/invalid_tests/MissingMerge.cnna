@@ -1,0 +1,24 @@
+architecture MissingMerge{
+    def input Q(-oo:+oo)^{inputs=10} in
+    def output Q(0:1)^{classes=2} out
+
+    in ->
+    (
+        (
+            FullyConnected(units=16)
+        |
+            FullyConnected(units=16)
+        )
+    |
+        (
+            FullyConnected(units=16)
+        |
+            FullyConnected(units=16)
+        )
+    ) ->
+    Add() ->
+    Tanh() ->
+    FullyConnected(units=classes) ->
+    Softmax() ->
+    out
+}
