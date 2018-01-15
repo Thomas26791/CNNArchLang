@@ -106,7 +106,7 @@ abstract public class PredefinedMethodDeclaration extends MethodDeclarationSymbo
                 }
             }
             else if (borderModeSetting.equals(AllPredefinedMethods.PADDING_NO_LOSS)){
-                //padding until no data gets discarded
+                //padding until no data gets discarded, same as valid with a stride of 1
                 outputWidth = 1 + Math.max(0, ((inputWidth - kernelWidth + strideWidth - 1) / strideWidth));
                 outputHeight = 1 + Math.max(0, ((inputHeight - kernelHeight + strideHeight - 1) / strideHeight));
             }

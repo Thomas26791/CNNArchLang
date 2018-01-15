@@ -2,14 +2,14 @@ architecture Alexnet{
     def input Z(0:255)^{h=224,w=224,c=3} image
     def output Q(0:1)^{classes=10} predictions
 
-    def group1(i){
+    def split1(i){
         [i] ->
         Convolution(kernel=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
         MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     }
-    def group2(i){
+    def split2(i){
         [i] ->
         Convolution(kernel=(3,3), channels=192) ->
         Relu() ->
@@ -29,12 +29,12 @@ architecture Alexnet{
     MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
     Relu() ->
     Split(n=2) ->
-    group1(i=[0|1]) ->
+    split1(i=[0|1]) ->
     Concatenate() ->
     Convolution(kernel=(3,3), channels=384) ->
     Relu() ->
     Split(n=2) ->
-    group2(i=[0|1]) ->
+    split2(i=[0|1]) ->
     Concatenate() ->
     fc(->=2) ->
     FullyConnected(units=classes) ->

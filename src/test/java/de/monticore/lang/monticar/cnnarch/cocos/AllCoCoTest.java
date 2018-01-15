@@ -54,6 +54,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
         checkValid("valid_tests", "SimpleNetworkRelu");
         checkValid("valid_tests", "SimpleNetworkTanh");
         checkValid("valid_tests", "ResNeXt50_alt");
+        checkValid("valid_tests", "Alexnet_alt2");
 
     }
 
