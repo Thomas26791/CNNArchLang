@@ -138,13 +138,13 @@ It is also possible to create a repetition of a method in another way through th
 If a argument is set to a sequence, the method will be repeated for each value in the sequence and the connection between the layers will be the same as it is between the values of the sequence. An argument which has a single value is neutral to the repetition which means that it will be repeated an arbitrary number of times without interfering with the repetition. If a method contains multiple argument sequences, CNNArch will try to combine the sequences. The language will throw an error at compile time if this fails. Assuming the method `m(a, b, c)` exists, the line `m(a=[5->3], b=[3|4|2], c=2)->` is equal to:
 ```
 (
-	m(a=5, b=3, c=2) ->
+    m(a=5, b=3, c=2) ->
     m(a=3, b=3, c=2)
 |
-	m(a=5, b=4, c=2) ->
+    m(a=5, b=4, c=2) ->
     m(a=3, b=4, c=2)
 |
-	m(a=5, b=2, c=2) ->
+    m(a=5, b=2, c=2) ->
     m(a=3, b=2, c=2)
 ) ->
 ```
