@@ -21,12 +21,26 @@
 package de.monticore.lang.monticar.cnnarch._cocos;
 
 import de.monticore.lang.monticar.cnnarch._ast.ASTIODeclaration;
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.se_rwth.commons.logging.Log;
 
-public class CheckIODeclaration implements CNNArchASTIODeclarationCoCo {
+import java.util.HashSet;
+import java.util.Set;
+
+public class CheckIOName implements CNNArchASTIODeclarationCoCo {
+
+    Set<String> ioNames = new HashSet<>();
 
     @Override
     public void check(ASTIODeclaration node) {
-        //todo: check io shape; only 1 and 3 is allowed
+        if (ioNames.contains(node.getName())){
+            Log.error("0" + ErrorCodes.DUPLICATED_NAME_CODE + " Duplicated IO name. " +
+                            "The name '" + node.getName() + "' is already used."
+                    , node.get_SourcePositionStart());
+        }
+        else {
+            ioNames.add(node.getName());
+        }
     }
 
 }

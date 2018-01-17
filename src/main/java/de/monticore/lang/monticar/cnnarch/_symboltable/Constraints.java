@@ -21,6 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.se_rwth.commons.SourcePosition;
 import de.se_rwth.commons.logging.Log;
 
@@ -109,13 +110,13 @@ public enum Constraints {
                 return exp.getDoubleValue().get() >= 0;
             }
             else if (exp.getDoubleTupleValues().isPresent()){
-                boolean isPositive = true;
+                boolean isNonNegative = true;
                 for (double value : exp.getDoubleTupleValues().get()){
                     if (value < 0){
-                        isPositive = false;
+                        isNonNegative = false;
                     }
                 }
-                return isPositive;
+                return isNonNegative;
             }
             return false;
         }
@@ -131,13 +132,13 @@ public enum Constraints {
                 return exp.getDoubleValue().get() >= 0 && exp.getDoubleValue().get() <= 1;
             }
             else if (exp.getDoubleTupleValues().isPresent()){
-                boolean isPositive = true;
+                boolean isBetween0And1 = true;
                 for (double value : exp.getDoubleTupleValues().get()){
                     if (value < 0 || value > 1){
-                        isPositive = false;
+                        isBetween0And1 = false;
                     }
                 }
-                return isPositive;
+                return isBetween0And1;
             }
             return false;
         }
@@ -200,7 +201,7 @@ public enum Constraints {
         for (List<ArchSimpleExpressionSymbol> expList : exp.getElements().get()) {
             for (ArchSimpleExpressionSymbol singleExp : expList) {
                 if (!isValid(singleExp)) {
-                    Log.error("0" + ILLEGAL_ASSIGNMENT_CODE + " Illegal assignment of '" + name + "'. " +
+                    Log.error("0" + ILLEGAL_ASSIGNMENT_CODE + " Illegal assignment of '" + printName(name) + "'. " +
                                     "Expression must be " + msgString() + "."
                             , sourcePosition);
                     return false;
@@ -210,4 +211,15 @@ public enum Constraints {
         return true;
     }
 
+    private String printName(String name){
+        if (name.equals(AllPredefinedVariables.FOR_NAME)){
+            return "->";
+        }
+        else if (name.equals(AllPredefinedVariables.CARDINALITY_NAME)){
+            return "|";
+        }
+        else {
+            return name;
+        }
+    }
 }

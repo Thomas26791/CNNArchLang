@@ -105,7 +105,11 @@ architecture ExampleNetwork{
 ```
 
 ## Methods
-It is possible to avoid redundancy in the architecture through the declaration of new methods. The method declaration is similar to python. Each parameter can have a default value that makes it an optional argument. The method call is also similar to python but, in contrast to python, it is necessary to specify the name of each argument. The body of a new method is constructed from other layers including other user-defined methods. However, recursion is not allowed. The compiler will throw an error if recursion occurs. The following is a example of multiple method declarations.
+It is possible to declare of new methods. The method declaration is similar to python. 
+Each parameter can have a default value that makes it an optional argument. 
+The method call is also similar to python but, in contrast to python, it is necessary to specify the name of each argument. 
+The body of a new method is constructed from other layers including other user-defined methods. However, recursion is not allowed. 
+The compiler will throw an error if recursion occurs. The following is a example of multiple method declarations.
 ```
     def conv(filter, channels, stride=1, act=true){
         Convolution(kernel=(filter,filter), channels=channels, stride=(stride,stride)) ->
@@ -130,7 +134,10 @@ It is possible to avoid redundancy in the architecture through the declaration o
 The method `resLayer` in this example corresponds to a building block of a Residual Network. The `If` argument is a special argument which is explained in the next section.
 
 ## Special Arguments
-There exists special structural arguments which can be used in each method. These are `->`, `|` and `If`. `->` and `|` can only be positive integers and `If` can only be a boolean. The argument `If` does not nothing if it is true and removes the layer completely if it is false. The other two arguments create a repetition of the method. We will show their effect with examples. Assuming `a` is a method without required arguments, then `a(-> = 3)->` is equal to `a()->a()->a()->`, `a(| = 3)->` is equal to `(a() | a() | a())->` and `a(-> = 3, | = 2->` is equal to `(a()->a()->a() | a()->a()->a())->`. 
+There exists special structural arguments which can be used in each method. These are `->`, `|` and `If`. `->` and `|` can only be positive integers and `If` can only be a boolean. 
+The argument `If` does not nothing if it is true and removes the layer completely if it is false. The other two arguments create a repetition of the method. 
+We will show their effect with examples. Assuming `a` is a method without required arguments, 
+then `a(-> = 3)->` is equal to `a()->a()->a()->`, `a(| = 3)->` is equal to `(a() | a() | a())->` and `a(-> = 3, | = 2->)` is equal to `(a()->a()->a() | a()->a()->a())->`. 
 
 ## Argument Sequences
 It is also possible to create a repetition of a method in another way through the use of argument sequences. The following are valid sequences: `[2->5->3]`, `[true|false|false]`, `[2->1|4->4->6]`, `[ |2->3]`, `1->..->5` and `3|..|-2`. All values in these examples could also be replaced by variable names or expressions. The first three are standard sequences and the last two are intervals. An interval can be translated to a standard sequence. The interval `3|..|-2` is equal to `[3|2|1|0|-1|-2]` and `1->..->5` is equal to `[1->2->3->4->5]`. 
@@ -153,7 +160,7 @@ However, the line `m(a=[5->3], b=[2|4->6], c=2)->` would throw an error because 
 ## Expressions
 Currently, the working expression operators are the basic arithmetic operators "+", "-", "\*", "/", the logical operators "&&", "||" and for most cases the comparison operators "==", "!=", "<", ">", "<=", ">=". The comparison operators do not work reliably for the comparison of tuple (they only compare the last element in the tuples). 
 
-## Another Example
+## Advanced Example
 This version of Alexnet, which uses method construction, argument sequences and special arguments, is identical to the one in the section Basic Structure.
 ```
 architecture Alexnet{
@@ -297,6 +304,5 @@ All methods with the exception of *Concatenate*, *Add*, *Get* and *Split* can on
   Opposite of *Concatenate*. Handles a single input stream and splits it into *n* output streams. The output streams have the same height and width as the input stream and a number channels which is in general `input_channels / n`. The last output stream will have a higher number of channels than the other if `input_channels` is not divisible by `n`.
   
   * **n** (integer > 0, required): The number of output streams. Cannot be higher than the number of input channels.
-
-
-<br><br>
+  
+  

@@ -50,8 +50,10 @@ public class IOLayerSymbol extends LayerSymbol {
 
     public IODeclarationSymbol getDefinition() {
         if (definition == null){
-            Optional<IODeclarationSymbol> optDef = getEnclosingScope().resolve(getName(), IODeclarationSymbol.KIND);
-            optDef.ifPresent(this::setDefinition);
+            Collection<IODeclarationSymbol> ioDefCollection = getEnclosingScope().resolveMany(getName(), IODeclarationSymbol.KIND);
+            if (!ioDefCollection.isEmpty()){
+                setDefinition(ioDefCollection.iterator().next());
+            }
         }
         return definition;
     }
@@ -63,6 +65,7 @@ public class IOLayerSymbol extends LayerSymbol {
 
     private void setDefinition(IODeclarationSymbol definition) {
         this.definition = definition;
+        definition.getConnectedLayers().add(this);
     }
 
     @Override

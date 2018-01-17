@@ -25,6 +25,7 @@ public class CNNArchPostResolveCocos {
     public static CNNArchCoCoChecker createChecker() {
         return new CNNArchCoCoChecker()
                 .addCoCo(new CheckLayerInputs())
+                .addCoCo(new CheckIOAccessAndIOMissing())
                 .addCoCo(new CheckIOType());
     }
 

@@ -24,7 +24,6 @@ import de.monticore.lang.monticar.cnnarch._symboltable.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class Dropout extends PredefinedMethodDeclaration {
@@ -40,7 +39,7 @@ public class Dropout extends PredefinedMethodDeclaration {
 
     @Override
     public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        checkOneInput(inputShapes, layer);
+        errorIfInputSizeIsNotOne(inputShapes, layer);
     }
 
     public static Dropout create(){

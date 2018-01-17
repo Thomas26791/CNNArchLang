@@ -28,7 +28,7 @@ import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
-public class CheckIOLayer implements CNNArchASTIOLayerCoCo {
+public class CheckUnknownIO implements CNNArchASTIOLayerCoCo {
 
     @Override
     public void check(ASTIOLayer node) {

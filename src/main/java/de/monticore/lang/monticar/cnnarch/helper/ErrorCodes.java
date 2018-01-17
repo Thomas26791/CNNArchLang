@@ -22,20 +22,10 @@ package de.monticore.lang.monticar.cnnarch.helper;
 
 public class ErrorCodes {
 
-    public static final String OUTPUT_UNDEFINED_CODE = "x0601D";
-    public static final String OUTPUT_UNDEFINED_MSG = "0" + OUTPUT_UNDEFINED_CODE + " Undefined output. ";
-    public static final String OUTPUT_MISSING_CODE = "x0601C";
-    public static final String OUTPUT_MISSING_MSG = "0" + OUTPUT_MISSING_CODE + " Missing output. Architecture has to declare at least one output.";
-    public static final String OUTPUT_UNUSED_CODE = "x0601E";
-    public static final String OUTPUT_UNUSED_MSG = "0" + OUTPUT_UNUSED_CODE + " ";
-    public static final String OUTPUT_DUPLICATE_CODE = "x0601B";
-    public static final String OUTPUT_DUPLICATE_MSG = "0"+OUTPUT_DUPLICATE_CODE+" ";
-
-
-
+    public static final String INVALID_ARRAY_ACCESS = "x74358";
+    public static final String MISSING_IO = "x10920";
+    public static final String INVALID_IO_SHAPE = "x0601C";
     public static final String MISSING_VAR_VALUE_CODE = "x02572";
-
-
     public static final String ILLEGAL_ASSIGNMENT_CODE = "x03444";
     public static final String ILLEGAL_SEQUENCE_LENGTH_CODE = "x24772";
     public static final String UNKNOWN_IO_CODE = "x32487";
@@ -48,5 +38,6 @@ public class ErrorCodes {
     public static final String RECURSION_ERROR_CODE = "x25833";
     public static final String INVALID_LAYER_INPUT = "x61670";
     public static final String MISSING_MERGE = "x82479";
+    public static final String UNKNOWN_VARIABLE_NAME = "x65013";
 
 }

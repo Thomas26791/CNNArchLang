@@ -31,33 +31,13 @@ import de.se_rwth.commons.logging.Log;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CheckMethodDeclaration implements CNNArchASTMethodDeclarationCoCo {
+public class CheckMethodRecursion implements CNNArchASTMethodDeclarationCoCo {
 
-    //for duplication check
-    Set<String> methodNames = new HashSet<>();
-    //for recursion check
     Set<MethodDeclarationSymbol> seenMethods = new HashSet<>();
     boolean done;
 
-
     @Override
     public void check(ASTMethodDeclaration node) {
-        String name = node.getName();
-        if (name.isEmpty() || !Character.isLowerCase(name.codePointAt(0))){
-            Log.error("0" + ErrorCodes.ILLEGAL_NAME_CODE + " Illegal name: " + name +
-                            ". All new variable and method names have to start with a lowercase letter. "
-                    , node.get_SourcePositionStart());
-        }
-
-        if (methodNames.contains(name)){
-            Log.error("0" + ErrorCodes.DUPLICATED_NAME_CODE + " Duplicated name. " +
-                            "The name '" + name + "' is already defined."
-                    , node.get_SourcePositionStart());
-        }
-        else {
-            methodNames.add(name);
-        }
-
         done = false;
         MethodDeclarationSymbol method = (MethodDeclarationSymbol) node.getSymbol().get();
         checkForRecursion(method, method.getBody());

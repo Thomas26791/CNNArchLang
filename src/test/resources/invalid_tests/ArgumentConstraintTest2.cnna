@@ -1,4 +1,4 @@
-architecture InvalidVariableType2{
+architecture ArgumentConstraintTest2{
     def input Z(0:255)^{h=224,w=224,c=3} image
     def output Q(0:1)^{classes=1000} predictions
 

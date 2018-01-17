@@ -35,13 +35,13 @@ public class BatchNorm extends PredefinedMethodDeclaration {
     @Override
     public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
         return inputShapes;
-        //todo: check
+        //todo:
     }
 
     @Override
     public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        checkOneInput(inputShapes, layer);
-        //todo:check
+        errorIfInputSizeIsNotOne(inputShapes, layer);
+        //todo:
     }
 
     public static BatchNorm create(){

@@ -4,7 +4,7 @@ architecture IllegalName{
     Tg = 1
 
     def Fc(){
-            FullyConnected(units=10)
+        FullyConnected(units=10)
     }
 
     in ->

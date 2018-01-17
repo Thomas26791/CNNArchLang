@@ -20,30 +20,37 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArgument;
-import de.monticore.lang.monticar.cnnarch._symboltable.ArgumentSymbol;
+import de.monticore.lang.monticar.cnnarch._ast.ASTMethodDeclaration;
+import de.monticore.lang.monticar.cnnarch._symboltable.CompositeLayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.LayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.MethodDeclarationSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.logging.Log;
 
-public class CheckArgument implements CNNArchASTArgumentCoCo {
+import java.util.HashSet;
+import java.util.Set;
+
+public class CheckMethodName implements CNNArchASTMethodDeclarationCoCo {
+
+    Set<String> methodNames = new HashSet<>();
 
     @Override
-    public void check(ASTArgument node) {
-        ArgumentSymbol argument = (ArgumentSymbol) node.getSymbol().get();
-        if (argument.getParameter() ==  null){
-            Log.error("0"+ ErrorCodes.UNKNOWN_ARGUMENT_CODE + " Unknown Argument. " +
-                            "Parameter with name '" + node.getName() + "' does not exist."
+    public void check(ASTMethodDeclaration node) {
+        String name = node.getName();
+        if (name.isEmpty() || !Character.isLowerCase(name.codePointAt(0))){
+            Log.error("0" + ErrorCodes.ILLEGAL_NAME_CODE + " Illegal name: " + name +
+                            ". All new variable and method names have to start with a lowercase letter. "
+                    , node.get_SourcePositionStart());
+        }
+
+        if (methodNames.contains(name)){
+            Log.error("0" + ErrorCodes.DUPLICATED_NAME_CODE + " Duplicated method name. " +
+                            "The name '" + name + "' is already used."
                     , node.get_SourcePositionStart());
         }
         else {
-            /*if (argument.getRhs().getValue().isPresent()){
-                argument.checkConstraints();
-            }*/
-            /*if (argument.getRhs().isResolvable()) {
-                argument.getRhs().resolveOrError();
-                argument.checkConstraints();
-                argument.getRhs().reset();
-            }*/
+            methodNames.add(name);
         }
     }
 

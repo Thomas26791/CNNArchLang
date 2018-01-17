@@ -74,15 +74,11 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
      */
     protected static void checkValid(String modelPath, String model) {
         Log.getFindings().clear();
-        ASTArchitecture node = getAstNode(modelPath, model);
-        CNNArchPreResolveCocos.createChecker().checkAll(node);
-        if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
-            ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
-            architecture.resolve();
-            if (architecture.isResolved()) {
-                CNNArchPostResolveCocos.createChecker().checkAll(node);
-            }
-        }
+        runCocoCheck(
+                CNNArchPreResolveCocos.createChecker(),
+                CNNArchPostResolveCocos.createChecker(),
+                modelPath,
+                model);
         new ExpectedErrorInfo().checkOnlyExpectedPresent(Log.getFindings());
     }
 
@@ -91,25 +87,32 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
      * the expected errors are present; once only with the given cocos, checking that no addditional
      * errors are present.
      */
-    protected static void checkInvalid(CNNArchCoCoChecker preResolveCocos, CNNArchCoCoChecker postResolveCocos, ASTArchitecture node,
+    protected static void checkInvalid(CNNArchCoCoChecker preResolveCocos, CNNArchCoCoChecker postResolveCocos, String modelPath, String model,
                                        ExpectedErrorInfo expectedErrors) {
 
         // check whether all the expected errors are present when using all cocos
         Log.getFindings().clear();
-        CNNArchPreResolveCocos.createChecker().checkAll(node);
-        if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
-            ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
-            architecture.resolve();
-            if (architecture.isResolved()) {
-                CNNArchPostResolveCocos.createChecker().checkAll(node);
-            }
-        }
+        runCocoCheck(
+                CNNArchPreResolveCocos.createChecker(),
+                CNNArchPostResolveCocos.createChecker(),
+                modelPath,
+                model);
         expectedErrors.checkExpectedPresent(Log.getFindings(), "Got no findings when checking all "
                 + "cocos. Did you forget to add the new coco to MontiArcCocos?");
 
-
         // check whether only the expected errors are present when using only the given cocos
         Log.getFindings().clear();
+        runCocoCheck(
+                preResolveCocos,
+                postResolveCocos,
+                modelPath,
+                model);
+        expectedErrors.checkOnlyExpectedPresent(Log.getFindings(), "Got no findings when checking only "
+                + "the given coco. Did you pass an empty coco checker?");
+    }
+
+    private static void runCocoCheck(CNNArchCoCoChecker preResolveCocos, CNNArchCoCoChecker postResolveCocos, String modelPath, String model){
+        ASTArchitecture node = getAstNode(modelPath, model);
         preResolveCocos.checkAll(node);
         if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
             ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
@@ -118,8 +121,6 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
                 postResolveCocos.checkAll(node);
             }
         }
-        expectedErrors.checkOnlyExpectedPresent(Log.getFindings(), "Got no findings when checking only "
-                + "the given coco. Did you pass an empty coco checker?");
     }
 
     protected static class ExpectedErrorInfo {

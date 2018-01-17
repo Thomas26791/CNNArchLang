@@ -54,7 +54,6 @@ public class Concatenate extends PredefinedMethodDeclaration {
 
     @Override
     public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        checkNotEmptyInput(inputShapes, layer);
         if (!inputShapes.isEmpty()) {
             List<Integer> heightList = new ArrayList<>();
             List<Integer> widthList = new ArrayList<>();
@@ -71,6 +70,9 @@ public class Concatenate extends PredefinedMethodDeclaration {
                                 "Input widths: " + Joiners.COMMA.join(widthList) + ". "
                         , layer.getSourcePosition());
             }
+        }
+        else {
+            errorIfInputIsEmpty(inputShapes, layer);
         }
     }
 

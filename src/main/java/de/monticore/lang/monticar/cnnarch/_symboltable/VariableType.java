@@ -44,5 +44,12 @@ public enum VariableType {
         public String toString(){
             return "constant";
         }
+    },
+    UNKNOWN {
+        //describes a variable which does not exist. Only used to avoid exceptions while checking Cocos.
+        @Override
+        public String toString(){
+            return "unknown";
+        }
     }
 }

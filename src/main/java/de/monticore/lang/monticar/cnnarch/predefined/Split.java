@@ -66,7 +66,6 @@ public class Split extends PredefinedMethodDeclaration {
 
     @Override
     public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        checkOneInput(inputShapes, layer);
         if (inputShapes.size() == 1) {
             int inputChannels = inputShapes.get(0).getChannels().get();
             int numberOfSplits = layer.getIntValue(AllPredefinedMethods.NUM_SPLITS_NAME).get();
@@ -77,6 +76,9 @@ public class Split extends PredefinedMethodDeclaration {
                                 " is smaller than the number of splits " + numberOfSplits + "."
                         , layer.getSourcePosition());
             }
+        }
+        else {
+            errorIfInputSizeIsNotOne(inputShapes, layer);
         }
     }
 

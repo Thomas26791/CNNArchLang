@@ -43,8 +43,10 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     public MethodDeclarationSymbol getMethod() {
         if (method == null){
-            Optional<MethodDeclarationSymbol> optMethod = getEnclosingScope().resolve(getName(), MethodDeclarationSymbol.KIND);
-            optMethod.ifPresent(this::setMethod);
+            Collection<MethodDeclarationSymbol> methodCollection = getEnclosingScope().resolveMany(getName(), MethodDeclarationSymbol.KIND);
+            if (!methodCollection.isEmpty()){
+                setMethod(methodCollection.iterator().next());
+            }
         }
         return method;
     }
@@ -130,7 +132,7 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     @Override
     public List<LayerSymbol> getFirstAtomicLayers() {
-        if (getResolvedThis().get() == this){
+        if (isAtomic()){
             return Collections.singletonList(this);
         }
         else {
@@ -140,7 +142,7 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     @Override
     public List<LayerSymbol> getLastAtomicLayers() {
-        if (getResolvedThis().get() == this){
+        if (isAtomic()){
             return Collections.singletonList(this);
         }
         else {
@@ -226,7 +228,6 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     private List<List<LayerSymbol>> computeExpandedSplit(int parallelLength, List<Integer> serialLengths){
-        //todo change serialLength to List
         List<List<LayerSymbol>> layers = new ArrayList<>(parallelLength);
 
         List<List<List<ArgumentSymbol>>> allExpandedArguments = new ArrayList<>(getArguments().size());
@@ -307,39 +308,39 @@ public class MethodLayerSymbol extends LayerSymbol {
         return Optional.empty();
     }
 
-    public Optional<Integer> getIntValue(String argumentName){
-        return getTValue(argumentName, ArchExpressionSymbol::getIntValue);
+    public Optional<Integer> getIntValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getIntValue);
     }
 
-    public Optional<List<Integer>> getIntTupleValue(String argumentName){
-        return getTValue(argumentName, ArchExpressionSymbol::getIntTupleValues);
+    public Optional<List<Integer>> getIntTupleValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getIntTupleValues);
     }
 
-    public Optional<Boolean> getBooleanValue(String argumentName){
-        return getTValue(argumentName, ArchExpressionSymbol::getBooleanValue);
+    public Optional<Boolean> getBooleanValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getBooleanValue);
     }
 
-    public Optional<String> getStringValue(String argumentName){
-        return getTValue(argumentName, ArchExpressionSymbol::getStringValue);
+    public Optional<String> getStringValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getStringValue);
     }
 
-    public Optional<Object> getValue(String argumentName){
-        return getTValue(argumentName, ArchExpressionSymbol::getValue);
+    public Optional<Double> getDoubleValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getDoubleValue);
     }
 
-    private <T> Optional<T> getTValue(String argumentName, Function<ArchExpressionSymbol, Optional<T>> getMethod){
-        Optional<ArgumentSymbol> arg = getArgument(argumentName);
-        Optional<VariableSymbol> param = getMethod().getParameter(argumentName);
+    public <T> Optional<T> getTValue(String parameterName, Function<ArchExpressionSymbol, Optional<T>> getValue){
+        Optional<ArgumentSymbol> arg = getArgument(parameterName);
+        Optional<VariableSymbol> param = getMethod().getParameter(parameterName);
         if (arg.isPresent()){
-            return getMethod.apply(arg.get().getRhs());
+            return getValue.apply(arg.get().getRhs());
         }
         else if (param.isPresent() && param.get().getDefaultExpression().isPresent()){
-            return getMethod.apply(param.get().getDefaultExpression().get());
+            return getValue.apply(param.get().getDefaultExpression().get());
         }
-        return Optional.empty();
+        else {
+            return Optional.empty();
+        }
     }
-
-    //todo outputShape Function partial check and check argument correctness
 
     @Override
     public Optional<Integer> getParallelLength(){

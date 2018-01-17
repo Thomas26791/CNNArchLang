@@ -44,7 +44,7 @@ public class Add extends PredefinedMethodDeclaration {
 
     @Override
     public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        checkNotEmptyInput(inputShapes, layer);
+        errorIfInputIsEmpty(inputShapes, layer);
         if (inputShapes.size() == 1){
             Log.warn("Add layer has only one input stream." , layer.getSourcePosition());
         }

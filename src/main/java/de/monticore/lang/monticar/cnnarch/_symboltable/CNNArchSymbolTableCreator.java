@@ -183,16 +183,19 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     public void endVisit(ASTShape node) {
         ShapeSymbol sym = (ShapeSymbol) node.getSymbol().get();
         if (node.getDimensions().size() == 1){
-            sym.setChannels((ArchSimpleExpressionSymbol) node.getDimensions().get(0).getSymbol().get());
+            ArchSimpleExpressionSymbol channels = (ArchSimpleExpressionSymbol) node.getDimensions().get(0).getSymbol().get();
+            sym.setChannels(channels);
         }
         else if (node.getDimensions().size() == 3){
-            sym.setHeight((ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.HEIGHT_INDEX - 1).getSymbol().get());
-            sym.setWidth((ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.WIDTH_INDEX - 1).getSymbol().get());
-            sym.setChannels((ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.CHANNEL_INDEX - 1).getSymbol().get());
+            ArchSimpleExpressionSymbol height = (ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.HEIGHT_INDEX - 1).getSymbol().get();
+            ArchSimpleExpressionSymbol width = (ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.WIDTH_INDEX - 1).getSymbol().get();
+            ArchSimpleExpressionSymbol channels = (ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.CHANNEL_INDEX - 1).getSymbol().get();
+            sym.setHeight(height);
+            sym.setWidth(width);
+            sym.setChannels(channels);
         }
         else {
-            //todo
-            throw new IllegalStateException("todo: incorrect shape");
+            //do nothing; will be checked in coco
         }
         addToScopeAndLinkWithNode(sym, node);
     }
@@ -219,7 +222,6 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
                 .name(node.getName())
                 .type(VariableType.IOVARIABLE)
                 .defaultValue(defaultValue)
-                .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                 .build();
         //addToScope(ArchSimpleExpressionSymbol.of(variable));
         addToScopeAndLinkWithNode(variable, node);
@@ -282,7 +284,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         else if (ast.getTupleExpression().isPresent()){
             mathExp = (MathExpressionSymbol) ast.getTupleExpression().get().getSymbol().get();
         }
-        else {
+        else{
             sym.setValue(ast.getString().get().getValue());
         }
         sym.setMathExpression(mathExp);
@@ -406,12 +408,13 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
     @Override
     public void visit(ASTIOLayer node) {
-        Optional<IODeclarationSymbol> optIODef = currentScope().get().resolve(node.getName(), IODeclarationSymbol.KIND);
+        Collection<IODeclarationSymbol> ioDefCollection = currentScope().get().<IODeclarationSymbol>resolveMany(node.getName(), IODeclarationSymbol.KIND);
         int arrayLength = 1;
         boolean isInput = false;
-        if (optIODef.isPresent()){
-            arrayLength = optIODef.get().getArrayLength();
-            isInput = optIODef.get().isInput();
+        if (!ioDefCollection.isEmpty()){
+            IODeclarationSymbol ioDeclaration = ioDefCollection.iterator().next();
+            arrayLength = ioDeclaration.getArrayLength();
+            isInput = ioDeclaration.isInput();
         }
 
         if (!node.getIndex().isPresent() && arrayLength > 1 && isInput){

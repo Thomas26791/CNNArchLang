@@ -34,15 +34,15 @@ public class Convolution extends PredefinedMethodDeclaration {
 
     @Override
     public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return convAndPoolOutputShapeFunction(inputShapes.get(0),
+        return computeConvAndPoolOutputShape(inputShapes.get(0),
                 layer,
                 layer.getIntValue(AllPredefinedMethods.CHANNELS_NAME).get());
     }
 
     @Override
     public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        checkOneInput(inputShapes, layer);
-        checkConvAndPoolInput(inputShapes, layer);
+        errorIfInputSizeIsNotOne(inputShapes, layer);
+        errorIfInputSmallerThanKernel(inputShapes, layer);
     }
 
     public static Convolution create(){

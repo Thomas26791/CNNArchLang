@@ -1,6 +1,6 @@
-architecture WrongIOShape{
-    def input Q(-oo:+oo)^{inputs=10, 2} in
-    def output Q(0:1)^{inputs=10, 2, 2, 2} out
+architecture UnknownVariableName{
+    def input Q(-oo:+oo)^{inputs=10} in
+    def output Q(0:1)^{2} out
 
     in ->
     FullyConnected(units=64) ->

@@ -22,8 +22,6 @@ package de.monticore.lang.monticar.cnnarch._cocos;
 
 import de.monticore.lang.monticar.cnnarch._ast.ASTParameter;
 import de.monticore.lang.monticar.cnnarch._ast.ASTVariable;
-import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.Constraints;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.Symbol;
@@ -33,18 +31,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CheckVariable implements CNNArchASTVariableCoCo {
+public class CheckVariableName implements CNNArchASTVariableCoCo {
 
     Set<String> variableNames = new HashSet<>();
 
 
     @Override
     public void check(ASTVariable node) {
-
         checkForIllegalNames(node);
         checkForDuplicates(node);
-        checkConstraints(node);
-
     }
 
     private void checkForIllegalNames(ASTVariable node){
@@ -68,35 +63,26 @@ public class CheckVariable implements CNNArchASTVariableCoCo {
 
     private void checkForDuplicates(ASTVariable node){
         String name = node.getName();
-        boolean duplicated = false;
         if (variableNames.contains(name)){
             if (node instanceof ASTParameter){
-                Collection<Symbol> collection = ((ASTParameter) node).getEnclosingScope().get().getLocalSymbols().get(name);
-                if (collection.size() > 1){
-                    duplicated = true;
+                Collection<Symbol> allParametersWithSameName = node.getEnclosingScope().get().getLocalSymbols().get(name);
+                if (allParametersWithSameName.size() > 1){
+                    duplicationError(node);
                 }
             }
             else {
-                duplicated = true;
+                duplicationError(node);
             }
         }
         else{
             variableNames.add(name);
         }
-
-        if (duplicated){
-            Log.error("0" + ErrorCodes.DUPLICATED_NAME_CODE + " Duplicated name: " + name +
-                            ". This name is already defined."
-                    , node.get_SourcePositionStart());
-        }
     }
 
-    private void checkConstraints(ASTVariable node){
-        VariableSymbol variable = (VariableSymbol) node.getSymbol().get();
-        if (variable.hasExpression() && variable.getExpression().isResolvable()) {
-            variable.getExpression().resolveOrError();
-            Constraints.check(variable);
-        }
+    private void duplicationError(ASTVariable node){
+        Log.error("0" + ErrorCodes.DUPLICATED_NAME_CODE + " Duplicated variable name. " +
+                        "The name '" + node.getName() + "' is already used."
+                , node.get_SourcePositionStart());
     }
 
 }

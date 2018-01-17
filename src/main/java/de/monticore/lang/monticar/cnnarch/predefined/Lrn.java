@@ -40,7 +40,7 @@ public class Lrn extends PredefinedMethodDeclaration {
 
     @Override
     public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        checkOneInput(inputShapes, layer);
+        errorIfInputSizeIsNotOne(inputShapes, layer);
         //todo: check
 
     }

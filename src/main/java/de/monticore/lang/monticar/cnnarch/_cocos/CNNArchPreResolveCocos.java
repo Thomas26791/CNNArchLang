@@ -25,11 +25,14 @@ public class CNNArchPreResolveCocos {
 
     public static CNNArchCoCoChecker createChecker() {
         return new CNNArchCoCoChecker()
+                .addCoCo(new CheckIOName())
+                .addCoCo(new CheckNameExpression())
                 .addCoCo(new CheckMethodLayer())
-                .addCoCo(new CheckVariable())
-                .addCoCo(new CheckIODeclaration())
-                .addCoCo(new CheckIOLayer())
+                .addCoCo(new CheckVariableName())
+                .addCoCo(new CheckIOShape())
+                .addCoCo(new CheckUnknownIO())
                 .addCoCo(new CheckArgument())
-                .addCoCo(new CheckMethodDeclaration());
+                .addCoCo(new CheckMethodName())
+                .addCoCo(new CheckMethodRecursion());
     }
 }

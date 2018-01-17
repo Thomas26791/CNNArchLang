@@ -40,7 +40,7 @@ public class Relu extends PredefinedMethodDeclaration {
 
     @Override
     public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        checkOneInput(inputShapes, layer);
+        errorIfInputSizeIsNotOne(inputShapes, layer);
     }
 
     public static Relu create(){

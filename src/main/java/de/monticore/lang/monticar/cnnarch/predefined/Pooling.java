@@ -22,9 +22,7 @@ package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 abstract public class Pooling extends PredefinedMethodDeclaration {
 
@@ -34,15 +32,15 @@ abstract public class Pooling extends PredefinedMethodDeclaration {
 
     @Override
     public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return convAndPoolOutputShapeFunction(inputShapes.get(0),
+        return computeConvAndPoolOutputShape(inputShapes.get(0),
                 layer,
                 inputShapes.get(0).getChannels().get());
     }
 
     @Override
     public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        checkOneInput(inputShapes, layer);
-        checkConvAndPoolInput(inputShapes, layer);
+        errorIfInputSizeIsNotOne(inputShapes, layer);
+        errorIfInputSmallerThanKernel(inputShapes, layer);
     }
 
     protected void setParameters(){

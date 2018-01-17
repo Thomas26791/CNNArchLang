@@ -1,4 +1,4 @@
-architecture InvalidVariableType{
+architecture ArgumentConstraintTest6{
     def input Z(0:255)^{h=224,w=224,c=3} image
     def output Q(0:1)^{classes=1000} predictions
 
@@ -8,7 +8,7 @@ architecture InvalidVariableType{
         Relu(If=act)
     }
     def skip(channels, stride){
-        Convolution(kernel=(1,-1), channels=false, stride=(stride,stride)) ->
+        Convolution(kernel=(1,1), channels=false, stride=(stride,stride)) ->
         BatchNorm()
     }
     def resLayer(channels, stride=1){
@@ -24,11 +24,11 @@ architecture InvalidVariableType{
 
     image ->
     conv(filter=7, channels=64, stride=2) ->
-    MaxPooling(kernel=(3,3), stride=(2,2), padding=1) ->
+    MaxPooling(kernel=(3,3), stride=(2,2), padding="valid") ->
     resLayer(channels=64, ->=3) ->
     resLayer(channels=128, stride=2) ->
-    AveragePooling(global=true, If=1) ->
-    FullyConnected(units=classes, ->=true) ->
+    AveragePooling(global=true) ->
+    FullyConnected(units=classes) ->
     Softmax() ->
     predictions
 }

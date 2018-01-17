@@ -64,6 +64,8 @@ public class AllPredefinedMethods {
     public static final String ALPHA_NAME = "alpha";
     public static final String BETA_NAME = "beta";
     public static final String PADDING_NAME = "padding";
+
+    //possible String values
     public static final String PADDING_VALID = "\"valid\"";
     public static final String PADDING_SAME = "\"same\"";
     public static final String PADDING_NO_LOSS = "\"no_loss\"";

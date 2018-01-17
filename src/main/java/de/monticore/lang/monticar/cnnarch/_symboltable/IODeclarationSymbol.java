@@ -26,6 +26,9 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 import de.monticore.lang.monticar.types2._ast.ASTElementType;
 import de.monticore.symboltable.CommonSymbol;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class IODeclarationSymbol extends CommonSymbol {
 
     public static final IODeclarationKind KIND = new IODeclarationKind();
@@ -34,6 +37,7 @@ public class IODeclarationSymbol extends CommonSymbol {
     private ShapeSymbol shape;
     private boolean input; //true->input, false->output
     private int arrayLength = 1;
+    private Set<IOLayerSymbol> connectedLayers = new HashSet<>();
 
 
     protected IODeclarationSymbol(String name) {
@@ -54,6 +58,10 @@ public class IODeclarationSymbol extends CommonSymbol {
 
     protected void setShape(ShapeSymbol shape) {
         this.shape = shape;
+    }
+
+    public Set<IOLayerSymbol> getConnectedLayers() {
+        return connectedLayers;
     }
 
     public boolean isOutput(){

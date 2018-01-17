@@ -104,17 +104,23 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
                 if (exp instanceof MathNameExpressionSymbol) {
                     String name = ((MathNameExpressionSymbol) exp).getNameToAccess();
                     Optional<VariableSymbol> variable = getEnclosingScope().resolve(name, VariableSymbol.KIND);
-                    //todo: implement coco to check isPresent()
-                    if (!allVariables.contains(variable.get())) {
-                        allVariables.add(variable.get());
-                        if (variable.get().hasExpression()) {
-                            if (!variable.get().getExpression().isResolved()) {
-                                variable.get().getExpression().computeUnresolvableVariables(unresolvableVariables, allVariables);
+                    if (variable.isPresent()) {
+                        if (!allVariables.contains(variable.get())) {
+                            allVariables.add(variable.get());
+                            if (variable.get().hasExpression()) {
+                                if (!variable.get().getExpression().isResolved()) {
+                                    variable.get().getExpression().computeUnresolvableVariables(unresolvableVariables, allVariables);
+                                }
+                            } else {
+                                unresolvableVariables.add(variable.get());
                             }
                         }
-                        else {
-                            unresolvableVariables.add(variable.get());
-                        }
+                    }
+                    else {
+                        unresolvableVariables.add(new VariableSymbol.Builder()
+                                .name(name)
+                                .type(VariableType.UNKNOWN)
+                                .build());
                     }
                 }
             }
