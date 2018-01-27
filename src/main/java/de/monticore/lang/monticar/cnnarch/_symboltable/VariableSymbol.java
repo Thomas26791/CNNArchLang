@@ -56,8 +56,8 @@ public class VariableSymbol extends CommonSymbol {
     }
 
     protected void setDefaultExpression(ArchSimpleExpressionSymbol defaultExpression) {
-        if (this.defaultExpression != null && (getType() == VariableType.CONSTANT || getType() == VariableType.IOVARIABLE)){
-            throw new IllegalStateException("Invalid constant or io variable assignment.");
+        if (this.defaultExpression != null && (getType() == VariableType.CONSTANT)){
+            throw new IllegalStateException("Invalid constant assignment.");
         }
         else {
             this.defaultExpression = defaultExpression;
@@ -83,19 +83,19 @@ public class VariableSymbol extends CommonSymbol {
     }
 
     /*public boolean isGlobalVariable(){
-        return type == VariableType.GLOBAL;
+        return type == VariableType.ARCHITECTURE_PARAMETER;
     }*/
 
-    public boolean isIOVariable(){
-        return type == VariableType.IOVARIABLE;
+    public boolean isArchitectureParameter(){
+        return type == VariableType.ARCHITECTURE_PARAMETER;
     }
 
     public boolean isConstant(){
         return type == VariableType.CONSTANT;
     }
 
-    public boolean isParameter(){
-        return type == VariableType.PARAMETER;
+    public boolean isMethodParameter(){
+        return type == VariableType.METHOD_PARAMETER;
     }
 
 
@@ -103,12 +103,12 @@ public class VariableSymbol extends CommonSymbol {
         return getCurrentExpression().isPresent() || getDefaultExpression().isPresent();
     }
 
-    protected void setExpression(ArchSimpleExpressionSymbol expression){
-        /*if (getType() == VariableType.GLOBAL){
-            setDefaultExpression(expression);
-        }
-        else*/ if (getType() != VariableType.CONSTANT){
+    public void setExpression(ArchSimpleExpressionSymbol expression){
+        if (getType() != VariableType.CONSTANT){
             currentExpression = expression;
+        }
+        else {
+            throw new IllegalStateException("assigned new value to a constant");
         }
     }
 
@@ -154,7 +154,7 @@ public class VariableSymbol extends CommonSymbol {
 
 
     public static class Builder{
-        private VariableType type = VariableType.PARAMETER;
+        private VariableType type = VariableType.METHOD_PARAMETER;
         private ArchSimpleExpressionSymbol defaultValue = null;
         private String name = null;
         private Set<Constraints> constraints = new HashSet<>();

@@ -63,9 +63,10 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
     protected static void runCheckerWithSymTab(String modelPath, String model) {
         Log.getFindings().clear();
 
-        ASTCNNArchNode node = getAstNode(modelPath, model);
-
-        CNNArchPreResolveCocos.createChecker().checkAll(node);
+        runCocoCheck(CNNArchPreResolveCocos.createChecker(),
+                CNNArchPostResolveCocos.createChecker(),
+                modelPath,
+                model);
     }
 
     /**
@@ -117,7 +118,7 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
         if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
             ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
             architecture.resolve();
-            if (architecture.isResolved()) {
+            if (Log.getFindings().isEmpty()){
                 postResolveCocos.checkAll(node);
             }
         }

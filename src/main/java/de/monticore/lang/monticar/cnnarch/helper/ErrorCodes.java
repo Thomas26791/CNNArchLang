@@ -39,5 +39,6 @@ public class ErrorCodes {
     public static final String INVALID_LAYER_INPUT = "x61670";
     public static final String MISSING_MERGE = "x82479";
     public static final String UNKNOWN_VARIABLE_NAME = "x65013";
+    public static final String DIFFERENT_RANGE_OPERATORS = "xA8289";
 
 }

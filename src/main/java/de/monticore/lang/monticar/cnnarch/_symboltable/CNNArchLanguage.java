@@ -40,7 +40,7 @@ public class CNNArchLanguage extends CNNArchLanguageTOP {
     protected void initResolvingFilters() {
         super.initResolvingFilters();
         //addResolvingFilter(CommonResolvingFilter.create(MathExpressionSymbol.KIND));
-        addResolvingFilter(CommonResolvingFilter.create(ArchitectureSymbol.KIND));
+        addResolvingFilter(new ArchitectureResolvingFilter());
         addResolvingFilter(CommonResolvingFilter.create(MethodDeclarationSymbol.KIND));
         addResolvingFilter(CommonResolvingFilter.create(LayerSymbol.KIND));
         addResolvingFilter(CommonResolvingFilter.create(VariableSymbol.KIND));

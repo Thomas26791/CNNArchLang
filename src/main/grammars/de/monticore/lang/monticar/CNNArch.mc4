@@ -5,7 +5,8 @@ grammar CNNArch extends de.monticore.lang.math.Math {
     CNNArchCompilationUnit = Architecture;
 
     symbol scope Architecture = "architecture"
-                                name:Name& "{"
+                                name:Name& "("
+                                (ArchitectureParameter || ",")* ")" "{"
                                 declarations:ArchDeclaration*
                                 body:ArchBody "}";
 
@@ -22,30 +23,31 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     ArchType implements Type = ElementType "^" Shape;
 
-    Shape = "{" (Dimension || ",")+ "}";
+    Shape = "{" dimensions:(ArchSimpleExpression || ",")+ "}";
 
-    Dimension = IOVariable | intLiteral:UnitNumberResolution;
-
-    IOVariable implements Variable = Name& ("=" intRhs:UnitNumberResolution)?;
-
-    VariableAssignment implements Variable,ArchDeclaration = Name& "=" rhs:ArchSimpleExpression;
+    ArchitectureParameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
 
     MethodDeclaration implements ArchDeclaration = "def"
                                                    Name& "("
-                                                   parameters:(Parameter || ",")* ")" "{"
+                                                   parameters:(MethodParameter || ",")* ")" "{"
                                                    body:ArchBody "}";
 
-    Parameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
+    MethodParameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
 
     scope ArchBody = elements:(ArchitectureElement || "->")*;
 
     IOLayer implements ArchitectureElement = Name& ("[" index:ArchSimpleExpression "]")?;
 
-    MethodLayer implements ArchitectureElement = Name& "(" arguments:(Argument || ",")* ")";
+    MethodLayer implements ArchitectureElement = Name& "(" arguments:(ArchArgument || ",")* ")";
 
-    Argument = Name "=" rhs:ArchExpression;
+    interface ArchArgument;
+    ast ArchArgument = method String getName(){}
+                       method ASTArchExpression getRhs(){};
 
-    PredefinedArgument extends Argument = (serial:"->" | parallel:"|") "=" rhs2:ArchExpression;
+    ArchParameterArgument implements ArchArgument = Name "=" rhs:ArchExpression;
+
+    ArchSpecialArgument implements ArchArgument = (serial:"->" | parallel:"|") "=" rhs:ArchExpression;
+    ast ArchSpecialArgument = method public String getName(){return "";};
 
     ParallelLayer implements ArchitectureElement = "(" groups:ArchBody "|" groups:(ArchBody || "|")+ ")";
 

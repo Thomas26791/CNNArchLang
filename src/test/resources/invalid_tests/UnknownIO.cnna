@@ -1,4 +1,4 @@
-architecture UnknownIO{
+architecture UnknownIO(){
     in ->
     FullyConnected(units=64) ->
     Tanh() ->

@@ -1,6 +1,6 @@
-architecture Alexnet_alt2{
-    def input Z(0:255)^{h=224,w=224,c=3} image
-    def output Q(0:1)^{classes=10} predictions
+architecture Alexnet_alt2(img_height=224, img_width=224, img_channels=3, classes=10){
+    def input Z(0:255)^{img_height, img_width, img_channels} image
+    def output Q(0:1)^{classes} predictions
     
     def conv(filter, channels, convStride=1, poolStride=1, hasLrn=false, convPadding="same"){
     	Convolution(kernel=(filter,filter), channels=channels, stride=(convStride,convStride), padding=convPadding) ->
@@ -32,7 +32,7 @@ architecture Alexnet_alt2{
     Split(n=2) ->
     split2(i=[0|1]) ->
     Concatenate() ->
-    fc(->=2) ->
+    fc(-> = 2) ->
     FullyConnected(units=classes) ->
     Softmax() ->
     predictions

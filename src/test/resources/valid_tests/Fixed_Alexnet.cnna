@@ -1,6 +1,6 @@
-architecture Fixed_Alexnet{
-    def input Z(0:255)^{h=224,w=224,c=3} image
-    def output Q(0:1)^{classes=10} predictions
+architecture Fixed_Alexnet(){
+    def input Z(0:255)^{224, 224, 3} image
+    def output Q(0:1)^{10} predictions
 
     def group1(i){
         [i] ->
@@ -37,7 +37,7 @@ architecture Fixed_Alexnet{
     group2(i=[0|1]) ->
     Concatenate() ->
     fc(->=2) ->
-    FullyConnected(units=classes) ->
+    FullyConnected(units=10) ->
     Softmax() ->
     predictions
 }

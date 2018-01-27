@@ -1,6 +1,6 @@
-architecture ArgumentConstraintTest5{
-    def input Z(0:255)^{h=224,w=224,c=3} image
-    def output Q(0:1)^{classes=1000} predictions
+architecture ArgumentConstraintTest5(img_height=224, img_width=224, img_channels=3, classes=1000){
+    def input Z(0:255)^{img_height, img_width, img_channels} image
+    def output Q(0:1)^{classes} predictions
 
     def conv(filter, channels, stride=1, act=true){
         Convolution(kernel=(filter,filter), channels=channels, stride=(stride,stride)) ->

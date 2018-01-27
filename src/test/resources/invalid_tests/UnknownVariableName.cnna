@@ -1,5 +1,5 @@
-architecture UnknownVariableName{
-    def input Q(-oo:+oo)^{inputs=10} in
+architecture UnknownVariableName(inputs=10){
+    def input Q(-oo:+oo)^{inputs} in
     def output Q(0:1)^{2} out
 
     in ->

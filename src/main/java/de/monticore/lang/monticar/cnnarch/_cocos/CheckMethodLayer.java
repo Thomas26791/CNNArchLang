@@ -20,7 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArgument;
+import de.monticore.lang.monticar.cnnarch._ast.ASTArchArgument;
 import de.monticore.lang.monticar.cnnarch._ast.ASTMethodLayer;
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodDeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
@@ -37,7 +37,7 @@ public class CheckMethodLayer implements CNNArchASTMethodLayerCoCo{
     @Override
     public void check(ASTMethodLayer node) {
         Set<String> nameSet = new HashSet<>();
-        for (ASTArgument argument : node.getArguments()){
+        for (ASTArchArgument argument : node.getArguments()){
             String name = argument.getName();
             if (nameSet.contains(name)){
                 Log.error("0" + ErrorCodes.DUPLICATED_ARG_CODE + " Duplicated name: " + name +
@@ -62,7 +62,7 @@ public class CheckMethodLayer implements CNNArchASTMethodLayerCoCo{
                     requiredArguments.add(param.getName());
                 }
             }
-            for (ASTArgument argument : node.getArguments()){
+            for (ASTArchArgument argument : node.getArguments()){
                 requiredArguments.remove(argument.getName());
                 if (argument.getName().equals(AllPredefinedMethods.GLOBAL_NAME)){
                     requiredArguments.remove(AllPredefinedMethods.KERNEL_NAME);

@@ -1,0 +1,11 @@
+architecture WrongRangeOperator(inputs=10, classes=2){
+    def input Q(-oo:+oo)^{inputs} in
+    def output Q(0:1)^{classes} out
+
+    in ->
+    FullyConnected(units=64->..|65) ->
+    Tanh() ->
+    FullyConnected(units=classes |..-> classes + 1 ) ->
+    Softmax() ->
+    out
+}

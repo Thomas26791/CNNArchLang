@@ -23,7 +23,13 @@
 
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.se_rwth.commons.Joiners;
+import de.se_rwth.commons.logging.Log;
+import org.jscience.mathematics.number.Rational;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class ArchitectureSymbol extends ArchitectureSymbolTOP {
@@ -31,6 +37,7 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
     private LayerSymbol body;
     private List<IODeclarationSymbol> inputs;
     private List<IODeclarationSymbol> outputs;
+    private List<VariableSymbol> parameters;
 
     public ArchitectureSymbol(String name) {
         super(name);
@@ -45,7 +52,7 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
         return body;
     }
 
-    public void setBody(LayerSymbol body) {
+    protected void setBody(LayerSymbol body) {
         this.body = body;
     }
 
@@ -53,7 +60,7 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
         return inputs;
     }
 
-    public void setInputs(List<IODeclarationSymbol> inputs) {
+    protected void setInputs(List<IODeclarationSymbol> inputs) {
         this.inputs = inputs;
     }
 
@@ -61,17 +68,33 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
         return outputs;
     }
 
-    public void setOutputs(List<IODeclarationSymbol> outputs) {
+    protected void setOutputs(List<IODeclarationSymbol> outputs) {
         this.outputs = outputs;
     }
 
+    public List<VariableSymbol> getParameters() {
+        return parameters;
+    }
+
+    protected void setParameters(List<VariableSymbol> parameters) {
+        this.parameters = parameters;
+    }
+
     public void resolve(){
+        checkParameters();
         getBody().checkIfResolvable();
         try{
             getBody().resolve();
         }
         catch (ArchResolveException e){
             //do nothing; error is already logged
+        }
+    }
+
+    public void resolveOrError(){
+        resolve();
+        if (!isResolved()){
+            throw new IllegalStateException("The following names could not be resolved: " + Joiners.COMMA.join(getUnresolvableVariables()));
         }
     }
 
@@ -86,7 +109,87 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
         return getBody().isResolved();
     }
 
+    public boolean isResolvable(){
+        return getBody().isResolvable();
+    }
+
     public Set<VariableSymbol> getUnresolvableVariables(){
         return getBody().getUnresolvableVariables();
+    }
+
+    public void checkParameters(){
+        for (VariableSymbol parameter : getParameters()){
+            if (!parameter.hasExpression()){
+                Log.error("0" + ErrorCodes.MISSING_VAR_VALUE_CODE + " Missing architecture argument. " +
+                        "The parameter '" + parameter.getName() + "' has no value.");
+            }
+        }
+    }
+
+    public Optional<IODeclarationSymbol> getInput(String name){
+        for (IODeclarationSymbol input : getInputs()){
+            if (input.getName().equals(name)){
+                return Optional.of(input);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<IODeclarationSymbol> getOutput(String name){
+        for (IODeclarationSymbol output : getOutputs()){
+            if (output.getName().equals(name)){
+                return Optional.of(output);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<VariableSymbol> getParameter(String name){
+        for (VariableSymbol parameter : getParameters()){
+            if (parameter.getName().equals(name)){
+                return Optional.of(parameter);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private VariableSymbol getParameterOrError(String name){
+        Optional<VariableSymbol> param = getParameter(name);
+        if (param.isPresent()){
+            return param.get();
+        }
+        else {
+            throw new IllegalArgumentException("architecture parameter with name " + name + " does not exist.");
+        }
+    }
+
+    public void setParameter(String name, Rational value){
+        VariableSymbol parameter = getParameterOrError(name);
+        if (value.getDivisor().intValue() == 1){
+            parameter.setExpression(ArchSimpleExpressionSymbol.of(value.getDividend().intValue()));
+        }
+        else {
+            parameter.setExpression(ArchSimpleExpressionSymbol.of(value.doubleValue()));
+        }
+    }
+
+    public void setParameter(String name, boolean value){
+        VariableSymbol parameter = getParameterOrError(name);
+        parameter.setExpression(ArchSimpleExpressionSymbol.of(value));
+    }
+
+    public void setParameter(String name, int value){
+        VariableSymbol parameter = getParameterOrError(name);
+        parameter.setExpression(ArchSimpleExpressionSymbol.of(value));
+    }
+
+    public void setParameter(String name, double value){
+        VariableSymbol parameter = getParameterOrError(name);
+        parameter.setExpression(ArchSimpleExpressionSymbol.of(value));
+    }
+
+    public void setParameter(String name, String value){
+        VariableSymbol parameter = getParameterOrError(name);
+        parameter.setExpression(ArchSimpleExpressionSymbol.of(value));
     }
 }

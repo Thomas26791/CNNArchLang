@@ -1,4 +1,4 @@
-architecture MissingLayerOperator{
+architecture MissingLayerOperator(){
     def input Q(-oo:+oo)^{10} in
     def output Q(0:1)^{2} out
 

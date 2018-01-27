@@ -1,4 +1,4 @@
-architecture InvalidIOShape2{
+architecture InvalidIOShape2(){
     def input Q(-oo:+oo)^{10.5} in
     def output Q(0:1)^{-10} out
 

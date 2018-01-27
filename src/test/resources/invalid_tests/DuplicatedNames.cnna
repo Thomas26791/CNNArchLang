@@ -1,7 +1,7 @@
-architecture DuplicatedNames{
-    def input Q(-oo:+oo)^{inputs=10} in
-    def input Q(-oo:+oo)^{inputs=10} in
-    def output Q(0:1)^{classes=2} out
+architecture DuplicatedNames(inputs=10, inputs=10, classes=2){
+    def input Q(-oo:+oo)^{inputs} in
+    def input Q(-oo:+oo)^{inputs} in
+    def output Q(0:1)^{classes} out
 
     def fc(){
         FullyConnected(units=64) ->

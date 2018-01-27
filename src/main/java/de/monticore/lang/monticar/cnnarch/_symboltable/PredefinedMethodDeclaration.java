@@ -20,9 +20,6 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch._symboltable.MethodDeclarationSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
 import de.se_rwth.commons.logging.Log;
@@ -45,6 +42,10 @@ abstract public class PredefinedMethodDeclaration extends MethodDeclarationSymbo
     abstract public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer);
 
     abstract public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer);
+
+
+
+    //the following methods are only here to avoid duplication. They are used by multiple subclasses.
 
     //check if inputShapes is of size 1
     protected void errorIfInputSizeIsNotOne(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer){

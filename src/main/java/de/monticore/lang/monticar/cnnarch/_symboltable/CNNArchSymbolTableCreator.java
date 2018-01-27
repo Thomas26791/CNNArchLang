@@ -94,7 +94,6 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         }
     }
 
-
     @Override
     public void visit(final ASTCNNArchCompilationUnit compilationUnit) {
         Log.debug("Building Symboltable for Script: " + compilationUnit.getArchitecture().getName(),
@@ -131,6 +130,12 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         architecture.setInputs(inputs);
         architecture.setOutputs(outputs);
 
+        List<VariableSymbol> parameters = new ArrayList<>(node.getArchitectureParameters().size());
+        for (ASTArchitectureParameter astParameter : node.getArchitectureParameters()){
+            parameters.add((VariableSymbol) astParameter.getSymbol().get());
+        }
+        architecture.setParameters(parameters);
+
         removeCurrentScope();
     }
 
@@ -143,6 +148,17 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         for (MethodDeclarationSymbol sym : AllPredefinedMethods.createList()){
             addToScope(sym);
         }
+    }
+
+    @Override
+    public void endVisit(ASTArchitectureParameter node) {
+        VariableSymbol variable = new VariableSymbol(node.getName());
+        variable.setType(VariableType.ARCHITECTURE_PARAMETER);
+        if (node.getDefault().isPresent()){
+            variable.setDefaultExpression((ArchSimpleExpressionSymbol) node.getDefault().get().getSymbol().get());
+        }
+
+        addToScopeAndLinkWithNode(variable, node);
     }
 
     @Override
@@ -201,33 +217,6 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     }
 
     @Override
-    public void endVisit(ASTDimension node) {
-        ArchSimpleExpressionSymbol sym;
-        if (node.getIntLiteral().isPresent()){
-            sym = ArchSimpleExpressionSymbol.of(node.getIntLiteral().get().getNumber().get().getDividend().intValue());
-        }
-        else {
-            sym = ArchSimpleExpressionSymbol.of((VariableSymbol) node.getIOVariable().get().getSymbol().get());
-        }
-        addToScopeAndLinkWithNode(sym, node);
-    }
-
-    @Override
-    public void endVisit(ASTIOVariable node) {
-        ArchSimpleExpressionSymbol defaultValue = null;
-        if (node.getIntRhs().isPresent()){
-            defaultValue = ArchSimpleExpressionSymbol.of(node.getIntRhs().get().getNumber().get().getDividend().intValue());
-        }
-        VariableSymbol variable = new VariableSymbol.Builder()
-                .name(node.getName())
-                .type(VariableType.IOVARIABLE)
-                .defaultValue(defaultValue)
-                .build();
-        //addToScope(ArchSimpleExpressionSymbol.of(variable));
-        addToScopeAndLinkWithNode(variable, node);
-    }
-
-    @Override
     public void visit(ASTMethodDeclaration ast) {
         MethodDeclarationSymbol methodDeclaration = new MethodDeclarationSymbol(ast.getName());
         addToScopeAndLinkWithNode(methodDeclaration, ast);
@@ -239,7 +228,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         methodDeclaration.setBody((CompositeLayerSymbol) ast.getBody().getSymbol().get());
 
         List<VariableSymbol> parameters = new ArrayList<>(4);
-        for (ASTParameter astParam : ast.getParameters()){
+        for (ASTMethodParameter astParam : ast.getParameters()){
             VariableSymbol parameter = (VariableSymbol) astParam.getSymbol().get();
             parameters.add(parameter);
         }
@@ -249,26 +238,18 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     }
 
     @Override
-    public void visit(ASTParameter ast) {
+    public void visit(ASTMethodParameter ast) {
         VariableSymbol variable = new VariableSymbol(ast.getName());
-        variable.setType(VariableType.PARAMETER);
+        variable.setType(VariableType.METHOD_PARAMETER);
         addToScopeAndLinkWithNode(variable, ast);
     }
 
     @Override
-    public void endVisit(ASTParameter ast) {
+    public void endVisit(ASTMethodParameter ast) {
         VariableSymbol variable = (VariableSymbol) ast.getSymbol().get();
         if (ast.getDefault().isPresent()){
             variable.setDefaultExpression((ArchSimpleExpressionSymbol) ast.getDefault().get().getSymbol().get());
         }
-    }
-
-    @Override
-    public void endVisit(ASTVariableAssignment node) {
-        VariableSymbol variable = new VariableSymbol(node.getName());
-        variable.setType(VariableType.CONSTANT);
-        variable.setDefaultExpression((ArchSimpleExpressionSymbol) node.getRhs().getSymbol().get());
-        addToScopeAndLinkWithNode(variable, node);
     }
 
     @Override
@@ -387,7 +368,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         MethodLayerSymbol methodLayer = (MethodLayerSymbol) ast.getSymbol().get();
 
         List<ArgumentSymbol> arguments = new ArrayList<>(6);
-        for (ASTArgument astArgument : ast.getArguments()){
+        for (ASTArchArgument astArgument : ast.getArguments()){
             Optional<ArgumentSymbol> optArgument = astArgument.getSymbol().map(e -> (ArgumentSymbol)e);
             optArgument.ifPresent(arguments::add);
         }
@@ -397,7 +378,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     }
 
     @Override
-    public void endVisit(ASTArgument node) {
+    public void endVisit(ASTArchArgument node) {
         ArchExpressionSymbol value;
         value = (ArchExpressionSymbol) node.getRhs().getSymbol().get();
 
@@ -483,4 +464,5 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
         addToScopeAndLinkWithNode(symbol, node);
     }
+
 }

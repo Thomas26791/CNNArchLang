@@ -75,7 +75,8 @@ public class CheckIOAccessAndIOMissing implements CNNArchASTIODeclarationCoCo {
                     unusedIndices.remove(arrayAccess.get());
                 }
                 else {
-                    Log.error("0" + ErrorCodes.INVALID_ARRAY_ACCESS + " The IO array access value must be an integer between 0 and " + (ioDeclaration.getArrayLength()-1) + ". " +
+                    Log.error("0" + ErrorCodes.INVALID_ARRAY_ACCESS + " The IO array access value of '" + layer.getName() +
+                                    "' must be an integer between 0 and " + (ioDeclaration.getArrayLength()-1) + ". " +
                                     "The current value is: " + layer.getArrayAccess().get().getValue().get().toString()
                             , layer.getSourcePosition());
                 }

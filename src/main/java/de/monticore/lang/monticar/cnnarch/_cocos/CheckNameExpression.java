@@ -20,8 +20,6 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.math.math._ast.ASTMathNameExpression;
-import de.monticore.lang.math.math._cocos.MathASTMathNameExpressionCoCo;
 import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
 import de.monticore.lang.math.math._symboltable.expression.MathNameExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch._ast.ASTArchSimpleExpression;
@@ -31,7 +29,7 @@ import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.lang.monticar.cnnarch.helper.ExpressionHelper;
 import de.se_rwth.commons.logging.Log;
 
-import java.util.Optional;
+import java.util.Collection;
 
 public class CheckNameExpression implements CNNArchASTArchSimpleExpressionCoCo {
 
@@ -44,9 +42,9 @@ public class CheckNameExpression implements CNNArchASTArchSimpleExpressionCoCo {
             for (MathExpressionSymbol subMathExp : ExpressionHelper.createSubExpressionList(mathExpression)){
                 if (subMathExp instanceof MathNameExpressionSymbol){
                     String name = ((MathNameExpressionSymbol) subMathExp).getNameToAccess();
-                    Optional<VariableSymbol> variable = node.getEnclosingScope().get().resolve(name, VariableSymbol.KIND);
+                    Collection<VariableSymbol> variableCollection = node.getEnclosingScope().get().resolveMany(name, VariableSymbol.KIND);
 
-                    if (!variable.isPresent()){
+                    if (variableCollection.isEmpty()){
                         Log.error("0" + ErrorCodes.UNKNOWN_VARIABLE_NAME + " Unknown variable name. " +
                                 "The variable '" + name + "' does not exist. "
                                 , subMathExp.getSourcePosition());

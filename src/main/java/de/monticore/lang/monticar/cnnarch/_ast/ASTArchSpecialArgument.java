@@ -18,32 +18,28 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._symboltable;
+package de.monticore.lang.monticar.cnnarch._ast;
 
-public enum VariableType {
-    METHOD_PARAMETER {
-        @Override
-        public String toString(){
-            return "parameter";
-        }
-    },
-    ARCHITECTURE_PARAMETER {
-        @Override
-        public String toString(){
-            return "globalVariable";
-        }
-    },
-    CONSTANT {
-        @Override
-        public String toString(){
-            return "constant";
-        }
-    },
-    UNKNOWN {
-        //describes a variable which does not exist. Only used to avoid exceptions while checking Cocos.
-        @Override
-        public String toString(){
-            return "unknown";
-        }
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
+
+public class ASTArchSpecialArgument extends ASTArchSpecialArgumentTOP {
+
+    public ASTArchSpecialArgument() {
     }
+
+    public ASTArchSpecialArgument(ASTArchExpression rhs, String serial, String parallel) {
+        super(rhs, serial, parallel);
+    }
+
+    @Override
+    public String getName() {
+        if (getParallel().isPresent()){
+            return AllPredefinedVariables.CARDINALITY_NAME;
+        }
+        else if (getSerial().isPresent()) {
+            return AllPredefinedVariables.FOR_NAME;
+        }
+        return null;
+    }
+
 }

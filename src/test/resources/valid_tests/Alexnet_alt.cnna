@@ -1,6 +1,6 @@
-architecture Alexnet_alt{
-    def input Z(0:255)^{h=224,w=224,c=3} image
-    def output Q(0:1)^{classes=10} predictions
+architecture Alexnet_alt(img_height=224, img_width=224, img_channels=3, classes=10){
+    def input Z(0:255)^{img_height, img_width, img_channels} image
+    def output Q(0:1)^{classes} predictions
 
     image ->
     Convolution(kernel=(11,11), channels=96, stride=(4,4), padding="no_loss") ->

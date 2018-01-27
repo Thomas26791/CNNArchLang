@@ -1,4 +1,4 @@
-architecture DuplicatedArgument{
+architecture DuplicatedArgument(){
     def input Q(-oo:+oo)^{10} in
     def output Q(0:1)^{2} out
 

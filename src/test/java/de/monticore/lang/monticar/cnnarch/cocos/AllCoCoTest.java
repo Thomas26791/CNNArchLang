@@ -68,14 +68,6 @@ public class AllCoCoTest extends AbstractCoCoTest {
                 new CNNArchCoCoChecker(),
                 "invalid_tests", "UnknownVariableName",
                 new ExpectedErrorInfo(1, ErrorCodes.UNKNOWN_VARIABLE_NAME));
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckIOShape()),
-                new CNNArchCoCoChecker(),
-                "invalid_tests", "InvalidIOShape1",
-                new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_SHAPE));
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckIOShape()),
-                new CNNArchCoCoChecker(),
-                "invalid_tests", "InvalidIOShape2",
-                new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_SHAPE));
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckUnknownIO()),
                 new CNNArchCoCoChecker(),
                 "invalid_tests", "UnknownIO",
@@ -100,6 +92,10 @@ public class AllCoCoTest extends AbstractCoCoTest {
                 new CNNArchCoCoChecker(),
                 "invalid_tests", "ArgumentConstraintTest2",
                 new ExpectedErrorInfo(1, ErrorCodes.ILLEGAL_ASSIGNMENT_CODE));
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckRangeOperators()),
+                new CNNArchCoCoChecker(),
+                "invalid_tests", "WrongRangeOperator",
+                new ExpectedErrorInfo(2, ErrorCodes.DIFFERENT_RANGE_OPERATORS));
         checkInvalid(new CNNArchCoCoChecker(),
                 new CNNArchCoCoChecker(),
                 "invalid_tests", "ArgumentConstraintTest3",
@@ -124,10 +120,19 @@ public class AllCoCoTest extends AbstractCoCoTest {
                 new CNNArchCoCoChecker(),
                 "invalid_tests", "IllegalName",
                 new ExpectedErrorInfo(2, ErrorCodes.ILLEGAL_NAME_CODE));
+
     }
 
     @Test
     public void testInvalidPostResolveCocos(){
+        checkInvalid(new CNNArchCoCoChecker(),
+                new CNNArchCoCoChecker().addCoCo(new CheckIOShape()),
+                "invalid_tests", "InvalidIOShape1",
+                new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_SHAPE));
+        checkInvalid(new CNNArchCoCoChecker(),
+                new CNNArchCoCoChecker().addCoCo(new CheckIOShape()),
+                "invalid_tests", "InvalidIOShape2",
+                new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_SHAPE));
         checkInvalid(new CNNArchCoCoChecker(),
                 new CNNArchCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()),
                 "invalid_tests", "NotIOArray",

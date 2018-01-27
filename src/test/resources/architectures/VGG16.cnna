@@ -1,6 +1,6 @@
-architecture VGG16{
-    def input Z(0:255)^{h=224,w=224,c=3} image
-    def output Q(0:1)^{classes=1000} predictions
+architecture VGG16(img_height=224, img_width=224, img_channels=3, classes=1000){
+    def input Z(0:255)^{img_height, img_width, img_channels} image
+    def output Q(0:1)^{classes} predictions
 
     def conv(filter, channels){
         Convolution(kernel=(filter,filter), channels=channels) ->

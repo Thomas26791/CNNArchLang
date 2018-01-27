@@ -20,9 +20,9 @@
  */
 package de.monticore.lang.monticar.cnnarch.predefined;
 
+import de.monticore.lang.monticar.cnnarch._symboltable.Constraints;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableType;
-import de.monticore.lang.monticar.cnnarch._symboltable.Constraints;
 
 public class AllPredefinedVariables {
 
@@ -35,7 +35,7 @@ public class AllPredefinedVariables {
     public static VariableSymbol createIfParameter(){
         return new VariableSymbol.Builder()
                 .name(IF_NAME)
-                .type(VariableType.PARAMETER)
+                .type(VariableType.METHOD_PARAMETER)
                 .constraints(Constraints.BOOLEAN)
                 .defaultValue(true)
                 .build();
@@ -44,7 +44,7 @@ public class AllPredefinedVariables {
     public static VariableSymbol createForParameter(){
         return new VariableSymbol.Builder()
                 .name(FOR_NAME)
-                .type(VariableType.PARAMETER)
+                .type(VariableType.METHOD_PARAMETER)
                 .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                 .defaultValue(1)
                 .build();
@@ -53,7 +53,7 @@ public class AllPredefinedVariables {
     public static VariableSymbol createCardinalityParameter(){
         return new VariableSymbol.Builder()
                 .name(CARDINALITY_NAME)
-                .type(VariableType.PARAMETER)
+                .type(VariableType.METHOD_PARAMETER)
                 .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                 .defaultValue(1)
                 .build();

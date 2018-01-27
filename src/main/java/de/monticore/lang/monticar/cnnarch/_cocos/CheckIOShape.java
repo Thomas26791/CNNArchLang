@@ -20,13 +20,11 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTDimension;
 import de.monticore.lang.monticar.cnnarch._ast.ASTIODeclaration;
-import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.monticore.lang.monticar.types2._ast.ASTUnitNumberResolution;
 import de.se_rwth.commons.logging.Log;
-import org.jscience.mathematics.number.Rational;
 
 import java.util.Optional;
 
@@ -41,18 +39,13 @@ public class CheckIOShape implements CNNArchASTIODeclarationCoCo {
                     , node.getType().getShape().get_SourcePositionStart());
         }
         else {
-            for (ASTDimension dimension : node.getType().getShape().getDimensions()){
-                Rational rational;
-                if (dimension.getIntLiteral().isPresent()){
-                    rational = dimension.getIntLiteral().get().getNumber().get();
-                }
-                else {
-                    rational = dimension.getIOVariable().get().getIntRhs().get().getNumber().get();
-                }
-                if (rational.getDivisor().intValue() != 1 || !rational.isPositive()){
+            IODeclarationSymbol ioDeclaration = (IODeclarationSymbol) node.getSymbol().get();
+            for (ArchSimpleExpressionSymbol dimension : ioDeclaration.getShape().getDimensionSymbols()){
+                Optional<Integer> value = dimension.getIntValue();
+                if (!value.isPresent() || value.get() <= 0){
                     Log.error("0" + ErrorCodes.INVALID_IO_SHAPE + " Invalid shape. " +
                                     "The dimension can only be defined by a positive integer."
-                            , dimension.get_SourcePositionStart());
+                            , dimension.getSourcePosition());
                 }
             }
         }

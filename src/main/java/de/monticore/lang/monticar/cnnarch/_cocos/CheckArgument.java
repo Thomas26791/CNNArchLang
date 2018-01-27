@@ -20,15 +20,15 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArgument;
+import de.monticore.lang.monticar.cnnarch._ast.ASTArchArgument;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArgumentSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.logging.Log;
 
-public class CheckArgument implements CNNArchASTArgumentCoCo {
+public class CheckArgument implements CNNArchASTArchArgumentCoCo {
 
     @Override
-    public void check(ASTArgument node) {
+    public void check(ASTArchArgument node) {
         ArgumentSymbol argument = (ArgumentSymbol) node.getSymbol().get();
         if (argument.getParameter() ==  null){
             Log.error("0"+ ErrorCodes.UNKNOWN_ARGUMENT_CODE + " Unknown Argument. " +

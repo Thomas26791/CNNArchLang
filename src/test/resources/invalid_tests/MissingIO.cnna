@@ -1,8 +1,8 @@
-architecture MissingIO{
-    def input Q(-oo:+oo)^{inputs=10} in
-    def input Q(-oo:+oo)^{inputs2=10} in2
-    def output Q(0:1)^{classes=2} out
-    def output Q(0:1)^{classes2=2} out2
+architecture MissingIO(inputs=10, inputs2=10, classes=2, classes2=2){
+    def input Q(-oo:+oo)^{inputs} in
+    def input Q(-oo:+oo)^{inputs2} in2
+    def output Q(0:1)^{classes} out
+    def output Q(0:1)^{classes2} out2
 
     in ->
     FullyConnected(units=64, no_bias=true) ->

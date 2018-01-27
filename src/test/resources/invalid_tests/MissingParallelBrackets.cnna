@@ -1,6 +1,6 @@
-architecture MissingParallelBrackets{
-    def input Z(0:255)^{h=256,w=256,c=3} image
-    def output Q(0:1)^{classes=10} predictions
+architecture MissingParallelBrackets(img_height=224, img_width=224, img_channels=3, classes=10){
+    def input Z(0:255)^{img_height, img_width, img_channels} image
+    def output Q(0:1)^{classes} predictions
 
     def conv(filter, channels, hasPool=true, convStride=(1,1)){
         Convolution(kernel=filter, channels=channels, stride=convStride) ->

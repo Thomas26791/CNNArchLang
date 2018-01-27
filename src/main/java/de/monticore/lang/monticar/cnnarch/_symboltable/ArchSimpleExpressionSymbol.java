@@ -69,7 +69,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
 
     @Override
     public boolean isBoolean() {
-        if (getMathExpression().isPresent() && !(getMathExpression().get() instanceof MathNameExpressionSymbol)){
+        if (getMathExpression().isPresent() && !(getMathExpression().get().getRealMathExpressionSymbol() instanceof MathNameExpressionSymbol)){
             if (getMathExpression().get().getRealMathExpressionSymbol() instanceof MathCompareExpressionSymbol){
                 return true;
             }
@@ -90,7 +90,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
 
     @Override
     public boolean isTuple() {
-        if (getMathExpression().isPresent() && !(getMathExpression().get() instanceof MathNameExpressionSymbol)){
+        if (getMathExpression().isPresent() && !(getMathExpression().get().getRealMathExpressionSymbol() instanceof MathNameExpressionSymbol)){
             if (getMathExpression().get().getRealMathExpressionSymbol() instanceof TupleExpressionSymbol){
                 return true;
             }

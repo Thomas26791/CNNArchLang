@@ -6,16 +6,27 @@
 # CNNArch
 **work in progress**
 ## Introduction
-CNNArch is a declarative language to build architectures of feedforward neural networks with a special focus on convolutional neural networks. It is being developed for use in the MontiCar language family, along with CNNTrain which configures the training of the network and EmbeddedMontiArcDL which combines the languages into a EmbeddedMontiArc component.
+CNNArch is a declarative language to build architectures of feedforward neural networks with a special focus on convolutional neural networks. 
+It is being developed for use in the MontiCar language family, along with CNNTrain which configures the training of the network and EmbeddedMontiArcDL 
+which combines the languages into a EmbeddedMontiArc component.
 The inputs and outputs of a network are strongly typed and the validity of a network is checked at compile time.
 In the following, we will explain the syntax and all features of CNNArch in combination with code examples to show how these can be used.
 
 ## Basic Structure
-The syntax of this language has many similarities to python in the way how variables and methods are handled. There exist three types of variables: constants, parameters and IO-variables. There all are seemingly untyped. However, the correctness of their values is checked at compile time. Constants can be defined by the user in the declaration part of the architecture (top part). IO-variables are variables which define the shape of inputs and outputs. They are initialized in the architecture but can be changed from the outside to fit the actual inputs and outputs of a component. If this is not wanted, the shape of inputs and outputs can also be defined with fixed values. The main part is the actual definition of the architecture in the form of a collection of layers which are connected through the two operators "->" and "|". A layer can either be a method, an input or an output. The following is a complete example of the original version of Alexnet by A. Krizhevsky. There are more compact versions of the same architecture but we will get to that later. All predefined methods are listed at the end of this document.
+The syntax of this language has many similarities to python in the way how variables and methods are handled. 
+Variables which occur only in form of parameters are seemingly untyped. 
+However, the correctness of their values is checked at compile time.
+The header of the architecture declares architecture parameters which are usually used to define the Dimensions of inputs and outputs.
+The top part of the architecture consists of input, output or method declarations.
+The main part is the actual definition of the architecture in the form of a collection of layers which are connected through the two operators "->" and "|". 
+A layer can either be a method, an input or an output. 
+The following is a complete example of the original version of Alexnet by A. Krizhevsky. 
+There are more compact versions of the same architecture but we will get to that later. 
+All predefined methods are listed at the end of this document.
 ```
-architecture Alexnet_simple{
-    def input Z(0:255)^{h=224,w=224,c=3} image
-    def output Q(0:1)^{classes=10} predictions
+architecture Alexnet_alt(img_height=224, img_width=224, img_channels=3, classes=10){
+    def input Z(0:255)^{img_height, img_width, img_channels} image
+    def output Q(0:1)^{classes} predictions
 
     image ->
     Convolution(kernel=(11,11), channels=96, stride=(4,4), padding="no_loss") ->
@@ -67,49 +78,55 @@ architecture Alexnet_simple{
     predictions
 }
 ```
-*Note: The third convolutional and the first two fully connected layers are not divided into two streams like they are in the original Alexnet. This is done for the sake of simplicity. However, this change should not affect the actual computation.*
+*Note: The third convolutional and the first two fully connected layers are not divided into two streams like they are in the original Alexnet. 
+This is done for the sake of simplicity. However, this change should not affect the actual computation.*
 
 ## Layer Operators
-The architecture does not use symbols to denote a connections between layers like most deep learning frameworks but instead uses a approach which describes the data flow through the network. The first operator is the serial connection "->". The operator simply connects the output of the first layer to the input of the second layer. Despite being sequential in nature, CNNArch is still able to describe complex networks like ResNeXt through the use of the parallelization operator "|". This operator splits the network into parallel data streams. Each stream in a parallel block has the same input as the whole block. The output of a parallel block is a list of streams which can be merged into a single stream through use of the following methods: `Convolution()`, `Add()` or `Get(index)`. Note: `Get(index=i)` can be abbreviated by `[i]`. The method `Split(n)` in the example above creates multiple output streams from a single input stream by splitting the data itself into *n* streams which can then handled separately.
+This language does not use symbols to denote a connections between layers like most deep learning frameworks but instead uses a approach which describes the data flow through the network. 
+The first operator is the serial connection "->". The operator simply connects the output of the first layer to the input of the second layer. 
+Despite being sequential in nature, CNNArch is still able to describe complex networks like ResNeXt through the use of the parallelization operator "|". 
+This operator splits the network into parallel data streams. 
+The serial connection operator has a higher precedence than the parallel connection operator. 
+Therefore it is necessary to use brackets around each parallel group of layers.
+Each element in a parallel group has the same input stream as the whole group. 
+The output of a parallel group is a list of streams which can be merged into a single stream through use of the following methods: 
+`Convolution()`, `Add()` or `Get(index)`. 
+Note: `Get(index=i)` can be abbreviated by `[i]`. 
+The method `Split(n)` in the example above creates multiple output streams from a single input stream by splitting the data itself into *n* streams which can then handled separately.
 
 
 ## Inputs and Outputs
-An architecture in CNNArch can have multiple inputs and outputs. Multiple inputs (or outputs) of the same form can be initialized as arrays. The declaration can look like the following:
+An architecture in CNNArch can have multiple inputs and outputs. 
+Multiple inputs (or outputs) of the same form can be initialized as arrays. 
+Assuming `h` and `w` are architecture parameter, the following is a valid example:
 ```
-def input Z(0:255)^{h=200,w=300,c=3} image[2]
+def input Z(0:255)^{h,w,3} image[2]
 def input Q(-oo:+oo)^{10} additionalData
-def output Q(0:1)^{classes=3} predictions
+def output Q(0:1)^{3} predictions
 ```
-The first line defines the input *image* as an array of two rgb (or bgr) images with a resolution of 300 x 200. The part `Z(0:255)`, which corresponds to the type definition in EmbeddedMontiArc, restricts the values to integers between 0 and 255. The following part `{h=200,w=300,c=3}` declares the shape of the input. The shape denotes the dimensionality in form  of height, width and depth(number of channels). Here, the height is initialized as 200, the width as 300 and the number of channels is 3. Height, width and depth can either be initialized variables or fixed values. The second line defines another input with 10 fixed dimensions and arbitrary rational values. The last line defines an output as the probability of three classes.
+The first line defines the input *image* as an array of two rgb (or bgr) images with a resolution of `h` x `w`. 
+The part `Z(0:255)`, which corresponds to the type definition in EmbeddedMontiArc, restricts the values to integers between 0 and 255. 
+The following line `{h=200,w=300,c=3}` declares the shape of the input. 
+The shape denotes the dimensionality in form  of height, width and depth(number of channels). 
+Here, the height is initialized as `h`, the width as `w` and the number of channels is 3.  
+The second line defines another input with 10 dimensions and arbitrary rational values. 
+The last line defines an output as the probability of 3 classes.
 
-If an input or output is an array, it can be used in the architecture in two different ways. Either a single element is accessed or the array is used as a whole. The line `image[0] ->` would access the first image of the array and `image ->` would directly result in 2 output streams. In fact, the line `image ->` is identical to `(image[0] | image[1]) ->`. Furthermore, assuming *out* is a output array of size 2, the line `-> out` would be identical to `-> ([0]->image[0] | [1]->image[1])`. Inputs and outputs can also be used in the middle of an architecture. In general, inputs create new streams and outputs consume existing streams.
-
-## Constants
-The following example uses the two constants `a` and `b`:
-```
-architecture ExampleNetwork{
-    def input Q(-oo:+oo)^{inputs=10} in
-    def output Q(0:1)^{classes=2} out
-    a = inputs * 3 + classes
-    b = 64
-
-    in ->
-    FullyConnected(units=a) ->
-    Tanh() ->
-    FullyConnected(units=b) ->
-    Tanh() ->
-    FullyConnected(units=classes) ->
-    Softmax() ->
-    out
-}
-```
+If an input or output is an array, it can be used in the architecture in two different ways. 
+Either a single element is accessed or the array is used as a whole. 
+The line `image[0] ->` would access the first image of the array and `image ->` would directly result in 2 output streams. 
+In fact, `image ->` is identical to `(image[0] | image[1]) ->`. 
+Furthermore, assuming *out* is a output array of size 2, the line `-> out` would be identical to `-> ([0]->image[0] | [1]->image[1])`. 
+Inputs and outputs can also be used in the middle of an architecture. 
+In general, inputs create new streams and outputs consume existing streams.
 
 ## Methods
-It is possible to declare of new methods. The method declaration is similar to python. 
+It is possible to declare and construct new methods. The method declaration is similar to python. 
 Each parameter can have a default value that makes it an optional argument. 
 The method call is also similar to python but, in contrast to python, it is necessary to specify the name of each argument. 
 The body of a new method is constructed from other layers including other user-defined methods. However, recursion is not allowed. 
-The compiler will throw an error if recursion occurs. The following is a example of multiple method declarations.
+The compiler will throw an error if recursion occurs. 
+The following is a example of multiple method declarations.
 ```
     def conv(filter, channels, stride=1, act=true){
         Convolution(kernel=(filter,filter), channels=channels, stride=(stride,stride)) ->
@@ -131,18 +148,33 @@ The compiler will throw an error if recursion occurs. The following is a example
         Relu()
     }
 ```
-The method `resLayer` in this example corresponds to a building block of a Residual Network. The `If` argument is a special argument which is explained in the next section.
+The method `resLayer` in this example corresponds to a building block of a Residual Network. 
+The `If` argument is a special argument which is explained in the next section.
 
 ## Special Arguments
-There exists special structural arguments which can be used in each method. These are `->`, `|` and `If`. `->` and `|` can only be positive integers and `If` can only be a boolean. 
-The argument `If` does not nothing if it is true and removes the layer completely if it is false. The other two arguments create a repetition of the method. 
-We will show their effect with examples. Assuming `a` is a method without required arguments, 
-then `a(-> = 3)->` is equal to `a()->a()->a()->`, `a(| = 3)->` is equal to `(a() | a() | a())->` and `a(-> = 3, | = 2->)` is equal to `(a()->a()->a() | a()->a()->a())->`. 
+There exists special structural arguments which can be used in each method. 
+These are `->`, `|` and `If`. `->` and `|` can only be positive integers and `If` can only be a boolean. 
+The argument `If` does not nothing if it is true and removes the layer completely if it is false. 
+The other two arguments create a repetition of the method. 
+We will show their effect with examples. 
+Assuming `a` is a method without required arguments, 
+then `a(-> = 3)->` is equal to `a()->a()->a()->`, 
+`a(| = 3)->` is equal to `(a() | a() | a())->` and 
+`a(-> = 3, | = 2->)` is equal to `(a()->a()->a() | a()->a()->a())->`. 
 
 ## Argument Sequences
-It is also possible to create a repetition of a method in another way through the use of argument sequences. The following are valid sequences: `[2->5->3]`, `[true|false|false]`, `[2->1|4->4->6]`, `[ |2->3]`, `1->..->5` and `3|..|-2`. All values in these examples could also be replaced by variable names or expressions. The first three are standard sequences and the last two are intervals. An interval can be translated to a standard sequence. The interval `3|..|-2` is equal to `[3|2|1|0|-1|-2]` and `1->..->5` is equal to `[1->2->3->4->5]`. 
+It is also possible to create a repetition of a method in another way through the use of argument sequences. 
+The following are valid sequences: `[2->5->3]`, `[true|false|false]`, `[2->1|4->4->6]`, `[ |2->3]`, `1->..->5` and `3|..|-2`. 
+All values in these examples could also be replaced by variable names or expressions. 
+The first three are standard sequences and the last two are intervals. 
+An interval can be translated to a standard sequence. 
+The interval `3|..|-2` is equal to `[3|2|1|0|-1|-2]` and `1->..->5` is equal to `[1->2->3->4->5]`. 
 
-If a argument is set to a sequence, the method will be repeated for each value in the sequence and the connection between the layers will be the same as it is between the values of the sequence. An argument which has a single value is neutral to the repetition which means that it will be repeated an arbitrary number of times without interfering with the repetition. If a method contains multiple argument sequences, CNNArch will try to combine the sequences. The language will throw an error at compile time if this fails. Assuming the method `m(a, b, c)` exists, the line `m(a=[5->3], b=[3|4|2], c=2)->` is equal to:
+If a argument is set to a sequence, the method will be repeated for each value in the sequence and the connection between the layers will be the same as it is between the values of the sequence. 
+An argument which has a single value is neutral to the repetition which means that it will be repeated an arbitrary number of times without interfering with the repetition. 
+If a method contains multiple argument sequences, CNNArch will try to combine the sequences. 
+The language will throw an error at compile time if this fails. 
+Assuming the method `m(a, b, c)` exists, the line `m(a=[5->3], b=[3|4|2], c=2)->` is equal to:
 ```
 (
     m(a=5, b=3, c=2) ->
@@ -158,14 +190,15 @@ If a argument is set to a sequence, the method will be repeated for each value i
 However, the line `m(a=[5->3], b=[2|4->6], c=2)->` would throw an error because it is not possible to expand *a* such that it is the same size as *b*.
 
 ## Expressions
-Currently, the working expression operators are the basic arithmetic operators "+", "-", "\*", "/", the logical operators "&&", "||" and for most cases the comparison operators "==", "!=", "<", ">", "<=", ">=". The comparison operators do not work reliably for the comparison of tuple (they only compare the last element in the tuples). 
+Currently, the working expression operators are the basic arithmetic operators "+", "-", "\*", "/", the logical operators "&&", "||" and for most cases the comparison operators "==", "!=", "<", ">", "<=", ">=". 
+The comparison operators do not work reliably for the comparison of tuple (they only compare the last element in the tuples). 
 
 ## Advanced Example
 This version of Alexnet, which uses method construction, argument sequences and special arguments, is identical to the one in the section Basic Structure.
 ```
-architecture Alexnet{
-    def input Z(0:255)^{h=224,w=224,c=3} image
-    def output Q(0:1)^{classes=10} predictions
+architecture Alexnet_alt2(img_height=224, img_width=224, img_channels=3, classes=10){
+    def input Z(0:255)^{img_height, img_width, img_channels} image
+    def output Q(0:1)^{classes} predictions
     
     def conv(filter, channels, convStride=1, poolStride=1, hasLrn=false, convPadding="same"){
     	Convolution(kernel=(filter,filter), channels=channels, stride=(convStride,convStride), padding=convPadding) ->
@@ -197,7 +230,7 @@ architecture Alexnet{
     Split(n=2) ->
     split2(i=[0|1]) ->
     Concatenate() ->
-    fc(->=2) ->
+    fc(-> = 2) ->
     FullyConnected(units=classes) ->
     Softmax() ->
     predictions
@@ -206,7 +239,8 @@ architecture Alexnet{
 
 
 ## Predefined Layers
-All methods with the exception of *Concatenate*, *Add*, *Get* and *Split* can only handle 1 input stream and have 1 output stream. All predefined methods start with a capital letter and all constructed methods have to start with a lowercase letter.
+All methods with the exception of *Concatenate*, *Add*, *Get* and *Split* can only handle 1 input stream and have 1 output stream. 
+All predefined methods start with a capital letter and all constructed methods have to start with a lowercase letter.
 
 * **FullyConnected(units, no_bias=false)**
 
@@ -243,7 +277,8 @@ All methods with the exception of *Concatenate*, *Add*, *Get* and *Split* can on
     
 * **Flatten()**
 
-  Reshapes the input such that height and width are 1. Usually not necessary because the FullyConnected layer applies *Flatten* automatically.
+  Reshapes the input such that height and width are 1. 
+  Usually not necessary because the FullyConnected layer applies *Flatten* automatically.
     
 * **Dropout()**
 
@@ -287,21 +322,28 @@ All methods with the exception of *Concatenate*, *Add*, *Get* and *Split* can on
 
 * **Concatenate()**
     
-  Merges multiple input streams into one output stream by concatenation of channels. The height and width of all inputs must be identical. The number of channels in the output shape is the sum of the number of channels in the shape of the input streams.
+  Merges multiple input streams into one output stream by concatenation of channels. 
+  The height and width of all inputs must be identical. 
+  The number of channels in the output shape is the sum of the number of channels in the shape of the input streams.
     
 * **Add()**
     
-  Merges multiple input streams into one output stream by adding them element-wise together. The height, width and the number of channels of all inputs must be identical. The output shape is identical to each input shape.
+  Merges multiple input streams into one output stream by adding them element-wise together. 
+  The height, width and the number of channels of all inputs must be identical. 
+  The output shape is identical to each input shape.
     
 * **Get(index)**
 
-  `Get(index=i)` can be abbreviated with `[i]`. Selects one out of multiple input streams. The single output stream is identical to the selected input. 
+  `Get(index=i)` can be abbreviated with `[i]`. Selects one out of multiple input streams. 
+  The single output stream is identical to the selected input. 
   
   * **index** (integer >= 0, required): The zero-based index of the selected input.
 
 * **Split(n)**
 
-  Opposite of *Concatenate*. Handles a single input stream and splits it into *n* output streams. The output streams have the same height and width as the input stream and a number channels which is in general `input_channels / n`. The last output stream will have a higher number of channels than the other if `input_channels` is not divisible by `n`.
+  Opposite of *Concatenate*. Handles a single input stream and splits it into *n* output streams. 
+  The output streams have the same height and width as the input stream and a number channels which is in general `input_channels / n`. 
+  The last output stream will have a higher number of channels than the other if `input_channels` is not divisible by `n`.
   
   * **n** (integer > 0, required): The number of output streams. Cannot be higher than the number of input channels.
   

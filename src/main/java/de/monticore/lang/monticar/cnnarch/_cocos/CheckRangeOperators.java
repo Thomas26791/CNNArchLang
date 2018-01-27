@@ -18,38 +18,32 @@
  *  License along with this project. If not, see <http://www.gnu.org/licenses/>.
  * *******************************************************************************
  */
-package de.monticore.lang.monticar.cnnarch._ast;
+package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
+import de.monticore.lang.monticar.cnnarch._ast.ASTArchValueRange;
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.se_rwth.commons.logging.Log;
 
-public class ASTPredefinedArgument extends ASTPredefinedArgumentTOP {
-
-    public ASTPredefinedArgument() {
-    }
-
-    public ASTPredefinedArgument(ASTArchExpression rhs2, String serial, String parallel, String name, ASTArchExpression rhs) {
-        super(rhs2, serial, parallel, name, rhs);
-    }
+public class CheckRangeOperators implements CNNArchASTArchValueRangeCoCo {
 
     @Override
-    public void setRhs2(ASTArchExpression rhs2) {
-        super.setRhs2(rhs2);
-        setRhs(rhs2);
-    }
-
-    @Override
-    public void setParallel(String parallel) {
-        super.setParallel(parallel);
-        if (parallel != null && !parallel.isEmpty()){
-            setName(AllPredefinedVariables.CARDINALITY_NAME);
+    public void check(ASTArchValueRange node) {
+        if (node.getParallel().isPresent()){
+            if (!node.getParallel2().isPresent()){
+                differentOperatorError(node);
+            }
+        }
+        else {
+            if (node.getParallel2().isPresent()){
+                differentOperatorError(node);
+            }
         }
     }
 
-    @Override
-    public void setSerial(String serial) {
-        super.setSerial(serial);
-        if (serial != null && !serial.isEmpty()) {
-            setName(AllPredefinedVariables.FOR_NAME);
-        }
+    private void differentOperatorError(ASTArchValueRange node){
+        Log.error("0" + ErrorCodes.DIFFERENT_RANGE_OPERATORS +
+                        " the second layer operator ('->' or '|') in a range has to be identical to the first one."
+                , node.get_SourcePositionStart());
     }
+
 }
