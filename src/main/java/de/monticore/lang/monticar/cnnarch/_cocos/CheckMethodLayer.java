@@ -26,7 +26,6 @@ import de.monticore.lang.monticar.cnnarch._symboltable.MethodDeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.HashSet;
@@ -40,7 +39,7 @@ public class CheckMethodLayer implements CNNArchASTMethodLayerCoCo{
         for (ASTArchArgument argument : node.getArguments()){
             String name = argument.getName();
             if (nameSet.contains(name)){
-                Log.error("0" + ErrorCodes.DUPLICATED_ARG_CODE + " Duplicated name: " + name +
+                Log.error("0" + ErrorCodes.DUPLICATED_ARG + " Duplicated name: " + name +
                                 ". Multiple values assigned to the same argument."
                         , argument.get_SourcePositionStart());
             }
@@ -51,7 +50,7 @@ public class CheckMethodLayer implements CNNArchASTMethodLayerCoCo{
 
         MethodDeclarationSymbol method = ((MethodLayerSymbol) node.getSymbol().get()).getMethod();
         if (method == null){
-            Log.error("0" + ErrorCodes.UNKNOWN_METHOD_CODE + " Unknown method error. " +
+            Log.error("0" + ErrorCodes.UNKNOWN_METHOD + " Unknown method error. " +
                             "Method with name '" + node.getName() + "' does not exist"
                     , node.get_SourcePositionStart());
         }
@@ -64,13 +63,10 @@ public class CheckMethodLayer implements CNNArchASTMethodLayerCoCo{
             }
             for (ASTArchArgument argument : node.getArguments()){
                 requiredArguments.remove(argument.getName());
-                if (argument.getName().equals(AllPredefinedMethods.GLOBAL_NAME)){
-                    requiredArguments.remove(AllPredefinedMethods.KERNEL_NAME);
-                }
             }
 
             for (String missingArgumentName : requiredArguments){
-                Log.error("0"+ErrorCodes.MISSING_ARGUMENT_CODE + " Missing argument. " +
+                Log.error("0"+ErrorCodes.MISSING_ARGUMENT + " Missing argument. " +
                                 "The argument '" + missingArgumentName + "' is required."
                         , node.get_SourcePositionStart());
             }

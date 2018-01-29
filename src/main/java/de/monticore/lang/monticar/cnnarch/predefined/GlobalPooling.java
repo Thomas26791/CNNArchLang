@@ -22,25 +22,29 @@ package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-public class Pooling extends PredefinedMethodDeclaration {
+public class GlobalPooling extends PredefinedMethodDeclaration {
 
-    protected Pooling() {
-        super(AllPredefinedMethods.POOLING_NAME);
+    protected GlobalPooling() {
+        super(AllPredefinedMethods.GLOBAL_POOLING_NAME);
     }
 
     @Override
     public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return computeConvAndPoolOutputShape(inputShapes.get(0),
-                layer,
-                inputShapes.get(0).getChannels().get());
+        return Collections.singletonList(new ShapeSymbol.Builder()
+                .height(1)
+                .width(1)
+                .channels(inputShapes.get(0).getChannels().get())
+                .build());
     }
 
     @Override
     public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputShapes, layer);
-        errorIfInputSmallerThanKernel(inputShapes, layer);
     }
 
     protected void setParameters(){
@@ -48,20 +52,6 @@ public class Pooling extends PredefinedMethodDeclaration {
                 new VariableSymbol.Builder()
                         .name(AllPredefinedMethods.POOL_TYPE_NAME)
                         .constraints(Constraints.POOL_TYPE)
-                        .build(),
-                new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.KERNEL_NAME)
-                        .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
-                        .build(),
-                new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.STRIDE_NAME)
-                        .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
-                        .defaultValue(Arrays.asList(1, 1))
-                        .build(),
-                new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.PADDING_NAME)
-                        .constraints(Constraints.PADDING_TYPE)
-                        .defaultValue(AllPredefinedMethods.PADDING_SAME)
                         .build()));
         for (VariableSymbol param : parameters){
             param.putInScope(getSpannedScope());
@@ -69,8 +59,8 @@ public class Pooling extends PredefinedMethodDeclaration {
         setParameters(parameters);
     }
 
-    public static Pooling create(){
-        Pooling method = new Pooling();
+    public static GlobalPooling create(){
+        GlobalPooling method = new GlobalPooling();
         method.setParameters();
         return method;
     }

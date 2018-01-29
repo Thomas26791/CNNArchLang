@@ -43,7 +43,7 @@ public class CheckUnknownIO implements CNNArchASTIOLayerCoCo {
         }
 
         if (ioDeclaration == null){
-            Log.error("0" + ErrorCodes.UNKNOWN_IO_CODE + " Unknown input or output name. " +
+            Log.error("0" + ErrorCodes.UNKNOWN_IO + " Unknown input or output name. " +
                             "The input or output '" + node.getName() + "' does not exist"
                     , node.get_SourcePositionStart());
         }

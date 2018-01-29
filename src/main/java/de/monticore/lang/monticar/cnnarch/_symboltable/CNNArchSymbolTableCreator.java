@@ -198,21 +198,28 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     @Override
     public void endVisit(ASTShape node) {
         ShapeSymbol sym = (ShapeSymbol) node.getSymbol().get();
-        if (node.getDimensions().size() == 1){
-            ArchSimpleExpressionSymbol channels = (ArchSimpleExpressionSymbol) node.getDimensions().get(0).getSymbol().get();
-            sym.setChannels(channels);
+
+        List<ArchSimpleExpressionSymbol> dimensionList = new ArrayList<>(3);
+        for (int i = 0; i < node.getDimensions().size(); i++){
+            ASTDimensionArgument dimensionArg = node.getDimensions().get(i);
+            if (dimensionArg.getHeight().isPresent()){
+                sym.setHeightIndex(i);
+                ArchSimpleExpressionSymbol exp = (ArchSimpleExpressionSymbol) dimensionArg.getHeight().get().getSymbol().get();
+                dimensionList.add(exp);
+            }
+            else if (dimensionArg.getWidth().isPresent()){
+                sym.setWidthIndex(i);
+                ArchSimpleExpressionSymbol exp = (ArchSimpleExpressionSymbol) dimensionArg.getWidth().get().getSymbol().get();
+                dimensionList.add(exp);
+            }
+            else {
+                sym.setChannelIndex(i);
+                ArchSimpleExpressionSymbol exp = (ArchSimpleExpressionSymbol) dimensionArg.getChannels().get().getSymbol().get();
+                dimensionList.add(exp);
+            }
         }
-        else if (node.getDimensions().size() == 3){
-            ArchSimpleExpressionSymbol height = (ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.HEIGHT_INDEX - 1).getSymbol().get();
-            ArchSimpleExpressionSymbol width = (ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.WIDTH_INDEX - 1).getSymbol().get();
-            ArchSimpleExpressionSymbol channels = (ArchSimpleExpressionSymbol) node.getDimensions().get(ShapeSymbol.CHANNEL_INDEX - 1).getSymbol().get();
-            sym.setHeight(height);
-            sym.setWidth(width);
-            sym.setChannels(channels);
-        }
-        else {
-            //do nothing; will be checked in coco
-        }
+        sym.setDimensionSymbols(dimensionList);
+
         addToScopeAndLinkWithNode(sym, node);
     }
 

@@ -38,8 +38,8 @@ public class AllPredefinedMethods {
     public static final String TANH_NAME = "Tanh";
     public static final String RELU_NAME = "Relu";
     public static final String DROPOUT_NAME = "Dropout";
-    public static final String MAX_POOLING_NAME = "MaxPooling";
-    public static final String AVG_POOLING_NAME = "AveragePooling";
+    public static final String POOLING_NAME = "Pooling";
+    public static final String GLOBAL_POOLING_NAME = "GlobalPooling";
     public static final String LRN_NAME = "Lrn";
     public static final String BATCHNORM_NAME = "BatchNorm";
     public static final String SPLIT_NAME = "Split";
@@ -54,7 +54,6 @@ public class AllPredefinedMethods {
     public static final String STRIDE_NAME = "stride";
     public static final String UNITS_NAME = "units";
     public static final String NOBIAS_NAME = "no_bias";
-    public static final String GLOBAL_NAME = "global";
     public static final String P_NAME = "p";
     public static final String INDEX_NAME = "index";
     public static final String NUM_SPLITS_NAME = "n";
@@ -64,11 +63,15 @@ public class AllPredefinedMethods {
     public static final String ALPHA_NAME = "alpha";
     public static final String BETA_NAME = "beta";
     public static final String PADDING_NAME = "padding";
+    public static final String POOL_TYPE_NAME = "type";
+
 
     //possible String values
     public static final String PADDING_VALID = "\"valid\"";
     public static final String PADDING_SAME = "\"same\"";
     public static final String PADDING_NO_LOSS = "\"no_loss\"";
+    public static final String POOL_MAX = "\"max\"";
+    public static final String POOL_AVG = "\"avg\"";
 
 
     //list with all atomic methods
@@ -82,8 +85,8 @@ public class AllPredefinedMethods {
                 Relu.create(),
                 Dropout.create(),
                 Flatten.create(),
-                MaxPooling.create(),
-                AveragePooling.create(),
+                Pooling.create(),
+                GlobalPooling.create(),
                 Lrn.create(),
                 BatchNorm.create(),
                 Split.create(),

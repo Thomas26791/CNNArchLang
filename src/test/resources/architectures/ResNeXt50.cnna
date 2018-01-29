@@ -1,11 +1,11 @@
 architecture ResNeXt50(img_height=224, img_width=224, img_channels=3, classes=1000){
-    def input Z(0:255)^{img_height, img_width, img_channels} image
-    def output Q(0:1)^{classes} predictions
+    def input Z(0:255)^{H:img_height, W:img_width, C:img_channels} image
+    def output Q(0:1)^{C:classes} predictions
 
     def conv(filter, channels, stride=1, act=true){
         Convolution(kernel=filter, channels=channels, stride=(stride,stride)) ->
         BatchNorm() ->
-        Relu(If=act)
+        Relu(?=act)
     }
     def resGroup(innerChannels, outChannels, stride=1){
         conv(filter=(1,1), channels=innerChannels) ->
@@ -24,7 +24,7 @@ architecture ResNeXt50(img_height=224, img_width=224, img_channels=3, classes=10
                      | = 32) ->
             Add()
         |
-            skip(outChannels=outChannels, stride=stride, If = stride!=1 || changedChannels)
+            skip(outChannels=outChannels, stride=stride, ? = stride!=1 || changedChannels)
         ) ->
         Add() ->
         Relu()
@@ -32,7 +32,7 @@ architecture ResNeXt50(img_height=224, img_width=224, img_channels=3, classes=10
 
     image ->
     conv(filter=(7,7), channels=64, stride=2) ->
-    MaxPooling(kernel=(3,3), stride=(2,2)) ->
+    Pooling(type="max", kernel=(3,3), stride=(2,2)) ->
     resLayer(innerChannels=4, outChannels=256, changedChannels=true, -> = 3) ->
     resLayer(innerChannels=8, outChannels=512, stride=2) ->
     resLayer(innerChannels=8, outChannels=512, -> = 3) ->
@@ -40,7 +40,7 @@ architecture ResNeXt50(img_height=224, img_width=224, img_channels=3, classes=10
     resLayer(innerChannels=16, outChannels=1024, -> = 5) ->
     resLayer(innerChannels=32, outChannels=2048, stride=2) ->
     resLayer(innerChannels=32, outChannels=2048, -> = 2) ->
-    AveragePooling(global=true) ->
+    GlobalPooling(type="avg") ->
     FullyConnected(units=classes) ->
     Softmax() ->
     predictions

@@ -354,7 +354,7 @@ public class MethodLayerSymbol extends LayerSymbol {
                         length = argLength;
                     }
                     else if (length != argLength) {
-                        Log.error("0" + ErrorCodes.ILLEGAL_SEQUENCE_LENGTH_CODE + " Illegal sequence length. " +
+                        Log.error("0" + ErrorCodes.ILLEGAL_SEQUENCE_LENGTH + " Illegal sequence length. " +
                                         "Length is " + argLength + " but it should be " + length + " or not a sequence. " +
                                         "All parallel sequences in the same method layer must be of the same size. "
                                 , argument.getSourcePosition());
@@ -419,7 +419,7 @@ public class MethodLayerSymbol extends LayerSymbol {
                 }
             }
             else if (argLength != 1 && argLength != serialLength){
-                Log.error("0" + ErrorCodes.ILLEGAL_SEQUENCE_LENGTH_CODE + " Illegal sequence length. " +
+                Log.error("0" + ErrorCodes.ILLEGAL_SEQUENCE_LENGTH + " Illegal sequence length. " +
                                 "Length of sequence dimension "+ serialIndex +" is " + argLength + " but it should be " + serialLength + " or not a sequence. " +
                                 "All serial sequences of the same paralle dimension in the same method layer must be of the same size. "
                         , getSourcePosition());

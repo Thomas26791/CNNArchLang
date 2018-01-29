@@ -27,7 +27,7 @@ import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
 
-import static de.monticore.lang.monticar.cnnarch.helper.ErrorCodes.MISSING_VAR_VALUE_CODE;
+import static de.monticore.lang.monticar.cnnarch.helper.ErrorCodes.MISSING_VAR_VALUE;
 
 public class VariableSymbol extends CommonSymbol {
 
@@ -123,7 +123,7 @@ public class VariableSymbol extends CommonSymbol {
             }
         }
         else {
-            String msg = "0" + MISSING_VAR_VALUE_CODE + " Missing value for variable  " + getName() + ".";
+            String msg = "0" + MISSING_VAR_VALUE + " Missing value for variable  " + getName() + ".";
             if (getAstNode().isPresent()){
                 Log.error(msg, getAstNode().get().get_SourcePositionStart());
             }

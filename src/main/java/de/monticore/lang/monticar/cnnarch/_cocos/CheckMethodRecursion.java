@@ -55,7 +55,7 @@ public class CheckMethodRecursion implements CNNArchASTMethodDeclarationCoCo {
                 if (method != null && !method.isPredefined() && !seenMethods.contains(method)) {
                     seenMethods.add(method);
                     if (startingMethod == method) {
-                        Log.error("0" + ErrorCodes.RECURSION_ERROR_CODE + " Recursion is not allowed. " +
+                        Log.error("0" + ErrorCodes.RECURSION_ERROR + " Recursion is not allowed. " +
                                         "The method '" + startingMethod.getName() + "' creates a recursive cycle."
                                 , startingMethod.getSourcePosition());
                         done = true;

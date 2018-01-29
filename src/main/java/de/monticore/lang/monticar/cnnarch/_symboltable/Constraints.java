@@ -28,7 +28,7 @@ import de.se_rwth.commons.logging.Log;
 import java.util.List;
 import java.util.Optional;
 
-import static de.monticore.lang.monticar.cnnarch.helper.ErrorCodes.ILLEGAL_ASSIGNMENT_CODE;
+import static de.monticore.lang.monticar.cnnarch.helper.ErrorCodes.ILLEGAL_ASSIGNMENT;
 
 public enum Constraints {
     NUMBER {
@@ -163,7 +163,28 @@ public enum Constraints {
 
         @Override
         protected String msgString() {
-            return AllPredefinedMethods.PADDING_VALID + " or " + AllPredefinedMethods.PADDING_SAME;
+            return AllPredefinedMethods.PADDING_VALID + ", "
+                    + AllPredefinedMethods.PADDING_SAME + " or "
+                    + AllPredefinedMethods.PADDING_NO_LOSS;
+        }
+    },
+    POOL_TYPE {
+        @Override
+        public boolean isValid(ArchSimpleExpressionSymbol exp) {
+            Optional<String> optString= exp.getStringValue();
+            if (optString.isPresent()){
+                if (optString.get().equals(AllPredefinedMethods.POOL_MAX)
+                        || optString.get().equals(AllPredefinedMethods.POOL_AVG)){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        protected String msgString() {
+            return AllPredefinedMethods.POOL_MAX + " or "
+                    + AllPredefinedMethods.POOL_AVG;
         }
     };
 
@@ -201,7 +222,7 @@ public enum Constraints {
         for (List<ArchSimpleExpressionSymbol> expList : exp.getElements().get()) {
             for (ArchSimpleExpressionSymbol singleExp : expList) {
                 if (!isValid(singleExp)) {
-                    Log.error("0" + ILLEGAL_ASSIGNMENT_CODE + " Illegal assignment of '" + printName(name) + "'. " +
+                    Log.error("0" + ILLEGAL_ASSIGNMENT + " Illegal assignment of '" + printName(name) + "'. " +
                                     "Expression must be " + msgString() + "."
                             , sourcePosition);
                     return false;

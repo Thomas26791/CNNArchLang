@@ -20,36 +20,59 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTIODeclaration;
+import de.monticore.lang.monticar.cnnarch._ast.ASTDimensionArgument;
+import de.monticore.lang.monticar.cnnarch._ast.ASTShape;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.Optional;
 
-public class CheckIOShape implements CNNArchASTIODeclarationCoCo {
+public class CheckIOShape implements CNNArchASTShapeCoCo {
 
     @Override
-    public void check(ASTIODeclaration node) {
-        int shapeSize = node.getType().getShape().getDimensions().size();
-        if (shapeSize != 1 && shapeSize != 3){
-            Log.error("0" + ErrorCodes.INVALID_IO_SHAPE + " Invalid shape. " +
-                            "IO Shape has to be either {height, width, channels} or {channels}."
-                    , node.getType().getShape().get_SourcePositionStart());
-        }
-        else {
-            IODeclarationSymbol ioDeclaration = (IODeclarationSymbol) node.getSymbol().get();
-            for (ArchSimpleExpressionSymbol dimension : ioDeclaration.getShape().getDimensionSymbols()){
-                Optional<Integer> value = dimension.getIntValue();
-                if (!value.isPresent() || value.get() <= 0){
-                    Log.error("0" + ErrorCodes.INVALID_IO_SHAPE + " Invalid shape. " +
-                                    "The dimension can only be defined by a positive integer."
-                            , dimension.getSourcePosition());
+    public void check(ASTShape node) {
+        boolean hasHeight = false;
+        boolean hasWidth = false;
+        boolean hasChannels = false;
+        for (ASTDimensionArgument dimensionArg : node.getDimensions()){
+            if (dimensionArg.getWidth().isPresent()){
+                if (hasWidth){
+                    repetitionError(dimensionArg);
                 }
+                hasWidth = true;
+            }
+            else if (dimensionArg.getHeight().isPresent()){
+                if (hasHeight){
+                    repetitionError(dimensionArg);
+                }
+                hasHeight = true;
+            }
+            else {
+                if (hasChannels){
+                    repetitionError(dimensionArg);
+                }
+                hasChannels = true;
             }
         }
 
+
+        ShapeSymbol shape = (ShapeSymbol) node.getSymbol().get();
+        for (ArchSimpleExpressionSymbol dimension : shape.getDimensionSymbols()){
+            Optional<Integer> value = dimension.getIntValue();
+            if (!value.isPresent() || value.get() <= 0){
+                Log.error("0" + ErrorCodes.INVALID_IO_SHAPE + " Invalid shape. " +
+                                "The dimensions can only be defined by a positive integer."
+                        , dimension.getSourcePosition());
+            }
+        }
+    }
+
+    private void repetitionError(ASTDimensionArgument node){
+        Log.error("0" + ErrorCodes.INVALID_IO_SHAPE + " Invalid shape. " +
+                        "The dimension '" + node.getName().get() + "' was defined multiple times. "
+                , node.get_SourcePositionStart());
     }
 
 }

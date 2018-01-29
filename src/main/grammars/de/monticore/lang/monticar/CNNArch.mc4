@@ -23,7 +23,11 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     ArchType implements Type = ElementType "^" Shape;
 
-    Shape = "{" dimensions:(ArchSimpleExpression || ",")+ "}";
+    Shape = "{" dimensions:(DimensionArgument || ",")* "}";
+
+    DimensionArgument = (name:"H" ":" height:ArchSimpleExpression
+                      |  name:"W" ":" width:ArchSimpleExpression
+                      |  name:"C" ":" channels:ArchSimpleExpression);
 
     ArchitectureParameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
 
@@ -46,7 +50,8 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     ArchParameterArgument implements ArchArgument = Name "=" rhs:ArchExpression;
 
-    ArchSpecialArgument implements ArchArgument = (serial:"->" | parallel:"|") "=" rhs:ArchExpression;
+    ArchSpecialArgument implements ArchArgument = (serial:"->" | parallel:"|" | conditional:"?") "="
+                                                  rhs:ArchExpression;
     ast ArchSpecialArgument = method public String getName(){return "";};
 
     ParallelLayer implements ArchitectureElement = "(" groups:ArchBody "|" groups:(ArchBody || "|")+ ")";

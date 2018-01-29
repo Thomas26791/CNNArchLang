@@ -1,11 +1,11 @@
 architecture SequentialAlexnet(img_height=224, img_width=224, img_channels=3, classes=10){
-    def input Z(0:255)^{img_height, img_width, img_channels} image
-    def output Q(0:1)^{classes} predictions
+    def input Z(0:255)^{H:img_height, W:img_width, C:img_channels} image
+    def output Q(0:1)^{C:classes} predictions
 
     def conv(filter, channels, hasPool=true, convStride=(1,1)){
         Convolution(kernel=filter, channels=channels, stride=convStride) ->
         Relu() ->
-        MaxPooling(kernel=(3,3), stride=(2,2), If=hasPool)
+        Pooling(type="max", kernel=(3,3), stride=(2,2), ?=hasPool)
     }
     def fc(){
         FullyConnected(units=4096) ->

@@ -25,26 +25,26 @@ There are more compact versions of the same architecture but we will get to that
 All predefined methods are listed at the end of this document.
 ```
 architecture Alexnet_alt(img_height=224, img_width=224, img_channels=3, classes=10){
-    def input Z(0:255)^{img_height, img_width, img_channels} image
-    def output Q(0:1)^{classes} predictions
+    def input Z(0:255)^{H:img_height, W:img_width, C:img_channels} image
+    def output Q(0:1)^{C:classes} predictions
 
     image ->
     Convolution(kernel=(11,11), channels=96, stride=(4,4), padding="no_loss") ->
     Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-    MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
+    Pooling(type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
     Relu() ->
     Split(n=2) ->
     (
         [0] ->
         Convolution(kernel=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-        MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
+        Pooling(type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     |
         [1] ->
         Convolution(kernel=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-        MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
+        Pooling(type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     ) ->
     Concatenate() ->
@@ -56,14 +56,14 @@ architecture Alexnet_alt(img_height=224, img_width=224, img_channels=3, classes=
         Convolution(kernel=(3,3), channels=192) ->
         Relu() ->
         Convolution(kernel=(3,3), channels=128) ->
-        MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
+        Pooling(type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     |
         [1] ->
         Convolution(kernel=(3,3), channels=192) ->
         Relu() ->
         Convolution(kernel=(3,3), channels=128) ->
-        MaxPooling(kernel=(3,3), stride=(2,2), padding="no_loss") ->
+        Pooling(type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     ) ->
     Concatenate() ->
@@ -100,17 +100,18 @@ An architecture in CNNArch can have multiple inputs and outputs.
 Multiple inputs (or outputs) of the same form can be initialized as arrays. 
 Assuming `h` and `w` are architecture parameter, the following is a valid example:
 ```
-def input Z(0:255)^{h,w,3} image[2]
-def input Q(-oo:+oo)^{10} additionalData
-def output Q(0:1)^{3} predictions
+def input Z(0:255)^{H:h, W:w, C:3} image[2]
+def input Q(-oo:+oo)^{C:10} additionalData
+def output Q(0:1)^{C:3} predictions
 ```
 The first line defines the input *image* as an array of two rgb (or bgr) images with a resolution of `h` x `w`. 
 The part `Z(0:255)`, which corresponds to the type definition in EmbeddedMontiArc, restricts the values to integers between 0 and 255. 
-The following line `{h=200,w=300,c=3}` declares the shape of the input. 
-The shape denotes the dimensionality in form  of height, width and depth(number of channels). 
+The following line `{H:h, W:w, C:3}` declares the shape of the input. 
+The shape denotes the dimensionality in form  of height `H`, width `W` and depth `C`(number of channels). 
 Here, the height is initialized as `h`, the width as `w` and the number of channels is 3.  
-The second line defines another input with 10 dimensions and arbitrary rational values. 
-The last line defines an output as the probability of 3 classes.
+The second line defines another input with one dimension of size 10 and arbitrary rational values. 
+The last line defines an one-dimensional output of size 3 with rational values between 0 and 1 (probabilities of 3 classes).
+The order of `H`, `W` and `C` determines the shape of the input or output of the network.
 
 If an input or output is an array, it can be used in the architecture in two different ways. 
 Either a single element is accessed or the array is used as a whole. 
@@ -131,7 +132,7 @@ The following is a example of multiple method declarations.
     def conv(filter, channels, stride=1, act=true){
         Convolution(kernel=(filter,filter), channels=channels, stride=(stride,stride)) ->
         BatchNorm() ->
-        Relu(If=act)
+        Relu(?=act)
     }
     def skip(channels, stride){
         Convolution(kernel=(1,1), channels=channels, stride=(stride,stride)) ->
@@ -142,25 +143,25 @@ The following is a example of multiple method declarations.
             conv(filter=3, channels=channels, stride=stride) ->
             conv(filter=3, channels=channels, act=false)
         |
-            skip(channels=channels, stride=stride, If=(stride!=1))
+            skip(channels=channels, stride=stride, ?=(stride!=1))
         ) ->
         Add() ->
         Relu()
     }
 ```
 The method `resLayer` in this example corresponds to a building block of a Residual Network. 
-The `If` argument is a special argument which is explained in the next section.
+The `?` argument is a special argument which is explained in the next section.
 
 ## Special Arguments
 There exists special structural arguments which can be used in each method. 
-These are `->`, `|` and `If`. `->` and `|` can only be positive integers and `If` can only be a boolean. 
-The argument `If` does not nothing if it is true and removes the layer completely if it is false. 
+These are `->`, `|` and `?`. `->` and `|` can only be positive integers and `?` can only be a boolean. 
+The argument `?` does not nothing if it is true and removes the layer completely if it is false. 
 The other two arguments create a repetition of the method. 
 We will show their effect with examples. 
 Assuming `a` is a method without required arguments, 
 then `a(-> = 3)->` is equal to `a()->a()->a()->`, 
 `a(| = 3)->` is equal to `(a() | a() | a())->` and 
-`a(-> = 3, | = 2->)` is equal to `(a()->a()->a() | a()->a()->a())->`. 
+`a(-> = 3, | = 2)->` is equal to `(a()->a()->a() | a()->a()->a())->`. 
 
 ## Argument Sequences
 It is also possible to create a repetition of a method in another way through the use of argument sequences. 
@@ -197,13 +198,13 @@ The comparison operators do not work reliably for the comparison of tuple (they 
 This version of Alexnet, which uses method construction, argument sequences and special arguments, is identical to the one in the section Basic Structure.
 ```
 architecture Alexnet_alt2(img_height=224, img_width=224, img_channels=3, classes=10){
-    def input Z(0:255)^{img_height, img_width, img_channels} image
-    def output Q(0:1)^{classes} predictions
+    def input Z(0:255)^{H:img_height, W:img_width, C:img_channels} image
+    def output Q(0:1)^{C:classes} predictions
     
     def conv(filter, channels, convStride=1, poolStride=1, hasLrn=false, convPadding="same"){
     	Convolution(kernel=(filter,filter), channels=channels, stride=(convStride,convStride), padding=convPadding) ->
-        Lrn(nsize=5, alpha=0.0001, beta=0.75, If=hasLrn) ->
-        MaxPooling(kernel=(3,3), stride=(poolStride,poolStride), padding="no_loss", If=(poolStride != 1)) ->
+        Lrn(nsize=5, alpha=0.0001, beta=0.75, ?=hasLrn) ->
+        Pooling(type="max", kernel=(3,3), stride=(poolStride,poolStride), padding="no_loss", ?=(poolStride != 1)) ->
         Relu()
     }
     def split1(i){
@@ -256,7 +257,7 @@ All predefined methods start with a capital letter and all constructed methods h
   * **kernel** (integer tuple > 0, required): convolution kernel size: (height, width).
   * **channels** (integer > 0, required): number of convolution filters and number of output channels.
   * **stride** (integer tuple > 0, optional, default=(1,1)): convolution stride: (height, width).
-  * **padding** (String, optional, default="same"): One of "valid", "same" or "no_loss". "valid" means no padding. "same"   results in padding the input such that the output has the same length as the original input divided by the stride (rounded up). "no_loss" results in minimal padding such that each input is used by at least one filter (identical to "valid" if *stride* equals 1).
+  * **padding** ({"valid", "same", "no_loss"}, optional, default="same"): One of "valid", "same" or "no_loss". "valid" means no padding. "same"   results in padding the input such that the output has the same length as the original input divided by the stride (rounded up). "no_loss" results in minimal padding such that each input is used by at least one filter (identical to "valid" if *stride* equals 1).
   * **no_bias** (boolean, optional, default=false): Whether to disable the bias parameter.
 
 * **Softmax()**
@@ -285,24 +286,21 @@ All predefined methods start with a capital letter and all constructed methods h
   Applies dropout operation to input array during training.
     
   * **p** (1 >= float >= 0, optional, default=0.5): Fraction of the input that gets dropped out during training time.
+  
+* **Pooling(type, kernel, stride=(1,1), padding="same")**
 
-* **MaxPooling(kernel, stride=(1,1), padding="same", global=false)**
-
-  Performs max pooling on the input.
-    
-  * **kernel** (integer tuple > 0, required): convolution kernel size: (height, width). Is not required if *global* is true.
+  Performs pooling on the input.
+  
+  * **type** ({"avg", "max"}, required): Pooling type to be applied.
+  * **kernel** (integer tuple > 0, required): convolution kernel size: (height, width).
   * **stride** (integer tuple > 0, optional, default=(1,1)): convolution stride: (height, width).
-  * **padding** (String, optional, default="same"): One of "valid", "same" or "no_loss". "valid" means no padding. "same"   results in padding the input such that the output has the same length as the original input divided by the stride (rounded up). "no_loss" results in minimal padding such that each input is used by at least one filter (identical to "valid" if *stride* equals 1).
-  * **global** (boolean, optional, default=false): Ignore kernel, stride and padding, do global pooling based on current input feature map.
+  * **padding** ({"valid", "same", "no_loss"}, optional, default="same"): One of "valid", "same" or "no_loss". "valid" means no padding. "same"   results in padding the input such that the output has the same length as the original input divided by the stride (rounded up). "no_loss" results in minimal padding such that each input is used by at least one filter (identical to "valid" if *stride* equals 1).
 
-* **AveragePooling(kernel, stride=(1,1), padding="same", global=false)**
+* **GlobalPooling(type)**
 
-  Performs average pooling on the input.
-    
-  * **kernel** (integer tuple > 0, required): convolution kernel size: (height, width). Is not required if *global* is true.
-  * **stride** (integer tuple > 0, optional, default=(1,1)): convolution stride: (height, width).
-  * **padding** (String, optional, default="same"): One of "valid", "same" or "no_loss". "valid" means no padding. "same"   results in padding the input such that the output has the same length as the original input divided by the stride (rounded up). "no_loss" results in minimal padding such that each input is used by at least one filter (identical to "valid" if *stride* equals 1).
-  * **global** (boolean, optional, default=false): Ignore kernel, stride and padding, do global pooling based on current input feature map.
+  Performs global pooling on the input.
+  
+  * **type** ({"avg", "max"}, required): Pooling type to be applied.
 
 * **Lrn(nsize, knorm=2, alpha=0.0001, beta=0.75)**
 

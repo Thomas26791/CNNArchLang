@@ -45,17 +45,17 @@ public class CheckVariableName implements CNNArchASTVariableCoCo {
     private void checkForIllegalNames(ASTVariable node){
         String name = node.getName();
         if (name.isEmpty() || !Character.isLowerCase(name.codePointAt(0))){
-            Log.error("0" + ErrorCodes.ILLEGAL_NAME_CODE + " Illegal name: " + name +
+            Log.error("0" + ErrorCodes.ILLEGAL_NAME + " Illegal name: " + name +
                             ". All new variable and method names have to start with a lowercase letter. "
                     , node.get_SourcePositionStart());
         }
         else if (name.equals(AllPredefinedVariables.TRUE_NAME) || name.equals(AllPredefinedVariables.FALSE_NAME)){
-            Log.error("0" + ErrorCodes.ILLEGAL_NAME_CODE + " Illegal name: " + name +
+            Log.error("0" + ErrorCodes.ILLEGAL_NAME + " Illegal name: " + name +
                             ". No variable can be named 'true' or 'false'"
                     , node.get_SourcePositionStart());
         }
         else if (name.equals(AllPredefinedVariables.IF_NAME.toLowerCase())){
-            Log.error("0" + ErrorCodes.ILLEGAL_NAME_CODE + " Illegal name: " + name +
+            Log.error("0" + ErrorCodes.ILLEGAL_NAME + " Illegal name: " + name +
                             ". No variable can be named 'if'"
                     , node.get_SourcePositionStart());
         }
@@ -80,7 +80,7 @@ public class CheckVariableName implements CNNArchASTVariableCoCo {
     }
 
     private void duplicationError(ASTVariable node){
-        Log.error("0" + ErrorCodes.DUPLICATED_NAME_CODE + " Duplicated variable name. " +
+        Log.error("0" + ErrorCodes.DUPLICATED_NAME + " Duplicated variable name. " +
                         "The name '" + node.getName() + "' is already used."
                 , node.get_SourcePositionStart());
     }

@@ -1,6 +1,6 @@
 architecture InvalidInputShape(inputs=10, classes=2){
-    def input Q(-oo:+oo)^{inputs} in[2]
-    def output Q(0:1)^{classes} out[2]
+    def input Q(-oo:+oo)^{C:inputs} in[2]
+    def output Q(0:1)^{C:classes} out[2]
 
     in ->
     FullyConnected(units=64) ->

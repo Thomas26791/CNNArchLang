@@ -120,7 +120,7 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
     public void checkParameters(){
         for (VariableSymbol parameter : getParameters()){
             if (!parameter.hasExpression()){
-                Log.error("0" + ErrorCodes.MISSING_VAR_VALUE_CODE + " Missing architecture argument. " +
+                Log.error("0" + ErrorCodes.MISSING_VAR_VALUE + " Missing architecture argument. " +
                         "The parameter '" + parameter.getName() + "' has no value.");
             }
         }

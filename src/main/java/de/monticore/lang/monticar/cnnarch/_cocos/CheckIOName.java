@@ -34,7 +34,7 @@ public class CheckIOName implements CNNArchASTIODeclarationCoCo {
     @Override
     public void check(ASTIODeclaration node) {
         if (ioNames.contains(node.getName())){
-            Log.error("0" + ErrorCodes.DUPLICATED_NAME_CODE + " Duplicated IO name. " +
+            Log.error("0" + ErrorCodes.DUPLICATED_NAME + " Duplicated IO name. " +
                             "The name '" + node.getName() + "' is already used."
                     , node.get_SourcePositionStart());
         }

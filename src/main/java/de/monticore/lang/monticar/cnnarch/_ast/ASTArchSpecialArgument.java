@@ -27,8 +27,8 @@ public class ASTArchSpecialArgument extends ASTArchSpecialArgumentTOP {
     public ASTArchSpecialArgument() {
     }
 
-    public ASTArchSpecialArgument(ASTArchExpression rhs, String serial, String parallel) {
-        super(rhs, serial, parallel);
+    public ASTArchSpecialArgument(ASTArchExpression rhs, String serial, String parallel, String conditional) {
+        super(rhs, serial, parallel, conditional);
     }
 
     @Override
@@ -39,7 +39,12 @@ public class ASTArchSpecialArgument extends ASTArchSpecialArgumentTOP {
         else if (getSerial().isPresent()) {
             return AllPredefinedVariables.FOR_NAME;
         }
-        return null;
+        else if (getConditional().isPresent()){
+            return AllPredefinedVariables.IF_NAME;
+        }
+        else {
+            throw new IllegalStateException();
+        }
     }
 
 }

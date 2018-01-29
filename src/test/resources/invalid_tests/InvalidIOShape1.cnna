@@ -1,6 +1,6 @@
 architecture InvalidIOShape1(){
-    def input Q(-oo:+oo)^{10, 2} in
-    def output Q(0:1)^{10, 2, 2, 2} out
+    def input Q(-oo:+oo)^{C:10, C:2} in
+    def output Q(0:1)^{H:10, W:2, C:2, H:2} out
 
     in ->
     FullyConnected(units=64) ->

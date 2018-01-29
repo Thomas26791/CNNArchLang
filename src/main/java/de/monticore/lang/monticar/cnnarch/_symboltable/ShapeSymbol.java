@@ -30,75 +30,59 @@ public class ShapeSymbol extends CommonSymbol {
 
     public static final ShapeKind KIND = new ShapeKind();
 
-    public static final int BATCH_SIZE_INDEX = 0;
-    public static final int HEIGHT_INDEX = 1;
-    public static final int WIDTH_INDEX = 2;
-    public static final int CHANNEL_INDEX = 3;
+    private int channelIndex = -1;
+    private int heightIndex = -1;
+    private int widthIndex = -1;
 
-    private List<ArchSimpleExpressionSymbol> dimensions =
-            Arrays.asList(ArchSimpleExpressionSymbol.of(1),
-                    ArchSimpleExpressionSymbol.of(1),
-                    ArchSimpleExpressionSymbol.of(1),
-                    ArchSimpleExpressionSymbol.of(1));
+    private List<ArchSimpleExpressionSymbol> dimensions = new ArrayList<>();
 
     public ShapeSymbol() {
         super("", KIND);
     }
 
-    public ArchSimpleExpressionSymbol getBatchSizeSymbol() {
-        return dimensions.get(BATCH_SIZE_INDEX);
+    public int getHeightIndex() {
+        return heightIndex;
     }
 
-    public void setBatchSize(int batchSize) {
-        dimensions.get(BATCH_SIZE_INDEX).reset();
-        dimensions.get(BATCH_SIZE_INDEX).setValue(batchSize);
-        dimensions.get(BATCH_SIZE_INDEX).setMathExpression(null);
+    protected void setHeightIndex(int heightIndex) {
+        this.heightIndex = heightIndex;
     }
 
-    protected void setBatchSize(ArchSimpleExpressionSymbol batchSize) {
-        getDimensionSymbols().set(BATCH_SIZE_INDEX, batchSize);
+    public int getWidthIndex() {
+        return widthIndex;
+    }
+
+    protected void setWidthIndex(int widthIndex) {
+        this.widthIndex = widthIndex;
+    }
+
+    public int getChannelIndex() {
+        return channelIndex;
+    }
+
+    protected void setChannelIndex(int channelIndex) {
+        this.channelIndex = channelIndex;
     }
 
     public ArchSimpleExpressionSymbol getHeightSymbol() {
-        return dimensions.get(HEIGHT_INDEX);
-    }
-
-    public void setHeight(int height) {
-        dimensions.get(HEIGHT_INDEX).reset();
-        dimensions.get(HEIGHT_INDEX).setValue(height);
-        dimensions.get(HEIGHT_INDEX).setMathExpression(null);
-    }
-
-    protected void setHeight(ArchSimpleExpressionSymbol height) {
-        getDimensionSymbols().set(HEIGHT_INDEX, height);
+        if (getHeightIndex() == -1){
+            return ArchSimpleExpressionSymbol.of(1);
+        }
+        return getDimensionSymbols().get(getHeightIndex());
     }
 
     public ArchSimpleExpressionSymbol getWidthSymbol() {
-        return dimensions.get(WIDTH_INDEX);
-    }
-
-    public void setWidth(int width) {
-        dimensions.get(WIDTH_INDEX).reset();
-        dimensions.get(WIDTH_INDEX).setValue(width);
-        dimensions.get(WIDTH_INDEX).setMathExpression(null);
-    }
-
-    protected void setWidth(ArchSimpleExpressionSymbol width) {
-        getDimensionSymbols().set(WIDTH_INDEX, width);
+        if (getWidthIndex() == -1){
+            return ArchSimpleExpressionSymbol.of(1);
+        }
+        return getDimensionSymbols().get(getWidthIndex());
     }
 
     public ArchSimpleExpressionSymbol getChannelsSymbol() {
-        return dimensions.get(CHANNEL_INDEX);
-    }
-
-    public void setChannels(int channels) {
-        dimensions.get(CHANNEL_INDEX).reset();
-        dimensions.get(CHANNEL_INDEX).setValue(channels);
-        dimensions.get(CHANNEL_INDEX).setMathExpression(null);
-    }
-
-    protected void setChannels(ArchSimpleExpressionSymbol channels) {
-        getDimensionSymbols().set(CHANNEL_INDEX, channels);
+        if (getChannelIndex() == -1){
+            return ArchSimpleExpressionSymbol.of(1);
+        }
+        return getDimensionSymbols().get(getChannelIndex());
     }
 
     public Optional<Integer> getWidth(){
@@ -113,8 +97,28 @@ public class ShapeSymbol extends CommonSymbol {
         return getChannelsSymbol().getIntValue();
     }
 
+    protected void setDimensionSymbols(List<ArchSimpleExpressionSymbol> dimensions) {
+        this.dimensions = dimensions;
+    }
+
     public List<ArchSimpleExpressionSymbol> getDimensionSymbols() {
         return dimensions;
+    }
+
+    public void setDimensions(List<Integer> dimensionList){
+        List<ArchSimpleExpressionSymbol> symbolList = new ArrayList<>(dimensionList.size());
+        for (int e : dimensionList){
+            symbolList.add(ArchSimpleExpressionSymbol.of(e));
+        }
+        setDimensionSymbols(symbolList);
+    }
+
+    public List<Integer> getDimensions(){
+        List<Integer> dimensionList = new ArrayList<>(3);
+        for (ArchSimpleExpressionSymbol exp : getDimensionSymbols()){
+            dimensionList.add(exp.getIntValue().get());
+        }
+        return dimensionList;
     }
 
     public Set<VariableSymbol> resolve() {
@@ -171,20 +175,18 @@ public class ShapeSymbol extends CommonSymbol {
     }
 
     public static class Builder{
-        private int height;
-        private int width;
-        private int channels;
+        private int height = 1;
+        private int width = 1;
+        private int channels = 1;
 
         public Builder height(int height){
             this.height = height;
             return this;
         }
-
         public Builder width(int width){
             this.width = width;
             return this;
         }
-
         public Builder channels(int channels){
             this.channels = channels;
             return this;
@@ -192,9 +194,10 @@ public class ShapeSymbol extends CommonSymbol {
 
         public ShapeSymbol build(){
             ShapeSymbol sym = new ShapeSymbol();
-            sym.setHeight(height);
-            sym.setChannels(channels);
-            sym.setWidth(width);
+            sym.setChannelIndex(0);
+            sym.setHeightIndex(1);
+            sym.setWidthIndex(2);
+            sym.setDimensions(Arrays.asList(channels, height, width));
             return sym;
         }
     }
