@@ -97,7 +97,7 @@ The method `Split(n)` in the example above creates multiple output streams from 
 
 ## Inputs and Outputs
 An architecture in CNNArch can have multiple inputs and outputs. 
-Multiple inputs (or outputs) of the same form can be initialized as arrays. 
+Multiple inputs (or outputs) of the same form can be combined to an array. 
 Assuming `h` and `w` are architecture parameter, the following is a valid example:
 ```
 def input Z(0:255)^{H:h, W:w, C:3} image[2]
@@ -117,7 +117,7 @@ If an input or output is an array, it can be used in the architecture in two dif
 Either a single element is accessed or the array is used as a whole. 
 The line `image[0] ->` would access the first image of the array and `image ->` would directly result in 2 output streams. 
 In fact, `image ->` is identical to `(image[0] | image[1]) ->`. 
-Furthermore, assuming *out* is a output array of size 2, the line `-> out` would be identical to `-> ([0]->image[0] | [1]->image[1])`. 
+Furthermore, assuming *out* is a output array of size 2, the line `-> out` would be identical to `-> ([0]->out[0] | [1]->out[1])`. 
 Inputs and outputs can also be used in the middle of an architecture. 
 In general, inputs create new streams and outputs consume existing streams.
 
