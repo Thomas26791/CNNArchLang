@@ -27,6 +27,6 @@ public class CheckLayerInputs implements CNNArchASTArchitectureCoCo {
     @Override
     public void check(ASTArchitecture node) {
         ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
-        architecture.getBody().checkInputAndOutput();
+        architecture.getBody().checkInput();
     }
 }

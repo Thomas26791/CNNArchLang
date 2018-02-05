@@ -21,6 +21,8 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.monticore.lang.monticar.cnnarch.helper.Utils;
+import de.monticore.lang.monticar.types2._ast.ASTElementType;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
@@ -68,12 +70,10 @@ public class IOLayerSymbol extends LayerSymbol {
         definition.getConnectedLayers().add(this);
     }
 
-    @Override
     public boolean isInput(){
         return getDefinition().isInput();
     }
 
-    @Override
     public boolean isOutput(){
         return getDefinition().isOutput();
     }
@@ -98,7 +98,7 @@ public class IOLayerSymbol extends LayerSymbol {
         if (!isResolved()) {
             if (isResolvable()) {
                 resolveExpressions();
-                getDefinition().getShape().resolve();
+                getDefinition().getType().resolve();
             }
         }
         return getUnresolvableVariables();
@@ -112,7 +112,7 @@ public class IOLayerSymbol extends LayerSymbol {
                 isResolved = false;
             }
         }
-        if (!getDefinition().getShape().isResolved()){
+        if (!getDefinition().getType().isResolved()){
             isResolved = false;
         }
         return isResolved;
@@ -124,15 +124,15 @@ public class IOLayerSymbol extends LayerSymbol {
             getArrayAccess().get().checkIfResolvable(allVariables);
             unresolvableVariables.addAll(getArrayAccess().get().getUnresolvableVariables());
         }
-        getDefinition().getShape().checkIfResolvable(allVariables);
-        unresolvableVariables.addAll(getDefinition().getShape().getUnresolvableVariables());
+        getDefinition().getType().checkIfResolvable(allVariables);
+        unresolvableVariables.addAll(getDefinition().getType().getUnresolvableVariables());
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes() {
-        List<ShapeSymbol> outputShapes;
+    public List<ArchTypeSymbol> computeOutputTypes() {
+        List<ArchTypeSymbol> outputShapes;
         if (isInput()){
-            outputShapes = Collections.singletonList(getDefinition().getShape());
+            outputShapes = Collections.singletonList(getDefinition().getType());
         }
         else {
             outputShapes = Collections.emptyList();
@@ -141,28 +141,28 @@ public class IOLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public void checkInputAndOutput() {
+    public void checkInput() {
         if (isOutput()){
-            List<ShapeSymbol> inputShapes = getInputShapes();
-            if (inputShapes.isEmpty()){
-                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT + " Invalid number of input streams. " +
-                                "The number of input streams to the output " + getName() + " is 0."
+            String name = getName();
+            if (getArrayAccess().isPresent()){
+                name = name + "[" + getArrayAccess().get().getIntValue().get() + "]";
+            }
+
+            if (getInputTypes().size() != 1){
+                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_SHAPE + " Invalid number of input streams. " +
+                                "The number of input streams for the output '" + name + "' is " + getInputTypes().size() + "."
                         , getSourcePosition());
             }
-            else{
-                int size = getDefinition().getArrayLength();
-                if (getArrayAccess().isPresent()){
-                    size = 1;
-                }
-
-                if (inputShapes.size() != size){
-                    Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT + " Invalid number of input streams. " +
-                                    "The output " + getName() + " is an array of size " + size +
-                                    " but the number of input streams is " + inputShapes.size() + "."
-                            , getSourcePosition());
+            else {
+                ASTElementType inputType = getInputTypes().get(0).getElementType();
+                if (!Utils.equals(inputType, getDefinition().getType().getElementType())){
+                    Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_TYPE + " " +
+                            "The declared output type of '" + name + "' does not match with the actual type. " +
+                            "Declared type: " + getDefinition().getType().getElementType().getTElementType().get() + ". " +
+                            "Actual type: " + inputType.getTElementType().get() + ".");
                 }
             }
-            //todo check type
+
         }
     }
 

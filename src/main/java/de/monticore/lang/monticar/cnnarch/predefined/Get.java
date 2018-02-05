@@ -36,19 +36,28 @@ public class Get extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return Collections.singletonList(
-                inputShapes.get(layer.getIntValue(AllPredefinedMethods.INDEX_NAME).get())
-        );
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        int index = layer.getIntValue(AllPredefinedMethods.INDEX_NAME).get();
+        if (index < inputTypes.size()){
+            return Collections.singletonList(inputTypes.get(index));
+        }
+        else {
+            if (inputTypes.isEmpty()){
+                return inputTypes;
+            }
+            else {
+                return Collections.singletonList(inputTypes.get(0));
+            }
+        }
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
         int index = layer.getIntValue(AllPredefinedMethods.INDEX_NAME).get();
-        if (inputShapes.size() <= index){
-            Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT + " Invalid layer input. " +
+        if (inputTypes.size() <= index){
+            Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_SHAPE + " Stream index out of bound. " +
                             "The selected input stream has the index " + index +
-                            " but there are only " + inputShapes.size() + " input streams."
+                            " but there are only " + inputTypes.size() + " input streams."
                     , layer.getSourcePosition());
         }
     }
@@ -60,9 +69,6 @@ public class Get extends PredefinedMethodDeclaration {
                         .name(AllPredefinedMethods.INDEX_NAME)
                         .constraints(Constraints.INTEGER, Constraints.NON_NEGATIVE)
                         .build()));
-        for (VariableSymbol param : parameters){
-            param.putInScope(method.getSpannedScope());
-        }
         method.setParameters(parameters);
         return method;
     }

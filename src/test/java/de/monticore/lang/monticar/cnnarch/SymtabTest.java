@@ -46,7 +46,7 @@ public class SymtabTest extends AbstractSymtabTest {
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
-        a.getBody().getOutputShapes();
+        a.getBody().getOutputTypes();
     }
 
     @Ignore
@@ -58,7 +58,7 @@ public class SymtabTest extends AbstractSymtabTest {
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
-        a.getBody().getOutputShapes();
+        a.getBody().getOutputTypes();
     }
 
     @Ignore
@@ -70,7 +70,7 @@ public class SymtabTest extends AbstractSymtabTest {
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
-        a.getBody().getOutputShapes();
+        a.getBody().getOutputTypes();
     }
 
     /*@Test
@@ -81,7 +81,7 @@ public class SymtabTest extends AbstractSymtabTest {
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
-        a.getBody().getOutputShapes();
+        a.getBody().getOutputTypes();
     }
 
     @Test
@@ -92,7 +92,7 @@ public class SymtabTest extends AbstractSymtabTest {
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
-        a.getBody().getOutputShapes();
+        a.getBody().getOutputTypes();
     }
 
     @Test
@@ -103,7 +103,7 @@ public class SymtabTest extends AbstractSymtabTest {
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
-        a.getBody().getOutputShapes();
+        a.getBody().getOutputTypes();
     }
 
     @Test
@@ -114,7 +114,7 @@ public class SymtabTest extends AbstractSymtabTest {
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
-        a.getBody().getOutputShapes();
+        a.getBody().getOutputTypes();
     }*/
 
 }

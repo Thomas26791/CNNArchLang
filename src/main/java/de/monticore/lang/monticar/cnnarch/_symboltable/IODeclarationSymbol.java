@@ -23,7 +23,6 @@
 
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.types2._ast.ASTElementType;
 import de.monticore.symboltable.CommonSymbol;
 
 import java.util.HashSet;
@@ -33,8 +32,7 @@ public class IODeclarationSymbol extends CommonSymbol {
 
     public static final IODeclarationKind KIND = new IODeclarationKind();
 
-    private ASTElementType type;
-    private ShapeSymbol shape;
+    private ArchTypeSymbol type;
     private boolean input; //true->input, false->output
     private int arrayLength = 1;
     private Set<IOLayerSymbol> connectedLayers = new HashSet<>();
@@ -44,20 +42,12 @@ public class IODeclarationSymbol extends CommonSymbol {
         super(name, KIND);
     }
 
-    public ASTElementType getType() {
+    public ArchTypeSymbol getType() {
         return type;
     }
 
-    protected void setType(ASTElementType type) {
+    protected void setType(ArchTypeSymbol type) {
         this.type = type;
-    }
-
-    public ShapeSymbol getShape() {
-        return shape;
-    }
-
-    protected void setShape(ShapeSymbol shape) {
-        this.shape = shape;
     }
 
     public Set<IOLayerSymbol> getConnectedLayers() {
@@ -87,19 +77,13 @@ public class IODeclarationSymbol extends CommonSymbol {
 
 
     public static class Builder{
-        private ASTElementType type;
-        private ShapeSymbol shape;
+        private ArchTypeSymbol type;
         private boolean input; //true->input, false->output
         private int arrayLength = 0;
         private String name;
 
-        public Builder type(ASTElementType type){
+        public Builder type(ArchTypeSymbol type){
             this.type = type;
-            return this;
-        }
-
-        public Builder shape(ShapeSymbol shape){
-            this.shape = shape;
             return this;
         }
 
@@ -123,10 +107,9 @@ public class IODeclarationSymbol extends CommonSymbol {
                 throw new IllegalStateException("Missing or empty name for IO declaration");
             }
             IODeclarationSymbol sym = new IODeclarationSymbol(name);
-            sym.setType(type);
             sym.setInput(input);
             sym.setArrayLength(arrayLength);
-            sym.setShape(shape);
+            sym.setType(type);
             return sym;
         }
     }

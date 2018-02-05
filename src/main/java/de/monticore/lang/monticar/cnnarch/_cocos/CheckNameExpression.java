@@ -26,7 +26,7 @@ import de.monticore.lang.monticar.cnnarch._ast.ASTArchSimpleExpression;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.monticore.lang.monticar.cnnarch.helper.ExpressionHelper;
+import de.monticore.lang.monticar.cnnarch.helper.Utils;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.Collection;
@@ -39,7 +39,7 @@ public class CheckNameExpression implements CNNArchASTArchSimpleExpressionCoCo {
         if (expression.getMathExpression().isPresent()){
             MathExpressionSymbol mathExpression = expression.getMathExpression().get();
 
-            for (MathExpressionSymbol subMathExp : ExpressionHelper.createSubExpressionList(mathExpression)){
+            for (MathExpressionSymbol subMathExp : Utils.createSubExpressionList(mathExpression)){
                 if (subMathExp instanceof MathNameExpressionSymbol){
                     String name = ((MathNameExpressionSymbol) subMathExp).getNameToAccess();
                     Collection<VariableSymbol> variableCollection = node.getEnclosingScope().get().resolveMany(name, VariableSymbol.KIND);

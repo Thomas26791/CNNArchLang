@@ -22,9 +22,9 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.SymbolKind;
 
-public class ShapeKind implements SymbolKind {
+public class ArchTypeKind implements SymbolKind {
 
-    private static final String NAME = "de.monticore.lang.monticar.cnnarch._symboltable.ShapeKind";
+    private static final String NAME = "de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeKind";
 
     @Override
     public String getName() {

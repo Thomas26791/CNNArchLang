@@ -55,6 +55,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
         checkValid("valid_tests", "SimpleNetworkTanh");
         checkValid("valid_tests", "ResNeXt50_alt");
         checkValid("valid_tests", "Alexnet_alt2");
+        checkValid("valid_tests", "MultipleOutputs");
 
     }
 
@@ -126,6 +127,14 @@ public class AllCoCoTest extends AbstractCoCoTest {
     @Test
     public void testInvalidPostResolveCocos(){
         checkInvalid(new CNNArchCoCoChecker(),
+                new CNNArchCoCoChecker().addCoCo(new CheckLayerInputs()),
+                "invalid_tests", "InvalidInputShape",
+                new ExpectedErrorInfo(2, ErrorCodes.INVALID_LAYER_INPUT_SHAPE));
+        checkInvalid(new CNNArchCoCoChecker(),
+                new CNNArchCoCoChecker().addCoCo(new CheckLayerInputs()),
+                "invalid_tests", "WrongIOType",
+                new ExpectedErrorInfo(1, ErrorCodes.INVALID_LAYER_INPUT_TYPE));
+        checkInvalid(new CNNArchCoCoChecker(),
                 new CNNArchCoCoChecker().addCoCo(new CheckIOShape()),
                 "invalid_tests", "InvalidIOShape1",
                 new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_SHAPE));
@@ -149,10 +158,6 @@ public class AllCoCoTest extends AbstractCoCoTest {
                 new CNNArchCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()),
                 "invalid_tests", "InvalidArrayAccessValue",
                 new ExpectedErrorInfo(1, ErrorCodes.INVALID_ARRAY_ACCESS));
-        checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchCoCoChecker().addCoCo(new CheckLayerInputs()),
-                "invalid_tests", "InvalidInputShape",
-                new ExpectedErrorInfo(2, ErrorCodes.INVALID_LAYER_INPUT));
         checkInvalid(new CNNArchCoCoChecker(),
                 new CNNArchCoCoChecker().addCoCo(new CheckLayerInputs()),
                 "invalid_tests", "MissingMerge",

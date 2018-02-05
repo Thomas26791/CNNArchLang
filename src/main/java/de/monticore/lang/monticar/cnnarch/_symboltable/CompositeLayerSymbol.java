@@ -177,43 +177,48 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes() {
+    public List<ArchTypeSymbol> computeOutputTypes() {
         if (getLayers().isEmpty()){
-            return getInputLayer().get().getOutputShapes();
+            if (getInputLayer().isPresent()){
+                return getInputLayer().get().getOutputTypes();
+            }
+            else {
+                return Collections.emptyList();
+            }
         }
         else {
             if (isParallel()){
-                List<ShapeSymbol> outputShapes = new ArrayList<>(getLayers().size());
+                List<ArchTypeSymbol> outputShapes = new ArrayList<>(getLayers().size());
                 for (LayerSymbol layer : getLayers()){
-                    if (layer.getOutputShapes().size() != 0){
-                        outputShapes.add(layer.getOutputShapes().get(0));
+                    if (layer.getOutputTypes().size() != 0){
+                        outputShapes.add(layer.getOutputTypes().get(0));
                     }
                 }
                 return outputShapes;
             }
             else {
                 for (LayerSymbol layer : getLayers()){
-                    layer.getOutputShapes();
+                    layer.getOutputTypes();
                 }
-                return getLayers().get(getLayers().size() - 1).getOutputShapes();
+                return getLayers().get(getLayers().size() - 1).getOutputTypes();
             }
         }
     }
 
     @Override
-    public void checkInputAndOutput() {
+    public void checkInput() {
         if (!getLayers().isEmpty()){
+            for (LayerSymbol layer : getLayers()){
+                layer.checkInput();
+            }
             if (isParallel()){
                 for (LayerSymbol layer : getLayers()){
-                    if (layer.getOutputShapes().size() > 1){
-                        Log.error("0" + ErrorCodes.MISSING_MERGE + " Missing merge layer (Add(), Concatenate, [i]). " +
+                    if (layer.getOutputTypes().size() > 1){
+                        Log.error("0" + ErrorCodes.MISSING_MERGE + " Missing merge layer (Add(), Concatenate() or [i]). " +
                                         "Each stream at the end of a parallel layer can only have one output stream. "
                                 , getSourcePosition());
                     }
                 }
-            }
-            for (LayerSymbol layer : getLayers()){
-                layer.checkInputAndOutput();
             }
         }
     }

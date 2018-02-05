@@ -34,34 +34,28 @@ public class GlobalPooling extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return Collections.singletonList(new ShapeSymbol.Builder()
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        return Collections.singletonList(new ArchTypeSymbol.Builder()
                 .height(1)
                 .width(1)
-                .channels(inputShapes.get(0).getChannels().get())
+                .channels(inputTypes.get(0).getChannels().get())
+                .elementType(inputTypes.get(0).getElementType())
                 .build());
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        errorIfInputSizeIsNotOne(inputShapes, layer);
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
-    protected void setParameters(){
+    public static GlobalPooling create(){
+        GlobalPooling method = new GlobalPooling();
         List<VariableSymbol> parameters = new ArrayList<>(Arrays.asList(
                 new VariableSymbol.Builder()
                         .name(AllPredefinedMethods.POOL_TYPE_NAME)
                         .constraints(Constraints.POOL_TYPE)
                         .build()));
-        for (VariableSymbol param : parameters){
-            param.putInScope(getSpannedScope());
-        }
-        setParameters(parameters);
-    }
-
-    public static GlobalPooling create(){
-        GlobalPooling method = new GlobalPooling();
-        method.setParameters();
+        method.setParameters(parameters);
         return method;
     }
 }

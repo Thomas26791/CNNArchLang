@@ -98,6 +98,8 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
         }
     }
 
+    //todo: deep copy method for instances
+
     public List<LayerSymbol> getFirstLayers(){
         if (!getBody().isResolved()){
             resolve();

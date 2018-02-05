@@ -25,7 +25,6 @@ import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Symbol;
-import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
@@ -207,24 +206,40 @@ public class MethodLayerSymbol extends LayerSymbol {
         List<List<LayerSymbol>> layers = computeExpandedSplit(parallelLength, serialLengths);
         List<LayerSymbol> serialComposites = new ArrayList<>();
 
-        for (List<LayerSymbol> serialLayers : layers){
+        if (layers.size() == 1){
+            return createSerialSequencePart(layers.get(0));
+        }
+        else {
+            for (List<LayerSymbol> serialLayers : layers) {
+                serialComposites.add(createSerialSequencePart(serialLayers));
+            }
+            CompositeLayerSymbol parallelLayer = new CompositeLayerSymbol.Builder()
+                    .parallel(true)
+                    .layers(serialComposites)
+                    .build();
+
+            if (getAstNode().isPresent()) {
+                parallelLayer.setAstNode(getAstNode().get());
+            }
+            return parallelLayer;
+        }
+    }
+
+    private LayerSymbol createSerialSequencePart(List<LayerSymbol> layers){
+        if (layers.size() == 1){
+            return layers.get(0);
+        }
+        else {
             CompositeLayerSymbol serialComposite = new CompositeLayerSymbol.Builder()
                     .parallel(false)
-                    .layers(serialLayers)
+                    .layers(layers)
                     .build();
+
             if (getAstNode().isPresent()){
                 serialComposite.setAstNode(getAstNode().get());
             }
-            serialComposites.add(serialComposite);
+            return serialComposite;
         }
-        CompositeLayerSymbol parallelLayer = new CompositeLayerSymbol.Builder()
-                .parallel(true)
-                .layers(serialComposites)
-                .build();
-        if (getAstNode().isPresent()){
-            parallelLayer.setAstNode(getAstNode().get());
-        }
-        return parallelLayer;
     }
 
     private List<List<LayerSymbol>> computeExpandedSplit(int parallelLength, List<Integer> serialLengths){
@@ -266,35 +281,29 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes() {
+    public List<ArchTypeSymbol> computeOutputTypes() {
         if (getResolvedThis().isPresent()) {
             if (getResolvedThis().get() == this) {
-                return ((PredefinedMethodDeclaration) getMethod()).computeOutputShapes(getInputShapes(), this);
+                return ((PredefinedMethodDeclaration) getMethod()).computeOutputTypes(getInputTypes(), this);
             }
             else {
-                Set<VariableSymbol> unresolvableVariables = getUnresolvableVariables();
-                if (unresolvableVariables.isEmpty()) {
-                    return getResolvedThis().get().computeOutputShapes();
-                } else {
-                    throw new IllegalStateException("The output shape can only be computed if this and all previous layer are resolvable. " +
-                            "The following names cannot be resolved: " + Joiners.COMMA.join(unresolvableVariables));
-                }
+                return getResolvedThis().get().getOutputTypes();
 
             }
         }
         else {
-            throw new IllegalStateException("Output shape cannot be computed before the method is resolved");
+            throw new IllegalStateException("Output type cannot be computed before the method is resolved");
         }
     }
 
     @Override
-    public void checkInputAndOutput() {
+    public void checkInput() {
         if (getResolvedThis().isPresent()){
             if (getResolvedThis().get() == this){
-                ((PredefinedMethodDeclaration) getMethod()).checkInput(getInputShapes(), this);
+                ((PredefinedMethodDeclaration) getMethod()).checkInput(getInputTypes(), this);
             }
             else {
-                getResolvedThis().get().checkInputAndOutput();
+                getResolvedThis().get().checkInput();
             }
         }
     }

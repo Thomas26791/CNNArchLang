@@ -61,10 +61,6 @@ public class ArgumentSymbol extends CommonSymbol {
         return rhs;
     }
 
-    public Optional<Object> getValue(){
-        return getRhs().getValue();
-    }
-
     protected void setRhs(ArchExpressionSymbol rhs) {
         if (getName().equals(AllPredefinedVariables.FOR_NAME)
                 && rhs instanceof ArchSimpleExpressionSymbol
@@ -192,11 +188,17 @@ public class ArgumentSymbol extends CommonSymbol {
 
 
     public static class Builder{
+        private String name;
         private VariableSymbol parameter;
         private ArchExpressionSymbol value;
 
         public Builder parameter(VariableSymbol parameter) {
             this.parameter = parameter;
+            return this;
+        }
+
+        public Builder parameter(String name) {
+            this.name = name;
             return this;
         }
 
@@ -206,13 +208,20 @@ public class ArgumentSymbol extends CommonSymbol {
         }
 
         public ArgumentSymbol build(){
-            if (parameter == null){
+            if (parameter == null && name == null){
                 throw new IllegalStateException("Missing parameter for ArgumentSymbol");
             }
-            ArgumentSymbol sym = new ArgumentSymbol(parameter.getName());
-            sym.setParameter(parameter);
-            sym.setRhs(value);
-            return sym;
+            if (parameter == null){
+                ArgumentSymbol sym = new ArgumentSymbol(name);
+                sym.setRhs(value);
+                return sym;
+            }
+            else {
+                ArgumentSymbol sym = new ArgumentSymbol(parameter.getName());
+                sym.setParameter(parameter);
+                sym.setRhs(value);
+                return sym;
+            }
         }
     }
 }

@@ -31,19 +31,20 @@ public class Pooling extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return computeConvAndPoolOutputShape(inputShapes.get(0),
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        return computeConvAndPoolOutputShape(inputTypes.get(0),
                 layer,
-                inputShapes.get(0).getChannels().get());
+                inputTypes.get(0).getChannels().get());
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        errorIfInputSizeIsNotOne(inputShapes, layer);
-        errorIfInputSmallerThanKernel(inputShapes, layer);
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        errorIfInputSizeIsNotOne(inputTypes, layer);
+        errorIfInputSmallerThanKernel(inputTypes, layer);
     }
 
-    protected void setParameters(){
+    public static Pooling create(){
+        Pooling method = new Pooling();
         List<VariableSymbol> parameters = new ArrayList<>(Arrays.asList(
                 new VariableSymbol.Builder()
                         .name(AllPredefinedMethods.POOL_TYPE_NAME)
@@ -63,15 +64,7 @@ public class Pooling extends PredefinedMethodDeclaration {
                         .constraints(Constraints.PADDING_TYPE)
                         .defaultValue(AllPredefinedMethods.PADDING_SAME)
                         .build()));
-        for (VariableSymbol param : parameters){
-            param.putInScope(getSpannedScope());
-        }
-        setParameters(parameters);
-    }
-
-    public static Pooling create(){
-        Pooling method = new Pooling();
-        method.setParameters();
+        method.setParameters(parameters);
         return method;
     }
 }

@@ -20,23 +20,23 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
+import de.monticore.lang.monticar.cnnarch._ast.ASTArchType;
 import de.monticore.lang.monticar.cnnarch._ast.ASTDimensionArgument;
-import de.monticore.lang.monticar.cnnarch._ast.ASTShape;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.Optional;
 
-public class CheckIOShape implements CNNArchASTShapeCoCo {
+public class CheckIOShape implements CNNArchASTArchTypeCoCo {
 
     @Override
-    public void check(ASTShape node) {
+    public void check(ASTArchType node) {
         boolean hasHeight = false;
         boolean hasWidth = false;
         boolean hasChannels = false;
-        for (ASTDimensionArgument dimensionArg : node.getDimensions()){
+        for (ASTDimensionArgument dimensionArg : node.getShape().getDimensions()){
             if (dimensionArg.getWidth().isPresent()){
                 if (hasWidth){
                     repetitionError(dimensionArg);
@@ -58,7 +58,7 @@ public class CheckIOShape implements CNNArchASTShapeCoCo {
         }
 
 
-        ShapeSymbol shape = (ShapeSymbol) node.getSymbol().get();
+        ArchTypeSymbol shape = (ArchTypeSymbol) node.getSymbol().get();
         for (ArchSimpleExpressionSymbol dimension : shape.getDimensionSymbols()){
             Optional<Integer> value = dimension.getIntValue();
             if (!value.isPresent() || value.get() <= 0){

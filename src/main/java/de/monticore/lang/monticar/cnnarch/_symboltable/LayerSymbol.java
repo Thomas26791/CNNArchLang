@@ -32,7 +32,7 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     private LayerSymbol inputLayer;
     private LayerSymbol outputLayer;
-    private List<ShapeSymbol> outputShapes = null;
+    private List<ArchTypeSymbol> outputTypes = null;
     private Set<VariableSymbol> unresolvableVariables = null;
 
     protected LayerSymbol(String name) {
@@ -66,20 +66,20 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
     }
 
     //only call after resolve
-    public List<ShapeSymbol> getOutputShapes() {
-        if (outputShapes == null){
-            outputShapes = computeOutputShapes();
+    public List<ArchTypeSymbol> getOutputTypes() {
+        if (outputTypes == null){
+            outputTypes = computeOutputTypes();
         }
-        return outputShapes;
+        return outputTypes;
     }
 
-    protected void setOutputShapes(List<ShapeSymbol> outputShapes) {
-        this.outputShapes = outputShapes;
+    protected void setOutputTypes(List<ArchTypeSymbol> outputTypes) {
+        this.outputTypes = outputTypes;
     }
 
-    public List<ShapeSymbol> getInputShapes() {
+    public List<ArchTypeSymbol> getInputTypes() {
         if (getInputLayer().isPresent()){
-            return getInputLayer().get().getOutputShapes();
+            return getInputLayer().get().getOutputTypes();
         }
         else {
             return new ArrayList<>();
@@ -88,35 +88,46 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     /**
      * only call after resolve():
-     * @return returns the atomic layers which get the output of this layer as input.
+     * @return returns the non-empty atomic layers which have the output of this layer as input.
      */
     public List<LayerSymbol> getNext(){
         if (getOutputLayer().isPresent()){
-            return getOutputLayer().get().getFirstAtomicLayers();
+            List<LayerSymbol> outputLayers = new ArrayList<>();
+            for (LayerSymbol layer : getOutputLayer().get().getFirstAtomicLayers()){
+                if (layer.getMaxSerialLength().get() == 0){
+                    outputLayers.addAll(layer.getNext());
+                }
+                else {
+                    outputLayers.add(layer);
+                }
+            }
+            return outputLayers;
         }
         else {
             return new ArrayList<>();
         }
     }
 
-    public boolean isInput(){
-        //override by IOLayerSymbol
-        return false;
-    }
-
-    public boolean isOutput(){
-        //override by IOLayerSymbol
-        return false;
-    }
-
-    //convenience method for generation
-    public boolean isCompositeLayer(){
-        return this instanceof CompositeLayerSymbol;
-    }
-
-    //convenience method for generation
-    public boolean isMethod(){
-        return this instanceof MethodLayerSymbol;
+    /**
+     * only call after resolve():
+     * @return returns the non-empty atomic layers which are the input to this layer.
+     */
+    public List<LayerSymbol> getPrevious(){
+        if (getInputLayer().isPresent()){
+            List<LayerSymbol> inputLayers = new ArrayList<>();
+            for (LayerSymbol layer : getInputLayer().get().getLastAtomicLayers()){
+                if (layer.getMaxSerialLength().get() == 0){
+                    inputLayers.addAll(layer.getPrevious());
+                }
+                else {
+                    inputLayers.add(layer);
+                }
+            }
+            return inputLayers;
+        }
+        else {
+            return new ArrayList<>();
+        }
     }
 
     public Set<VariableSymbol> getUnresolvableVariables() {
@@ -153,17 +164,17 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
 
     /**
      * resolves all expressions and underlying layers and handles method calls and sequences.
-     * If input and output shape have to be changed, this needs to be done before calling resolve().
-     * Resolves prepares the layers such that the output shapes of each layer can be calculated and checked.
+     * Architecture parameters have to be set before calling resolve.
+     * Resolves prepares the layers such that the output type and shape of each layer can be calculated and checked.
      * CNNArchPreResolveCocos have to be checked before calling resolve and CNNArchPostResolvesCocos have to be checked after calling resolve.
-     * @return returns the set of all variables which could not be resolved. Can be ignored.
+     * @return returns the set of all variables which could not be resolved. Should be ignored.
      * @throws ArchResolveException thrown to interrupt the recursive resolve process to avoid follow-up Runtime Exceptions in tests after an error was logged.
      *                              Can be caught and ignored.
      */
     abstract public Set<VariableSymbol> resolve() throws ArchResolveException;
 
     //only call after resolve
-    protected abstract List<ShapeSymbol> computeOutputShapes();
+    protected abstract List<ArchTypeSymbol> computeOutputTypes();
 
     abstract protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables);
 
@@ -219,6 +230,6 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
     abstract public boolean isAtomic();
 
     //only call after resolve
-    abstract public void checkInputAndOutput();
+    abstract public void checkInput();
 
 }

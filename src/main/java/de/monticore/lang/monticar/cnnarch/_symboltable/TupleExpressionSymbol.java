@@ -21,7 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
-import de.monticore.lang.monticar.cnnarch.helper.ExpressionHelper;
+import de.monticore.lang.monticar.cnnarch.helper.Utils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class TupleExpressionSymbol extends MathExpressionSymbol {
 
     @Override
     public String getTextualRepresentation() {
-        return ExpressionHelper.createTupleTextualRepresentation(getExpressions(), MathExpressionSymbol::getTextualRepresentation);
+        return Utils.createTupleTextualRepresentation(getExpressions(), MathExpressionSymbol::getTextualRepresentation);
     }
 
     public void add(MathExpressionSymbol symbol){

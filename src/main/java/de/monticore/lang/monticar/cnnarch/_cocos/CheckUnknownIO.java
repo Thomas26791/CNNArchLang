@@ -24,25 +24,22 @@ import de.monticore.lang.monticar.cnnarch._ast.ASTIOLayer;
 import de.monticore.lang.monticar.cnnarch._symboltable.CompositeLayerSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.IOLayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.LayerSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
+
+import java.util.Collection;
+import java.util.Collections;
 
 public class CheckUnknownIO implements CNNArchASTIOLayerCoCo {
 
     @Override
     public void check(ASTIOLayer node) {
         Symbol symbol = node.getSymbol().get();
-        IODeclarationSymbol ioDeclaration = null;
-        if (symbol instanceof IOLayerSymbol){
-            ioDeclaration = ((IOLayerSymbol) symbol).getDefinition();
-        }
-        else if (symbol instanceof CompositeLayerSymbol){
-            IOLayerSymbol layer = (IOLayerSymbol) ((CompositeLayerSymbol) symbol).getLayers().get(0);
-            ioDeclaration = layer.getDefinition();
-        }
+        Collection<IODeclarationSymbol> ioDeclarations = node.getEnclosingScope().get().<IODeclarationSymbol>resolveMany(node.getName(), IODeclarationSymbol.KIND);
 
-        if (ioDeclaration == null){
+        if (ioDeclarations.isEmpty()){
             Log.error("0" + ErrorCodes.UNKNOWN_IO + " Unknown input or output name. " +
                             "The input or output '" + node.getName() + "' does not exist"
                     , node.get_SourcePositionStart());

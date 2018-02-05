@@ -33,15 +33,13 @@ public class BatchNorm extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return inputShapes;
-        //todo:
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        return inputTypes;
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        errorIfInputSizeIsNotOne(inputShapes, layer);
-        //todo:
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static BatchNorm create(){
@@ -52,9 +50,6 @@ public class BatchNorm extends PredefinedMethodDeclaration {
                         .constraints(Constraints.BOOLEAN)
                         .defaultValue(true)
                         .build()));
-        for (VariableSymbol param : parameters){
-            param.putInScope(method.getSpannedScope());
-        }
         method.setParameters(parameters);
         return method;
     }

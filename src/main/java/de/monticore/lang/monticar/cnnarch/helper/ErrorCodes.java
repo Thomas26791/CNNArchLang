@@ -36,7 +36,8 @@ public class ErrorCodes {
     public static final String DUPLICATED_ARG = "x03031";
     public static final String MISSING_ARGUMENT = "x06021";
     public static final String RECURSION_ERROR = "x25833";
-    public static final String INVALID_LAYER_INPUT = "x61670";
+    public static final String INVALID_LAYER_INPUT_SHAPE = "x61670";
+    public static final String INVALID_LAYER_INPUT_TYPE = "x61686";
     public static final String MISSING_MERGE = "x82479";
     public static final String UNKNOWN_VARIABLE_NAME = "x65013";
     public static final String DIFFERENT_RANGE_OPERATORS = "xA8289";

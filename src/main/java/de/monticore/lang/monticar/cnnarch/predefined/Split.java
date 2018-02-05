@@ -35,8 +35,8 @@ public class Split extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        ShapeSymbol inputShape = inputShapes.get(0);
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        ArchTypeSymbol inputShape = inputTypes.get(0);
         int numberOfSplits = layer.getIntValue(AllPredefinedMethods.NUM_SPLITS_NAME).get();
         int inputHeight = inputShape.getHeight().get();
         int inputWidth = inputShape.getWidth().get();
@@ -45,19 +45,21 @@ public class Split extends PredefinedMethodDeclaration {
         int outputChannels = inputChannels / numberOfSplits;
         int outputChannelsLast = inputChannels - (numberOfSplits-1) * outputChannels;
 
-        List<ShapeSymbol> outputShapes  = new ArrayList<>(numberOfSplits);
+        List<ArchTypeSymbol> outputShapes  = new ArrayList<>(numberOfSplits);
         for (int i = 0; i < numberOfSplits; i++){
             if (i == numberOfSplits - 1) {
-                outputShapes.add(new ShapeSymbol.Builder()
+                outputShapes.add(new ArchTypeSymbol.Builder()
                         .height(inputHeight)
                         .width(inputWidth)
                         .channels(outputChannelsLast)
+                        .elementType(inputTypes.get(0).getElementType())
                         .build());
             } else {
-                outputShapes.add(new ShapeSymbol.Builder()
+                outputShapes.add(new ArchTypeSymbol.Builder()
                         .height(inputHeight)
                         .width(inputWidth)
                         .channels(outputChannels)
+                        .elementType(inputTypes.get(0).getElementType())
                         .build());
             }
         }
@@ -65,20 +67,20 @@ public class Split extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        if (inputShapes.size() == 1) {
-            int inputChannels = inputShapes.get(0).getChannels().get();
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        if (inputTypes.size() == 1) {
+            int inputChannels = inputTypes.get(0).getChannels().get();
             int numberOfSplits = layer.getIntValue(AllPredefinedMethods.NUM_SPLITS_NAME).get();
 
             if (inputChannels < numberOfSplits){
-                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT + " Invalid layer input. " +
+                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_SHAPE + " Invalid layer input. " +
                                 "The number of input channels " +  inputChannels +
                                 " is smaller than the number of splits " + numberOfSplits + "."
                         , layer.getSourcePosition());
             }
         }
         else {
-            errorIfInputSizeIsNotOne(inputShapes, layer);
+            errorIfInputSizeIsNotOne(inputTypes, layer);
         }
     }
 
@@ -89,9 +91,6 @@ public class Split extends PredefinedMethodDeclaration {
                         .name(AllPredefinedMethods.NUM_SPLITS_NAME)
                         .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                         .build()));
-        for (VariableSymbol param : parameters){
-            param.putInScope(method.getSpannedScope());
-        }
         method.setParameters(parameters);
         return method;
     }

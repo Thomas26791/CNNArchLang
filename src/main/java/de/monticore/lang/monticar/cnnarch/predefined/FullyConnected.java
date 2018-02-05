@@ -35,17 +35,18 @@ public class FullyConnected extends PredefinedMethodDeclaration {
 
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return Collections.singletonList(new ShapeSymbol.Builder()
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        return Collections.singletonList(new ArchTypeSymbol.Builder()
                 .height(1)
                 .width(1)
                 .channels(layer.getIntValue(AllPredefinedMethods.UNITS_NAME).get())
+                .elementType("-oo", "oo")
                 .build());
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        errorIfInputSizeIsNotOne(inputShapes, layer);
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static FullyConnected create(){
@@ -60,9 +61,6 @@ public class FullyConnected extends PredefinedMethodDeclaration {
                         .constraints(Constraints.BOOLEAN)
                         .defaultValue(false)
                         .build()));
-        for (VariableSymbol param : parameters){
-            param.putInScope(method.getSpannedScope());
-        }
         method.setParameters(parameters);
         return method;
     }

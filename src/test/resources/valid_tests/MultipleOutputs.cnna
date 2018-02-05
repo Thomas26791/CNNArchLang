@@ -1,0 +1,21 @@
+architecture MultipleOutputs{
+    def input Q(-oo:+oo)^{C:10} in
+    def output Q(0:1)^{C:4} out[2]
+
+    in ->
+    FullyConnected(units=128, no_bias=true) ->
+    Tanh() ->
+    (
+        FullyConnected(units=16, no_bias=true) ->
+        Tanh() ->
+        FullyConnected(units=4, no_bias=true) ->
+        Softmax()
+    |
+        FullyConnected(units=16, no_bias=true) ->
+        Tanh() ->
+        FullyConnected(units=4, no_bias=true) ->
+        Softmax()
+    ) ->
+    out
+
+}

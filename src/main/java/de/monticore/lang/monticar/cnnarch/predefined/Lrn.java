@@ -33,16 +33,13 @@ public class Lrn extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return inputShapes;
-        //todo: check
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        return inputTypes;
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        errorIfInputSizeIsNotOne(inputShapes, layer);
-        //todo: check
-
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static Lrn create(){
@@ -67,9 +64,6 @@ public class Lrn extends PredefinedMethodDeclaration {
                         .constraints(Constraints.NUMBER)
                         .defaultValue(0.75)
                         .build()));
-        for (VariableSymbol param : parameters){
-            param.putInScope(method.getSpannedScope());
-        }
         method.setParameters(parameters);
         return method;
     }

@@ -5,8 +5,8 @@ grammar CNNArch extends de.monticore.lang.math.Math {
     CNNArchCompilationUnit = Architecture;
 
     symbol scope Architecture = "architecture"
-                                name:Name& "("
-                                (ArchitectureParameter || ",")* ")" "{"
+                                name:Name&
+                                ( "(" (ArchitectureParameter || ",")* ")" )? "{"
                                 declarations:ArchDeclaration*
                                 body:ArchBody "}";
 

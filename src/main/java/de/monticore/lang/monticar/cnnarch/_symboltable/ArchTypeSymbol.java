@@ -20,24 +20,40 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
+import de.monticore.lang.monticar.types2._ast.ASTElementType;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
 
 import java.util.*;
 
 
-public class ShapeSymbol extends CommonSymbol {
+public class ArchTypeSymbol extends CommonSymbol {
 
-    public static final ShapeKind KIND = new ShapeKind();
+    public static final ArchTypeKind KIND = new ArchTypeKind();
+
+    protected static final String DEFAULT_ELEMENT_TYPE = "Q(-oo:oo)";
+    private ASTElementType elementType;
 
     private int channelIndex = -1;
     private int heightIndex = -1;
     private int widthIndex = -1;
 
+
     private List<ArchSimpleExpressionSymbol> dimensions = new ArrayList<>();
 
-    public ShapeSymbol() {
+    public ArchTypeSymbol() {
         super("", KIND);
+        ASTElementType elementType = new ASTElementType();
+        elementType.setTElementType(DEFAULT_ELEMENT_TYPE);
+        setElementType(elementType);
+    }
+
+    public ASTElementType getElementType() {
+        return elementType;
+    }
+
+    public void setElementType(ASTElementType elementType) {
+        this.elementType = elementType;
     }
 
     public int getHeightIndex() {
@@ -178,6 +194,7 @@ public class ShapeSymbol extends CommonSymbol {
         private int height = 1;
         private int width = 1;
         private int channels = 1;
+        private ASTElementType elementType = null;
 
         public Builder height(int height){
             this.height = height;
@@ -191,13 +208,28 @@ public class ShapeSymbol extends CommonSymbol {
             this.channels = channels;
             return this;
         }
+        public Builder elementType(ASTElementType elementType){
+            this.elementType = elementType;
+            return this;
+        }
+        public Builder elementType(String start, String end){
+            elementType = new ASTElementType();
+            elementType.setTElementType("Q(" + start + ":" + end +")");
+            return this;
+        }
 
-        public ShapeSymbol build(){
-            ShapeSymbol sym = new ShapeSymbol();
+        public ArchTypeSymbol build(){
+            ArchTypeSymbol sym = new ArchTypeSymbol();
             sym.setChannelIndex(0);
             sym.setHeightIndex(1);
             sym.setWidthIndex(2);
             sym.setDimensions(Arrays.asList(channels, height, width));
+
+            if (elementType == null){
+                elementType = new ASTElementType();
+                elementType.setTElementType(DEFAULT_ELEMENT_TYPE);
+            }
+            sym.setElementType(elementType);
             return sym;
         }
     }

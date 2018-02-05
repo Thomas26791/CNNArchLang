@@ -22,7 +22,7 @@ package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
-import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,19 +35,20 @@ public class Flatten extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return Collections.singletonList(new ShapeSymbol.Builder()
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        return Collections.singletonList(new ArchTypeSymbol.Builder()
                 .height(1)
                 .width(1)
-                .channels(inputShapes.get(0).getHeight().get()
-                        * inputShapes.get(0).getWidth().get()
-                        * inputShapes.get(0).getChannels().get())
+                .channels(inputTypes.get(0).getHeight().get()
+                        * inputTypes.get(0).getWidth().get()
+                        * inputTypes.get(0).getChannels().get())
+                .elementType(inputTypes.get(0).getElementType())
                 .build());
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        errorIfInputSizeIsNotOne(inputShapes, layer);
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static Flatten create(){

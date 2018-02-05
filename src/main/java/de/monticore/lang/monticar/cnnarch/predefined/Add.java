@@ -22,14 +22,19 @@ package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
-import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.monticore.lang.monticar.ranges._ast.ASTRange;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
+import org.jscience.mathematics.number.Rational;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Add extends PredefinedMethodDeclaration {
 
@@ -38,21 +43,28 @@ public class Add extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return Collections.singletonList(inputShapes.get(0));
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        List<String> range = computeStartAndEndValue(inputTypes, Rational::plus, Rational::plus);
+
+        return Collections.singletonList(new ArchTypeSymbol.Builder()
+                .channels(inputTypes.get(0).getChannels().get())
+                .height(inputTypes.get(0).getHeight().get())
+                .width(inputTypes.get(0).getWidth().get())
+                .elementType(range.get(0), range.get(1))
+                .build());
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        errorIfInputIsEmpty(inputShapes, layer);
-        if (inputShapes.size() == 1){
-            Log.warn("Add layer has only one input stream." , layer.getSourcePosition());
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        errorIfInputIsEmpty(inputTypes, layer);
+        if (inputTypes.size() == 1){
+            Log.warn("Add layer has only one input stream. Layer can be removed." , layer.getSourcePosition());
         }
-        else if (inputShapes.size() > 1){
+        else if (inputTypes.size() > 1){
             List<Integer> heightList = new ArrayList<>();
             List<Integer> widthList = new ArrayList<>();
             List<Integer> channelsList = new ArrayList<>();
-            for (ShapeSymbol shape : inputShapes){
+            for (ArchTypeSymbol shape : inputTypes){
                 heightList.add(shape.getHeight().get());
                 widthList.add(shape.getWidth().get());
                 channelsList.add(shape.getChannels().get());
@@ -61,7 +73,7 @@ public class Add extends PredefinedMethodDeclaration {
             int countEqualWidths = (int)widthList.stream().distinct().count();
             int countEqualNumberOfChannels = (int)channelsList.stream().distinct().count();
             if (countEqualHeights != 1 || countEqualWidths != 1 || countEqualNumberOfChannels != 1){
-                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT + " Invalid layer input. " +
+                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_SHAPE + " Invalid layer input. " +
                                 "Shapes of all input streams must be equal. " +
                                 "Input heights: " + Joiners.COMMA.join(heightList) + ". " +
                                 "Input widths: " + Joiners.COMMA.join(widthList) + ". " +

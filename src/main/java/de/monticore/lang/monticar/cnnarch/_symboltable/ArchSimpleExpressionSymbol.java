@@ -22,7 +22,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.math.math._symboltable.expression.*;
 import de.monticore.lang.monticar.cnnarch.helper.Calculator;
-import de.monticore.lang.monticar.cnnarch.helper.ExpressionHelper;
+import de.monticore.lang.monticar.cnnarch.helper.Utils;
 
 import java.util.*;
 
@@ -100,7 +100,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
 
     protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables) {
         if (getMathExpression().isPresent()) {
-            for (MathExpressionSymbol exp : ExpressionHelper.createSubExpressionList(getMathExpression().get())) {
+            for (MathExpressionSymbol exp : Utils.createSubExpressionList(getMathExpression().get())) {
                 if (exp instanceof MathNameExpressionSymbol) {
                     String name = ((MathNameExpressionSymbol) exp).getNameToAccess();
                     Optional<VariableSymbol> variable = getEnclosingScope().resolve(name, VariableSymbol.KIND);
@@ -164,7 +164,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
         }
         else {
             Map<String, String> replacementMap = new HashMap<>();
-            for (MathExpressionSymbol exp : ExpressionHelper.createSubExpressionList(getMathExpression().get())) {
+            for (MathExpressionSymbol exp : Utils.createSubExpressionList(getMathExpression().get())) {
                 if (exp instanceof MathNameExpressionSymbol) {
                     String name = ((MathNameExpressionSymbol) exp).getNameToAccess();
                     VariableSymbol variable = (VariableSymbol) getEnclosingScope().resolve(name, VariableSymbol.KIND).get();
@@ -174,7 +174,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
                 }
             }
 
-            String resolvedString = ExpressionHelper.replace(getTextualRepresentation(), replacementMap);
+            String resolvedString = Utils.replace(getTextualRepresentation(), replacementMap);
             return Calculator.getInstance().calculate(resolvedString);
         }
     }
@@ -191,7 +191,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
     public String getTextualRepresentation() {
         if (isResolved()){
             if (isTuple()){
-                return ExpressionHelper.createTupleTextualRepresentation(getTupleValues().get(), Object::toString);
+                return Utils.createTupleTextualRepresentation(getTupleValues().get(), Object::toString);
             }
             else {
                 return getValue().get().toString();

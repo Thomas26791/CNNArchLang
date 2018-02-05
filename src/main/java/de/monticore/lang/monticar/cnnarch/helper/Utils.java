@@ -23,6 +23,8 @@ package de.monticore.lang.monticar.cnnarch.helper;
 import de.monticore.lang.math.math._symboltable.expression.*;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.TupleExpressionSymbol;
+import de.monticore.lang.monticar.ranges._ast.ASTRange;
+import de.monticore.lang.monticar.types2._ast.ASTElementType;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.function.Function;
 
-public class ExpressionHelper {
+public class Utils {
 
 
     public static List<MathExpressionSymbol> createSubExpressionList(MathExpressionSymbol expression){
@@ -79,86 +81,6 @@ public class ExpressionHelper {
         return resolvedString;
     }
 
-    /*public static void replace(ArchSimpleExpressionSymbol container, Map<MathExpressionSymbol, MathExpressionSymbol> replacementMap){
-        if (replacementMap.containsKey(container.getExpression())){
-            container.setMathExpression(replacementMap.get(container.getExpression()));
-        }
-        else {
-            replace(container.getExpression(), replacementMap);
-        }
-    }
-
-    private static void replace(MathExpressionSymbol expression, Map<MathExpressionSymbol, MathExpressionSymbol> replacementMap) {
-
-        if (expression instanceof MathParenthesisExpressionSymbol) {
-            MathParenthesisExpressionSymbol exp = (MathParenthesisExpressionSymbol) expression;
-            if (replacementMap.containsKey(exp.getMathExpressionSymbol())) {
-                exp.setMathExpressionSymbol(replacementMap.get(expression));
-            }
-            else {
-                replace(exp.getMathExpressionSymbol(), replacementMap);
-            }
-        }
-        else if (expression instanceof MathCompareExpressionSymbol) {
-            MathCompareExpressionSymbol exp = (MathCompareExpressionSymbol) expression;
-            if (replacementMap.containsKey(exp.getLeftExpression())) {
-                exp.setLeftExpression(replacementMap.get(expression));
-            }
-            else {
-                replace(exp.getLeftExpression(), replacementMap);
-            }
-            if (replacementMap.containsKey(exp.getRightExpression())) {
-                exp.setRightExpression(replacementMap.get(expression));
-            }
-            else {
-                replace(exp.getRightExpression(), replacementMap);
-            }
-        }
-        else if (expression instanceof MathArithmeticExpressionSymbol) {
-            MathArithmeticExpressionSymbol exp = (MathArithmeticExpressionSymbol) expression;
-            if (replacementMap.containsKey(exp.getLeftExpression())) {
-                exp.setLeftExpression(replacementMap.get(expression));
-            }
-            else {
-                replace(exp.getLeftExpression(), replacementMap);
-            }
-            if (replacementMap.containsKey(exp.getRightExpression())) {
-                exp.setRightExpression(replacementMap.get(expression));
-            }
-            else {
-                replace(exp.getRightExpression(), replacementMap);
-            }
-        }
-        else if (expression instanceof MathPreOperatorExpressionSymbol) {
-            MathPreOperatorExpressionSymbol exp = (MathPreOperatorExpressionSymbol) expression;
-            if (replacementMap.containsKey(exp.getMathExpressionSymbol())) {
-                exp.setMathExpressionSymbol(replacementMap.get(expression));
-            }
-            else {
-                replace(exp.getMathExpressionSymbol(), replacementMap);
-            }
-        }
-        else if (expression instanceof TupleExpressionSymbol) {
-            TupleExpressionSymbol tuple = (TupleExpressionSymbol) expression;
-            ListIterator<MathExpressionSymbol> iterator = tuple.getExpressions().listIterator();
-            while (iterator.hasNext()) {
-                MathExpressionSymbol exp = iterator.next();
-                if (replacementMap.containsKey(exp)) {
-                    iterator.set(replacementMap.get(exp));
-                }
-                else {
-                    replace(exp, replacementMap);
-                }
-            }
-        }
-        else if (expression instanceof MathValueExpressionSymbol) {
-            //do nothing
-        }
-        else {
-            throw new IllegalArgumentException("Unknown expression: " + expression.getClass().getSimpleName());
-        }
-    }*/
-
     public static <T> String createTupleTextualRepresentation(List<T> list, Function<T,String> stringFunction){
         StringBuilder builder = new StringBuilder();
         builder.append("(");
@@ -170,6 +92,38 @@ public class ExpressionHelper {
         }
         builder.append(")");
         return builder.toString();
+    }
+
+
+    public static boolean equals(ASTElementType firstType, ASTElementType secondType){
+        ASTRange firstRange = firstType.getRange().get();
+        ASTRange secondRange = secondType.getRange().get();
+
+        if (firstType.isIsBoolean() ^ secondType.isIsBoolean()
+                || firstType.isIsNatural() ^ secondType.isIsNatural()
+                || firstType.isIsRational() ^ secondType.isIsRational()
+                || firstType.isIsWholeNumberNumber() ^ secondType.isIsWholeNumberNumber()
+                || firstType.isIsComplex() ^ secondType.isIsComplex()){
+            return false;
+        }
+        if (firstRange.getStartInf().isPresent() ^ secondRange.getStartInf().isPresent()
+                || firstRange.getEndInf().isPresent() ^ secondRange.getEndInf().isPresent()){
+            return false;
+        }
+        if (!firstRange.getStartInf().isPresent() && !firstRange.getStartValue().equals(secondRange.getStartValue())){
+            return false;
+        }
+        if (!firstRange.getEndInf().isPresent() && !firstRange.getEndValue().equals(secondRange.getEndValue())){
+            return false;
+        }
+        if (firstRange.getStep().isPresent() ^ secondRange.getStep().isPresent()){
+            return false;
+        }
+        if (firstRange.getStep().isPresent() && !firstRange.getStepValue().equals(secondRange.getStepValue())){
+            return false;
+        }
+
+        return true;
     }
 
 }

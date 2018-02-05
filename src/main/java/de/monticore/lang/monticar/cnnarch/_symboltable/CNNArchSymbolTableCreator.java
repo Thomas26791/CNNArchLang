@@ -30,7 +30,6 @@ import de.monticore.lang.monticar.cnnarch._visitor.CNNArchVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CommonCNNArchDelegatorVisitor;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
-import de.monticore.lang.monticar.types2._ast.ASTType;
 import de.monticore.symboltable.*;
 import de.se_rwth.commons.logging.Log;
 
@@ -173,9 +172,8 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         if (ast.getArrayDeclaration().isPresent()){
             iODeclaration.setArrayLength(ast.getArrayDeclaration().get().getIntLiteral().getNumber().get().getDividend().intValue());
         }
-        iODeclaration.setShape((ShapeSymbol) ast.getType().getShape().getSymbol().get());
+        iODeclaration.setType((ArchTypeSymbol) ast.getType().getSymbol().get());
         iODeclaration.setInput(ast.getIn().isPresent());
-        iODeclaration.setType(ast.getType().getElementType());
         if (iODeclaration.isInput()){
             inputs.add(iODeclaration);
         }
@@ -185,23 +183,19 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     }
 
     @Override
-    public void endVisit(ASTType node) {
-        //todo
-    }
-
-    @Override
-    public void visit(ASTShape ast) {
-        ShapeSymbol sym = new ShapeSymbol();
+    public void visit(ASTArchType ast) {
+        ArchTypeSymbol sym = new ArchTypeSymbol();
         addToScopeAndLinkWithNode(sym, ast);
     }
 
     @Override
-    public void endVisit(ASTShape node) {
-        ShapeSymbol sym = (ShapeSymbol) node.getSymbol().get();
+    public void endVisit(ASTArchType node) {
+        ArchTypeSymbol sym = (ArchTypeSymbol) node.getSymbol().get();
+        List<ASTDimensionArgument> astDimensions = node.getShape().getDimensions();
 
         List<ArchSimpleExpressionSymbol> dimensionList = new ArrayList<>(3);
-        for (int i = 0; i < node.getDimensions().size(); i++){
-            ASTDimensionArgument dimensionArg = node.getDimensions().get(i);
+        for (int i = 0; i < astDimensions.size(); i++){
+            ASTDimensionArgument dimensionArg = astDimensions.get(i);
             if (dimensionArg.getHeight().isPresent()){
                 sym.setHeightIndex(i);
                 ArchSimpleExpressionSymbol exp = (ArchSimpleExpressionSymbol) dimensionArg.getHeight().get().getSymbol().get();
@@ -219,6 +213,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
             }
         }
         sym.setDimensionSymbols(dimensionList);
+        sym.setElementType(node.getElementType());
 
         addToScopeAndLinkWithNode(sym, node);
     }
@@ -405,31 +400,60 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
             isInput = ioDeclaration.isInput();
         }
 
-        if (!node.getIndex().isPresent() && arrayLength > 1 && isInput){
-            List<LayerSymbol> ioLayers = new ArrayList<>(arrayLength);
-            IOLayerSymbol ioLayer;
-            for (int i = 0; i < arrayLength; i++){
-                ioLayer = new IOLayerSymbol(node.getName());
-                ioLayer.setArrayAccess(i);
-                ioLayers.add(ioLayer);
-            }
-
+        if (!node.getIndex().isPresent() && arrayLength > 1){
+            //transform io array into parallel composite
+            List<LayerSymbol> parallelLayers = createSerialIOLayerPart(node, arrayLength, isInput);
             CompositeLayerSymbol composite = new CompositeLayerSymbol.Builder()
                     .parallel(true)
-                    .layers(ioLayers)
+                    .layers(parallelLayers)
                     .build();
 
             addToScopeAndLinkWithNode(composite, node);
 
-            for (LayerSymbol layer : ioLayers){
-                addToScope(layer);
+            for (LayerSymbol layer : parallelLayers){
+                layer.putInScope(composite.getSpannedScope());
                 layer.setAstNode(node);
             }
+
         }
         else {
             IOLayerSymbol ioLayer = new IOLayerSymbol(node.getName());
             addToScopeAndLinkWithNode(ioLayer, node);
         }
+    }
+
+    private List<LayerSymbol> createSerialIOLayerPart(ASTIOLayer node, int arrayLength, boolean isInput){
+        List<LayerSymbol> parallelLayers = new ArrayList<>(arrayLength);
+        if (isInput){
+            for (int i = 0; i < arrayLength; i++){
+                IOLayerSymbol ioLayer = new IOLayerSymbol(node.getName());
+                ioLayer.setArrayAccess(i);
+                parallelLayers.add(ioLayer);
+            }
+        }
+        else {
+            for (int i = 0; i < arrayLength; i++){
+                CompositeLayerSymbol serialComposite = new CompositeLayerSymbol();
+                serialComposite.setParallel(false);
+
+                IOLayerSymbol ioLayer = new IOLayerSymbol(node.getName());
+                ioLayer.setArrayAccess(i);
+                ioLayer.setAstNode(node);
+
+                MethodLayerSymbol getLayer = new MethodLayerSymbol(AllPredefinedMethods.GET_NAME);
+                getLayer.setArguments(Collections.singletonList(
+                        new ArgumentSymbol.Builder()
+                                .parameter(AllPredefinedMethods.INDEX_NAME)
+                                .value(ArchSimpleExpressionSymbol.of(i))
+                                .build()));
+                getLayer.setAstNode(node);
+
+                serialComposite.setLayers(Arrays.asList(getLayer, ioLayer));
+
+                parallelLayers.add(serialComposite);
+            }
+        }
+        return parallelLayers;
     }
 
     @Override

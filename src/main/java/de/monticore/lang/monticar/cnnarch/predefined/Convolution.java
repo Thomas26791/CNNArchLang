@@ -33,16 +33,16 @@ public class Convolution extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        return computeConvAndPoolOutputShape(inputShapes.get(0),
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        return computeConvAndPoolOutputShape(inputTypes.get(0),
                 layer,
                 layer.getIntValue(AllPredefinedMethods.CHANNELS_NAME).get());
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        errorIfInputSizeIsNotOne(inputShapes, layer);
-        errorIfInputSmallerThanKernel(inputShapes, layer);
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        errorIfInputSizeIsNotOne(inputTypes, layer);
+        errorIfInputSmallerThanKernel(inputTypes, layer);
     }
 
     public static Convolution create(){
@@ -71,9 +71,6 @@ public class Convolution extends PredefinedMethodDeclaration {
                         .constraints(Constraints.PADDING_TYPE)
                         .defaultValue(AllPredefinedMethods.PADDING_SAME)
                         .build()));
-        for (VariableSymbol param : parameters){
-            param.putInScope(method.getSpannedScope());
-        }
         method.setParameters(parameters);
         return method;
     }

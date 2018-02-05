@@ -22,14 +22,17 @@ package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
-import de.monticore.lang.monticar.cnnarch._symboltable.ShapeSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.monticore.lang.monticar.ranges._ast.ASTRange;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
+import org.jscience.mathematics.number.Rational;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class Concatenate extends PredefinedMethodDeclaration {
 
@@ -38,33 +41,37 @@ public class Concatenate extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public List<ShapeSymbol> computeOutputShapes(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        int height = inputShapes.get(0).getHeight().get();
-        int width = inputShapes.get(0).getWidth().get();
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        int height = inputTypes.get(0).getHeight().get();
+        int width = inputTypes.get(0).getWidth().get();
         int channels = 0;
-        for (ShapeSymbol inputShape : inputShapes) {
+        for (ArchTypeSymbol inputShape : inputTypes) {
             channels += inputShape.getChannels().get();
         }
-        return Collections.singletonList(new ShapeSymbol.Builder()
+
+        List<String> range = computeStartAndEndValue(inputTypes, (x,y) -> x.isLessThan(y) ? x : y, (x,y) -> x.isLessThan(y) ? y : x);
+
+        return Collections.singletonList(new ArchTypeSymbol.Builder()
+                .channels(channels)
                 .height(height)
                 .width(width)
-                .channels(channels)
+                .elementType(range.get(0), range.get(1))
                 .build());
     }
 
     @Override
-    public void checkInput(List<ShapeSymbol> inputShapes, MethodLayerSymbol layer) {
-        if (!inputShapes.isEmpty()) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+        if (!inputTypes.isEmpty()) {
             List<Integer> heightList = new ArrayList<>();
             List<Integer> widthList = new ArrayList<>();
-            for (ShapeSymbol shape : inputShapes){
+            for (ArchTypeSymbol shape : inputTypes){
                 heightList.add(shape.getHeight().get());
                 widthList.add(shape.getWidth().get());
             }
             int countEqualHeights = (int)heightList.stream().distinct().count();
             int countEqualWidths = (int)widthList.stream().distinct().count();
             if (countEqualHeights != 1 || countEqualWidths != 1){
-                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT + " Invalid layer input. " +
+                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_SHAPE + " Invalid layer input. " +
                                 "Concatenation of inputs with different resolutions is not possible. " +
                                 "Input heights: " + Joiners.COMMA.join(heightList) + ". " +
                                 "Input widths: " + Joiners.COMMA.join(widthList) + ". "
@@ -72,7 +79,7 @@ public class Concatenate extends PredefinedMethodDeclaration {
             }
         }
         else {
-            errorIfInputIsEmpty(inputShapes, layer);
+            errorIfInputIsEmpty(inputTypes, layer);
         }
     }
 
