@@ -101,16 +101,16 @@ public class ArchTypeSymbol extends CommonSymbol {
         return getDimensionSymbols().get(getChannelIndex());
     }
 
-    public Optional<Integer> getWidth(){
-        return getWidthSymbol().getIntValue();
+    public Integer getWidth(){
+        return getWidthSymbol().getIntValue().get();
     }
 
-    public Optional<Integer> getHeight(){
-        return getHeightSymbol().getIntValue();
+    public Integer getHeight(){
+        return getHeightSymbol().getIntValue().get();
     }
 
-    public Optional<Integer> getChannels(){
-        return getChannelsSymbol().getIntValue();
+    public Integer getChannels(){
+        return getChannelsSymbol().getIntValue().get();
     }
 
     protected void setDimensionSymbols(List<ArchSimpleExpressionSymbol> dimensions) {

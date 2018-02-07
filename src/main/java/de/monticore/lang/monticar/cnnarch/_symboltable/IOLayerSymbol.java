@@ -70,10 +70,12 @@ public class IOLayerSymbol extends LayerSymbol {
         definition.getConnectedLayers().add(this);
     }
 
+    @Override
     public boolean isInput(){
         return getDefinition().isInput();
     }
 
+    @Override
     public boolean isOutput(){
         return getDefinition().isOutput();
     }

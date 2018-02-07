@@ -47,9 +47,9 @@ public class Add extends PredefinedMethodDeclaration {
         List<String> range = computeStartAndEndValue(inputTypes, Rational::plus, Rational::plus);
 
         return Collections.singletonList(new ArchTypeSymbol.Builder()
-                .channels(inputTypes.get(0).getChannels().get())
-                .height(inputTypes.get(0).getHeight().get())
-                .width(inputTypes.get(0).getWidth().get())
+                .channels(inputTypes.get(0).getChannels())
+                .height(inputTypes.get(0).getHeight())
+                .width(inputTypes.get(0).getWidth())
                 .elementType(range.get(0), range.get(1))
                 .build());
     }
@@ -65,9 +65,9 @@ public class Add extends PredefinedMethodDeclaration {
             List<Integer> widthList = new ArrayList<>();
             List<Integer> channelsList = new ArrayList<>();
             for (ArchTypeSymbol shape : inputTypes){
-                heightList.add(shape.getHeight().get());
-                widthList.add(shape.getWidth().get());
-                channelsList.add(shape.getChannels().get());
+                heightList.add(shape.getHeight());
+                widthList.add(shape.getWidth());
+                channelsList.add(shape.getChannels());
             }
             int countEqualHeights = (int)heightList.stream().distinct().count();
             int countEqualWidths = (int)widthList.stream().distinct().count();

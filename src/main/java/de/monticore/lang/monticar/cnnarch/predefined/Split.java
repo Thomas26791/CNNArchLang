@@ -38,9 +38,9 @@ public class Split extends PredefinedMethodDeclaration {
     public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
         ArchTypeSymbol inputShape = inputTypes.get(0);
         int numberOfSplits = layer.getIntValue(AllPredefinedMethods.NUM_SPLITS_NAME).get();
-        int inputHeight = inputShape.getHeight().get();
-        int inputWidth = inputShape.getWidth().get();
-        int inputChannels = inputShape.getChannels().get();
+        int inputHeight = inputShape.getHeight();
+        int inputWidth = inputShape.getWidth();
+        int inputChannels = inputShape.getChannels();
 
         int outputChannels = inputChannels / numberOfSplits;
         int outputChannelsLast = inputChannels - (numberOfSplits-1) * outputChannels;
@@ -69,7 +69,7 @@ public class Split extends PredefinedMethodDeclaration {
     @Override
     public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
         if (inputTypes.size() == 1) {
-            int inputChannels = inputTypes.get(0).getChannels().get();
+            int inputChannels = inputTypes.get(0).getChannels();
             int numberOfSplits = layer.getIntValue(AllPredefinedMethods.NUM_SPLITS_NAME).get();
 
             if (inputChannels < numberOfSplits){

@@ -121,11 +121,14 @@ public class AllCoCoTest extends AbstractCoCoTest {
                 new CNNArchCoCoChecker(),
                 "invalid_tests", "IllegalName",
                 new ExpectedErrorInfo(2, ErrorCodes.ILLEGAL_NAME));
-
     }
 
     @Test
     public void testInvalidPostResolveCocos(){
+        checkInvalid(new CNNArchCoCoChecker(),
+                new CNNArchCoCoChecker().addCoCo(new CheckArchitectureFinished()),
+                "invalid_tests", "UnfinishedArchitecture",
+                new ExpectedErrorInfo(1, ErrorCodes.UNFINISHED_ARCHITECTURE));
         checkInvalid(new CNNArchCoCoChecker(),
                 new CNNArchCoCoChecker().addCoCo(new CheckLayerInputs()),
                 "invalid_tests", "InvalidInputShape",

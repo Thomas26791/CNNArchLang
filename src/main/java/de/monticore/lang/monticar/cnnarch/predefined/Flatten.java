@@ -39,9 +39,9 @@ public class Flatten extends PredefinedMethodDeclaration {
         return Collections.singletonList(new ArchTypeSymbol.Builder()
                 .height(1)
                 .width(1)
-                .channels(inputTypes.get(0).getHeight().get()
-                        * inputTypes.get(0).getWidth().get()
-                        * inputTypes.get(0).getChannels().get())
+                .channels(inputTypes.get(0).getHeight()
+                        * inputTypes.get(0).getWidth()
+                        * inputTypes.get(0).getChannels())
                 .elementType(inputTypes.get(0).getElementType())
                 .build());
     }

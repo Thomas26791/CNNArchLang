@@ -20,10 +20,33 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
+import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchNode;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
+import de.se_rwth.commons.logging.Log;
 
-public class CNNArchPreResolveCocos {
+//check all cocos
+public class CNNArchCocos {
 
-    public static CNNArchCoCoChecker createChecker() {
+    public static void checkAll(ArchitectureSymbol architecture){
+        ASTCNNArchNode node = (ASTCNNArchNode) architecture.getAstNode().get();
+        createPreResolveChecker().checkAll(node);
+        if (Log.getFindings().isEmpty()){
+            architecture.resolve();
+            if (Log.getFindings().isEmpty()){
+                createPostResolveChecker().checkAll(node);
+            }
+        }
+    }
+
+    public static CNNArchCoCoChecker createPostResolveChecker() {
+        return new CNNArchCoCoChecker()
+                .addCoCo(new CheckLayerInputs())
+                .addCoCo(new CheckIOAccessAndIOMissing())
+                .addCoCo(new CheckIOShape())
+                .addCoCo(new CheckArchitectureFinished());
+    }
+
+    public static CNNArchCoCoChecker createPreResolveChecker() {
         return new CNNArchCoCoChecker()
                 .addCoCo(new CheckIOName())
                 .addCoCo(new CheckNameExpression())

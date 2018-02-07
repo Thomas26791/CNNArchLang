@@ -24,8 +24,7 @@ import de.monticore.lang.monticar.cnnarch.AbstractSymtabTest;
 import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchNode;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
-import de.monticore.lang.monticar.cnnarch._cocos.CNNArchPostResolveCocos;
-import de.monticore.lang.monticar.cnnarch._cocos.CNNArchPreResolveCocos;
+import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCocos;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.symboltable.Scope;
 import de.se_rwth.commons.logging.Finding;
@@ -63,8 +62,8 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
     protected static void runCheckerWithSymTab(String modelPath, String model) {
         Log.getFindings().clear();
 
-        runCocoCheck(CNNArchPreResolveCocos.createChecker(),
-                CNNArchPostResolveCocos.createChecker(),
+        runCocoCheck(CNNArchCocos.createPreResolveChecker(),
+                CNNArchCocos.createPostResolveChecker(),
                 modelPath,
                 model);
     }
@@ -76,8 +75,8 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
     protected static void checkValid(String modelPath, String model) {
         Log.getFindings().clear();
         runCocoCheck(
-                CNNArchPreResolveCocos.createChecker(),
-                CNNArchPostResolveCocos.createChecker(),
+                CNNArchCocos.createPreResolveChecker(),
+                CNNArchCocos.createPostResolveChecker(),
                 modelPath,
                 model);
         new ExpectedErrorInfo().checkOnlyExpectedPresent(Log.getFindings());
@@ -94,8 +93,8 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
         // check whether all the expected errors are present when using all cocos
         Log.getFindings().clear();
         runCocoCheck(
-                CNNArchPreResolveCocos.createChecker(),
-                CNNArchPostResolveCocos.createChecker(),
+                CNNArchCocos.createPreResolveChecker(),
+                CNNArchCocos.createPostResolveChecker(),
                 modelPath,
                 model);
         expectedErrors.checkExpectedPresent(Log.getFindings(), "Got no findings when checking all "

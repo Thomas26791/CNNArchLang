@@ -20,34 +20,28 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArchArgument;
-import de.monticore.lang.monticar.cnnarch._symboltable.ArgumentSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.MethodDeclarationSymbol;
+import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
 
-public class CheckArgument implements CNNArchASTArchArgumentCoCo {
+public class CheckArchitectureFinished implements CNNArchASTArchitectureCoCo {
 
     @Override
-    public void check(ASTArchArgument node) {
-        ArgumentSymbol argument = (ArgumentSymbol) node.getSymbol().get();
-        MethodDeclarationSymbol method = argument.getMethodLayer().getMethod();
-        if (argument.getParameter() ==  null){
-            Log.error("0"+ ErrorCodes.UNKNOWN_ARGUMENT + " Unknown Argument. " +
-                            "Parameter with name '" + node.getName() + "' does not exist. " +
-                            "Possible arguments are: " + Joiners.COMMA.join(method.getParameters())
+    public void check(ASTArchitecture node) {
+        ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
+        if (!architecture.getBody().getOutputTypes().isEmpty()){
+            Log.error("0" + ErrorCodes.UNFINISHED_ARCHITECTURE + " The architecture is not finished. " +
+                            "There are still open streams at the end of the architecture. "
+                    , node.get_SourcePositionEnd());
+        }
+        if (architecture.getInputs().isEmpty()){
+            Log.error("0" + ErrorCodes.UNFINISHED_ARCHITECTURE + " The architecture has no inputs. "
                     , node.get_SourcePositionStart());
         }
-        else {
-            /*if (argument.getRhs().getValue().isPresent()){
-                argument.checkConstraints();
-            }*/
-            /*if (argument.getRhs().isResolvable()) {
-                argument.getRhs().resolveOrError();
-                argument.checkConstraints();
-                argument.getRhs().reset();
-            }*/
+        if (architecture.getOutputs().isEmpty()){
+            Log.error("0" + ErrorCodes.UNFINISHED_ARCHITECTURE + " The architecture has no outputs. "
+                    , node.get_SourcePositionStart());
         }
     }
 

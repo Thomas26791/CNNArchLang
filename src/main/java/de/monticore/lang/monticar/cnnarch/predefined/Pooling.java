@@ -34,7 +34,7 @@ public class Pooling extends PredefinedMethodDeclaration {
     public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
         return computeConvAndPoolOutputShape(inputTypes.get(0),
                 layer,
-                inputTypes.get(0).getChannels().get());
+                inputTypes.get(0).getChannels());
     }
 
     @Override

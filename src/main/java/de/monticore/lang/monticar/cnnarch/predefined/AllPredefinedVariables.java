@@ -26,9 +26,9 @@ import de.monticore.lang.monticar.cnnarch._symboltable.VariableType;
 
 public class AllPredefinedVariables {
 
-    public static final String IF_NAME = "If";
-    public static final String FOR_NAME = "For";
-    public static final String CARDINALITY_NAME = "Cardinality";
+    public static final String IF_NAME = "?";
+    public static final String FOR_NAME = "->";
+    public static final String CARDINALITY_NAME = "|";
     public static final String TRUE_NAME = "true";
     public static final String FALSE_NAME = "false";
 

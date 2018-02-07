@@ -78,8 +78,8 @@ abstract public class PredefinedMethodDeclaration extends MethodDeclarationSymbo
     //check input for convolution and pooling
     protected static void errorIfInputSmallerThanKernel(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer){
         if (!inputTypes.isEmpty()) {
-            int inputHeight = inputTypes.get(0).getHeight().get();
-            int inputWidth = inputTypes.get(0).getWidth().get();
+            int inputHeight = inputTypes.get(0).getHeight();
+            int inputWidth = inputTypes.get(0).getWidth();
             int kernelHeight = layer.getIntTupleValue(AllPredefinedMethods.KERNEL_NAME).get().get(0);
             int kernelWidth = layer.getIntTupleValue(AllPredefinedMethods.KERNEL_NAME).get().get(1);
 
@@ -123,8 +123,8 @@ abstract public class PredefinedMethodDeclaration extends MethodDeclarationSymbo
         int strideWidth = method.getIntTupleValue(AllPredefinedMethods.STRIDE_NAME).get().get(1);
         int kernelHeight = method.getIntTupleValue(AllPredefinedMethods.KERNEL_NAME).get().get(0);
         int kernelWidth = method.getIntTupleValue(AllPredefinedMethods.KERNEL_NAME).get().get(1);
-        int inputHeight = inputType.getHeight().get();
-        int inputWidth = inputType.getWidth().get();
+        int inputHeight = inputType.getHeight();
+        int inputWidth = inputType.getWidth();
 
         int outputWidth;
         int outputHeight;
@@ -151,8 +151,8 @@ abstract public class PredefinedMethodDeclaration extends MethodDeclarationSymbo
         int strideWidth = method.getIntTupleValue(AllPredefinedMethods.STRIDE_NAME).get().get(1);
         int kernelHeight = method.getIntTupleValue(AllPredefinedMethods.KERNEL_NAME).get().get(0);
         int kernelWidth = method.getIntTupleValue(AllPredefinedMethods.KERNEL_NAME).get().get(1);
-        int inputHeight = inputType.getHeight().get();
-        int inputWidth = inputType.getWidth().get();
+        int inputHeight = inputType.getHeight();
+        int inputWidth = inputType.getWidth();
 
         int outputWidth = 1 + Math.max(0, ((inputWidth - kernelWidth + strideWidth - 1) / strideWidth));
         int outputHeight = 1 + Math.max(0, ((inputHeight - kernelHeight + strideHeight - 1) / strideHeight));
@@ -169,8 +169,8 @@ abstract public class PredefinedMethodDeclaration extends MethodDeclarationSymbo
     private static List<ArchTypeSymbol> computeOutputShapeWithSamePadding(ArchTypeSymbol inputType, MethodLayerSymbol method, int channels){
         int strideHeight = method.getIntTupleValue(AllPredefinedMethods.STRIDE_NAME).get().get(0);
         int strideWidth = method.getIntTupleValue(AllPredefinedMethods.STRIDE_NAME).get().get(1);
-        int inputHeight = inputType.getHeight().get();
-        int inputWidth = inputType.getWidth().get();
+        int inputHeight = inputType.getHeight();
+        int inputWidth = inputType.getWidth();
 
         int outputWidth = (inputWidth + strideWidth - 1) / strideWidth;
         int outputHeight = (inputHeight + strideWidth - 1) / strideHeight;

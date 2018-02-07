@@ -337,6 +337,10 @@ public class MethodLayerSymbol extends LayerSymbol {
         return getTValue(parameterName, ArchExpressionSymbol::getDoubleValue);
     }
 
+    public Optional<Object> getValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getValue);
+    }
+
     public <T> Optional<T> getTValue(String parameterName, Function<ArchExpressionSymbol, Optional<T>> getValue){
         Optional<ArgumentSymbol> arg = getArgument(parameterName);
         Optional<VariableSymbol> param = getMethod().getParameter(parameterName);

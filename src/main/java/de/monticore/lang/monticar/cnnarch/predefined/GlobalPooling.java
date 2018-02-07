@@ -38,7 +38,7 @@ public class GlobalPooling extends PredefinedMethodDeclaration {
         return Collections.singletonList(new ArchTypeSymbol.Builder()
                 .height(1)
                 .width(1)
-                .channels(inputTypes.get(0).getChannels().get())
+                .channels(inputTypes.get(0).getChannels())
                 .elementType(inputTypes.get(0).getElementType())
                 .build());
     }

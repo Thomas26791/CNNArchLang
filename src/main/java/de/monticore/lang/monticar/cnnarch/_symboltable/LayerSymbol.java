@@ -86,6 +86,16 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         }
     }
 
+    public boolean isInput(){
+        //override by IOLayerSymbol
+        return false;
+    }
+
+    public boolean isOutput(){
+        //override by IOLayerSymbol
+        return false;
+    }
+
     /**
      * only call after resolve():
      * @return returns the non-empty atomic layers which have the output of this layer as input.
@@ -229,7 +239,7 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
      */
     abstract public boolean isAtomic();
 
-    //only call after resolve
+    //only call after resolve; used in coco CheckLayerInputs to check the input type and shape of each layer.
     abstract public void checkInput();
 
 }

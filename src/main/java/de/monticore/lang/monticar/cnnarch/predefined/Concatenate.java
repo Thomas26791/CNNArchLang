@@ -42,11 +42,11 @@ public class Concatenate extends PredefinedMethodDeclaration {
 
     @Override
     public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
-        int height = inputTypes.get(0).getHeight().get();
-        int width = inputTypes.get(0).getWidth().get();
+        int height = inputTypes.get(0).getHeight();
+        int width = inputTypes.get(0).getWidth();
         int channels = 0;
         for (ArchTypeSymbol inputShape : inputTypes) {
-            channels += inputShape.getChannels().get();
+            channels += inputShape.getChannels();
         }
 
         List<String> range = computeStartAndEndValue(inputTypes, (x,y) -> x.isLessThan(y) ? x : y, (x,y) -> x.isLessThan(y) ? y : x);
@@ -65,8 +65,8 @@ public class Concatenate extends PredefinedMethodDeclaration {
             List<Integer> heightList = new ArrayList<>();
             List<Integer> widthList = new ArrayList<>();
             for (ArchTypeSymbol shape : inputTypes){
-                heightList.add(shape.getHeight().get());
-                widthList.add(shape.getWidth().get());
+                heightList.add(shape.getHeight());
+                widthList.add(shape.getWidth());
             }
             int countEqualHeights = (int)heightList.stream().distinct().count();
             int countEqualWidths = (int)widthList.stream().distinct().count();

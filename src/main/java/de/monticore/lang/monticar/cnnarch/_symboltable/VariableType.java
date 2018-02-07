@@ -24,13 +24,13 @@ public enum VariableType {
     METHOD_PARAMETER {
         @Override
         public String toString(){
-            return "parameter";
+            return "method parameter";
         }
     },
     ARCHITECTURE_PARAMETER {
         @Override
         public String toString(){
-            return "globalVariable";
+            return "architecture parameter";
         }
     },
     CONSTANT {

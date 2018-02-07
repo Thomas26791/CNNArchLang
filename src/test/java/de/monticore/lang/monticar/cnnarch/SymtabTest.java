@@ -63,58 +63,14 @@ public class SymtabTest extends AbstractSymtabTest {
 
     @Ignore
     @Test
-    public void testFixedThreeInput(){
+    public void test3(){
         Scope symTab = createSymTab("src/test/resources/valid_tests");
         ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
-                "Alexnet_alt2",
+                "MultipleOutputs",
                 ArchitectureSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
         a.getBody().getOutputTypes();
     }
-
-    /*@Test
-    public void testThreeInput(){
-        Scope symTab = createSymTab("src/test/resources/architectures");
-        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
-                "ThreeInputCNN_M14",
-                ArchitectureSymbol.KIND).orElse(null);
-        assertNotNull(a);
-        a.resolve();
-        a.getBody().getOutputTypes();
-    }
-
-    @Test
-    public void testFixedAlexnet(){
-        Scope symTab = createSymTab("src/test/resources/valid_tests");
-        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
-                "Fixed_Alexnet",
-                ArchitectureSymbol.KIND).orElse(null);
-        assertNotNull(a);
-        a.resolve();
-        a.getBody().getOutputTypes();
-    }
-
-    @Test
-    public void testFixedResNeXt(){
-        Scope symTab = createSymTab("src/test/resources/valid_tests");
-        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
-                "Fixed_ResNeXt50",
-                ArchitectureSymbol.KIND).orElse(null);
-        assertNotNull(a);
-        a.resolve();
-        a.getBody().getOutputTypes();
-    }
-
-    @Test
-    public void testFixedThreeInput(){
-        Scope symTab = createSymTab("src/test/resources/valid_tests");
-        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
-                "Fixed_ThreeInputCNN_M14",
-                ArchitectureSymbol.KIND).orElse(null);
-        assertNotNull(a);
-        a.resolve();
-        a.getBody().getOutputTypes();
-    }*/
 
 }

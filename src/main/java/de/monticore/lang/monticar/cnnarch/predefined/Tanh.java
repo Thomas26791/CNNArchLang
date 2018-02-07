@@ -38,9 +38,9 @@ public class Tanh extends PredefinedMethodDeclaration {
     public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
         return Collections.singletonList(
                 new ArchTypeSymbol.Builder()
-                        .channels(inputTypes.get(0).getChannels().get())
-                        .height(inputTypes.get(0).getHeight().get())
-                        .width(inputTypes.get(0).getWidth().get())
+                        .channels(inputTypes.get(0).getChannels())
+                        .height(inputTypes.get(0).getHeight())
+                        .width(inputTypes.get(0).getWidth())
                         .elementType("-1", "1")
                         .build());
     }

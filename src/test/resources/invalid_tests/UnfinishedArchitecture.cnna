@@ -1,0 +1,15 @@
+architecture UnfinishedArchitecture(inputs=10, classes=2){
+    def input Q(-oo:+oo)^{C:inputs} in
+    def output Q(0:1)^{C:classes} out
+
+    in ->
+    FullyConnected(units=64, no_bias=true) ->
+    Tanh() ->
+    (
+        FullyConnected(units=classes, no_bias=true) ->
+        Softmax() ->
+        out
+    |
+
+    )
+}
