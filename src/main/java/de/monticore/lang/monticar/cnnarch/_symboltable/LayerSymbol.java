@@ -211,7 +211,7 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
     }
 
     /**
-     * deepCopy for LayerSymbols, ArgumentSymbol and ArchExpressionSymbols but does not copy math expressions or scope and ast information.
+     * deepCopy for LayerSymbols, ArgumentSymbol and ArchExpressionSymbols but does not copy math expressions.
      * @return returns a copy of this object
      */
     abstract public LayerSymbol copy();

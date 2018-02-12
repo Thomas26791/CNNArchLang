@@ -62,7 +62,7 @@ public class ArgumentSymbol extends CommonSymbol {
     }
 
     protected void setRhs(ArchExpressionSymbol rhs) {
-        if (getName().equals(AllPredefinedVariables.FOR_NAME)
+        if (getName().equals(AllPredefinedVariables.SERIAL_ARG_NAME)
                 && rhs instanceof ArchSimpleExpressionSymbol
                 && (!rhs.getValue().isPresent() || !rhs.getValue().get().equals(1))){
             this.rhs = ArchRangeExpressionSymbol.of(
@@ -70,7 +70,7 @@ public class ArgumentSymbol extends CommonSymbol {
                     (ArchSimpleExpressionSymbol) rhs,
                     false);
         }
-        else if (getName().equals(AllPredefinedVariables.CARDINALITY_NAME)
+        else if (getName().equals(AllPredefinedVariables.PARALLEL_ARG_NAME)
                 && rhs instanceof ArchSimpleExpressionSymbol
                 && (!rhs.getValue().isPresent() || !rhs.getValue().get().equals(1))) {
             this.rhs = ArchRangeExpressionSymbol.of(
@@ -116,7 +116,7 @@ public class ArgumentSymbol extends CommonSymbol {
             List<ArgumentSymbol> serialArgumentList = new ArrayList<>(serialElementList.size());
             for (ArchSimpleExpressionSymbol element : serialElementList){
                 ArchSimpleExpressionSymbol value = element;
-                if (getName().equals(AllPredefinedVariables.FOR_NAME) || getName().equals(AllPredefinedVariables.CARDINALITY_NAME)){
+                if (getName().equals(AllPredefinedVariables.SERIAL_ARG_NAME) || getName().equals(AllPredefinedVariables.PARALLEL_ARG_NAME)){
                     value = ArchSimpleExpressionSymbol.of(1);
                 }
 

@@ -68,7 +68,7 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     public ArchExpressionSymbol getIfExpression(){
-        Optional<ArgumentSymbol> argument = getArgument(AllPredefinedVariables.IF_NAME);
+        Optional<ArgumentSymbol> argument = getArgument(AllPredefinedVariables.CONDITIONAL_ARG_NAME);
         if (argument.isPresent()){
             return argument.get().getRhs();
         }

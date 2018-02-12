@@ -160,7 +160,6 @@ public enum Constraints {
             }
             return false;
         }
-
         @Override
         protected String msgString() {
             return AllPredefinedMethods.PADDING_VALID + ", "
@@ -222,7 +221,7 @@ public enum Constraints {
         for (List<ArchSimpleExpressionSymbol> expList : exp.getElements().get()) {
             for (ArchSimpleExpressionSymbol singleExp : expList) {
                 if (!isValid(singleExp)) {
-                    Log.error("0" + ILLEGAL_ASSIGNMENT + " Illegal assignment of '" + printName(name) + "'. " +
+                    Log.error("0" + ILLEGAL_ASSIGNMENT + " Illegal assignment of '" + name + "'. " +
                                     "Expression must be " + msgString() + "."
                             , sourcePosition);
                     return false;
@@ -230,17 +229,5 @@ public enum Constraints {
             }
         }
         return true;
-    }
-
-    private String printName(String name){
-        if (name.equals(AllPredefinedVariables.FOR_NAME)){
-            return "->";
-        }
-        else if (name.equals(AllPredefinedVariables.CARDINALITY_NAME)){
-            return "|";
-        }
-        else {
-            return name;
-        }
     }
 }

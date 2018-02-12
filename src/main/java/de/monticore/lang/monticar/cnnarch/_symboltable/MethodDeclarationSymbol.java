@@ -26,12 +26,8 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
 public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
 
@@ -61,17 +57,17 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
 
     protected void setParameters(List<VariableSymbol> parameters) {
         this.parameters = parameters;
-        if (!getParameter(AllPredefinedVariables.IF_NAME).isPresent()){
+        if (!getParameter(AllPredefinedVariables.CONDITIONAL_ARG_NAME).isPresent()){
             VariableSymbol ifParam = AllPredefinedVariables.createIfParameter();
             this.parameters.add(ifParam);
             ifParam.putInScope(getSpannedScope());
         }
-        if (!getParameter(AllPredefinedVariables.FOR_NAME).isPresent()){
+        if (!getParameter(AllPredefinedVariables.SERIAL_ARG_NAME).isPresent()){
             VariableSymbol forParam = AllPredefinedVariables.createForParameter();
             this.parameters.add(forParam);
             forParam.putInScope(getSpannedScope());
         }
-        if (!getParameter(AllPredefinedVariables.CARDINALITY_NAME).isPresent()){
+        if (!getParameter(AllPredefinedVariables.PARALLEL_ARG_NAME).isPresent()){
             VariableSymbol forParam = AllPredefinedVariables.createCardinalityParameter();
             this.parameters.add(forParam);
             forParam.putInScope(getSpannedScope());

@@ -31,7 +31,6 @@ import de.monticore.symboltable.ResolvingConfiguration;
 import java.util.Deque;
 
 public class ModifiedMathSymbolTableCreator extends MathSymbolTableCreator {
-    //todo: remove this class if MontiMath is fixed
 
     public ModifiedMathSymbolTableCreator(ResolvingConfiguration resolverConfiguration, MutableScope enclosingScope) {
         super(resolverConfiguration, enclosingScope);

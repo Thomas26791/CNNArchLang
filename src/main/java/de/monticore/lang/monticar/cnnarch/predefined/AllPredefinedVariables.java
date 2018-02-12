@@ -26,15 +26,15 @@ import de.monticore.lang.monticar.cnnarch._symboltable.VariableType;
 
 public class AllPredefinedVariables {
 
-    public static final String IF_NAME = "?";
-    public static final String FOR_NAME = "->";
-    public static final String CARDINALITY_NAME = "|";
+    public static final String CONDITIONAL_ARG_NAME = "?";
+    public static final String SERIAL_ARG_NAME = "->";
+    public static final String PARALLEL_ARG_NAME = "|";
     public static final String TRUE_NAME = "true";
     public static final String FALSE_NAME = "false";
 
     public static VariableSymbol createIfParameter(){
         return new VariableSymbol.Builder()
-                .name(IF_NAME)
+                .name(CONDITIONAL_ARG_NAME)
                 .type(VariableType.METHOD_PARAMETER)
                 .constraints(Constraints.BOOLEAN)
                 .defaultValue(true)
@@ -43,7 +43,7 @@ public class AllPredefinedVariables {
 
     public static VariableSymbol createForParameter(){
         return new VariableSymbol.Builder()
-                .name(FOR_NAME)
+                .name(SERIAL_ARG_NAME)
                 .type(VariableType.METHOD_PARAMETER)
                 .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                 .defaultValue(1)
@@ -52,7 +52,7 @@ public class AllPredefinedVariables {
 
     public static VariableSymbol createCardinalityParameter(){
         return new VariableSymbol.Builder()
-                .name(CARDINALITY_NAME)
+                .name(PARALLEL_ARG_NAME)
                 .type(VariableType.METHOD_PARAMETER)
                 .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                 .defaultValue(1)

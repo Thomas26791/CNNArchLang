@@ -61,7 +61,7 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     ArchExpression = (expression:ArchSimpleExpression | sequence:ArchValueSequence);
 
-    interface ArchValueSequence;
+   interface ArchValueSequence;
 
     ArchParallelSequence implements ArchValueSequence = "[" parallelValues:(ArchSerialSequence || "|")* "]";
 

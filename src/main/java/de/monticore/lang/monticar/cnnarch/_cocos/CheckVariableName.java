@@ -54,7 +54,7 @@ public class CheckVariableName implements CNNArchASTVariableCoCo {
                             ". No variable can be named 'true' or 'false'"
                     , node.get_SourcePositionStart());
         }
-        else if (name.equals(AllPredefinedVariables.IF_NAME.toLowerCase())){
+        else if (name.equals(AllPredefinedVariables.CONDITIONAL_ARG_NAME.toLowerCase())){
             Log.error("0" + ErrorCodes.ILLEGAL_NAME + " Illegal name: " + name +
                             ". No variable can be named 'if'"
                     , node.get_SourcePositionStart());

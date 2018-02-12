@@ -34,13 +34,13 @@ public class ASTArchSpecialArgument extends ASTArchSpecialArgumentTOP {
     @Override
     public String getName() {
         if (getParallel().isPresent()){
-            return AllPredefinedVariables.CARDINALITY_NAME;
+            return AllPredefinedVariables.PARALLEL_ARG_NAME;
         }
         else if (getSerial().isPresent()) {
-            return AllPredefinedVariables.FOR_NAME;
+            return AllPredefinedVariables.SERIAL_ARG_NAME;
         }
         else if (getConditional().isPresent()){
-            return AllPredefinedVariables.IF_NAME;
+            return AllPredefinedVariables.CONDITIONAL_ARG_NAME;
         }
         else {
             throw new IllegalStateException();

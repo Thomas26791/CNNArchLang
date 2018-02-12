@@ -96,9 +96,6 @@ public class Utils {
 
 
     public static boolean equals(ASTElementType firstType, ASTElementType secondType){
-        ASTRange firstRange = firstType.getRange().get();
-        ASTRange secondRange = secondType.getRange().get();
-
         if (firstType.isIsBoolean() ^ secondType.isIsBoolean()
                 || firstType.isIsNatural() ^ secondType.isIsNatural()
                 || firstType.isIsRational() ^ secondType.isIsRational()
@@ -106,6 +103,19 @@ public class Utils {
                 || firstType.isIsComplex() ^ secondType.isIsComplex()){
             return false;
         }
+        if (firstType.getRange().isPresent()){
+            if (!secondType.getRange().isPresent()){
+                return false;
+            }
+        }
+        else {
+            return !secondType.getRange().isPresent();
+        }
+
+        return equals(firstType.getRange().get(), secondType.getRange().get());
+    }
+
+    public static boolean equals(ASTRange firstRange, ASTRange secondRange){
         if (firstRange.getStartInf().isPresent() ^ secondRange.getStartInf().isPresent()
                 || firstRange.getEndInf().isPresent() ^ secondRange.getEndInf().isPresent()){
             return false;
@@ -125,5 +135,4 @@ public class Utils {
 
         return true;
     }
-
 }
