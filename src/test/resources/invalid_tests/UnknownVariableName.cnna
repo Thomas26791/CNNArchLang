@@ -1,6 +1,6 @@
 architecture UnknownVariableName(inputs=10){
-    def input Q(-oo:+oo)^{C:inputs} in
-    def output Q(0:1)^{C:2} out
+    def input Q(-oo:+oo)^{inputs} in
+    def output Q(0:1)^{2} out
 
     in ->
     FullyConnected(units=64) ->

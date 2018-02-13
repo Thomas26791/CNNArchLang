@@ -59,7 +59,7 @@ public class AllPredefinedMethods {
     public static final String ALPHA_NAME = "alpha";
     public static final String BETA_NAME = "beta";
     public static final String PADDING_NAME = "padding";
-    public static final String POOL_TYPE_NAME = "type";
+    public static final String POOL_TYPE_NAME = "pool_type";
 
 
     //possible String values

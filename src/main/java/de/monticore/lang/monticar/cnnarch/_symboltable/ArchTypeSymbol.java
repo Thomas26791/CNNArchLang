@@ -60,7 +60,7 @@ public class ArchTypeSymbol extends CommonSymbol {
         return heightIndex;
     }
 
-    protected void setHeightIndex(int heightIndex) {
+    public void setHeightIndex(int heightIndex) {
         this.heightIndex = heightIndex;
     }
 
@@ -68,7 +68,7 @@ public class ArchTypeSymbol extends CommonSymbol {
         return widthIndex;
     }
 
-    protected void setWidthIndex(int widthIndex) {
+    public void setWidthIndex(int widthIndex) {
         this.widthIndex = widthIndex;
     }
 
@@ -76,7 +76,7 @@ public class ArchTypeSymbol extends CommonSymbol {
         return channelIndex;
     }
 
-    protected void setChannelIndex(int channelIndex) {
+    public void setChannelIndex(int channelIndex) {
         this.channelIndex = channelIndex;
     }
 

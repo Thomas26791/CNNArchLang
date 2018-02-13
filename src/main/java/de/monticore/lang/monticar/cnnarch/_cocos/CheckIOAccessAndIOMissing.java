@@ -20,7 +20,9 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
+import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 import de.monticore.lang.monticar.cnnarch._ast.ASTIODeclaration;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.IOLayerSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
@@ -33,17 +35,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class CheckIOAccessAndIOMissing implements CNNArchASTIODeclarationCoCo {
+public class CheckIOAccessAndIOMissing implements CNNArchASTArchitectureCoCo {
 
     @Override
-    public void check(ASTIODeclaration node) {
-        IODeclarationSymbol ioDeclaration = (IODeclarationSymbol) node.getSymbol().get();
+    public void check(ASTArchitecture node) {
+        ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
 
-        if (ioDeclaration.getArrayLength() == 1){
-            checkSingleIO(ioDeclaration);
-        }
-        else {
-            checkIOArray(ioDeclaration);
+        for (IODeclarationSymbol ioDeclaration : architecture.getIODeclarations()){
+            if (ioDeclaration.getArrayLength() == 1){
+                checkSingleIO(ioDeclaration);
+            }
+            else {
+                checkIOArray(ioDeclaration);
+            }
         }
     }
 

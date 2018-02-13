@@ -24,28 +24,24 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.monticore.symboltable.CommonScopeSpanningSymbol;
+import de.monticore.symboltable.Scope;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
 import org.jscience.mathematics.number.Rational;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
-public class ArchitectureSymbol extends ArchitectureSymbolTOP {
+public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
+
+    public static final ArchitectureKind KIND = new ArchitectureKind();
 
     private LayerSymbol body;
-    private List<IODeclarationSymbol> inputs;
-    private List<IODeclarationSymbol> outputs;
-    private List<VariableSymbol> parameters;
+    private List<IOLayerSymbol> inputs = new ArrayList<>();
+    private List<IOLayerSymbol> outputs = new ArrayList<>();
 
-    public ArchitectureSymbol(String name) {
-        super(name);
-    }
-
-    @Override
-    protected ArchitectureScope createSpannedScope() {
-        return new ArchitectureScope();
+    public ArchitectureSymbol() {
+        super("", KIND);
     }
 
     public LayerSymbol getBody() {
@@ -56,49 +52,34 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
         this.body = body;
     }
 
-    public List<IODeclarationSymbol> getInputs() {
+    public List<IOLayerSymbol> getInputs() {
         return inputs;
     }
 
-    protected void setInputs(List<IODeclarationSymbol> inputs) {
-        this.inputs = inputs;
-    }
-
-    public List<IODeclarationSymbol> getOutputs() {
+    public List<IOLayerSymbol> getOutputs() {
         return outputs;
     }
 
-    protected void setOutputs(List<IODeclarationSymbol> outputs) {
-        this.outputs = outputs;
-    }
-
-    public List<VariableSymbol> getParameters() {
-        return parameters;
-    }
-
-    protected void setParameters(List<VariableSymbol> parameters) {
-        this.parameters = parameters;
+    public Set<IODeclarationSymbol> getIODeclarations(){
+        Set<IODeclarationSymbol> ioDeclarations = new HashSet<>();
+        for (IOLayerSymbol input : getInputs()){
+            ioDeclarations.add(input.getDefinition());
+        }
+        for (IOLayerSymbol output : getOutputs()){
+            ioDeclarations.add(output.getDefinition());
+        }
+        return ioDeclarations;
     }
 
     public void resolve(){
-        checkParameters();
         getBody().checkIfResolvable();
         try{
-            getBody().resolve();
+            getBody().resolveOrError();
         }
         catch (ArchResolveException e){
             //do nothing; error is already logged
         }
     }
-
-    public void resolveOrError(){
-        resolve();
-        if (!isResolved()){
-            throw new IllegalStateException("The following names could not be resolved: " + Joiners.COMMA.join(getUnresolvableVariables()));
-        }
-    }
-
-    //todo: deep copy method for instances
 
     public List<LayerSymbol> getFirstLayers(){
         if (!getBody().isResolved()){
@@ -113,85 +94,5 @@ public class ArchitectureSymbol extends ArchitectureSymbolTOP {
 
     public boolean isResolvable(){
         return getBody().isResolvable();
-    }
-
-    public Set<VariableSymbol> getUnresolvableVariables(){
-        return getBody().getUnresolvableVariables();
-    }
-
-    public void checkParameters(){
-        for (VariableSymbol parameter : getParameters()){
-            if (!parameter.hasExpression()){
-                Log.error("0" + ErrorCodes.MISSING_VAR_VALUE + " Missing architecture argument. " +
-                        "The parameter '" + parameter.getName() + "' has no value.");
-            }
-        }
-    }
-
-    public Optional<IODeclarationSymbol> getInput(String name){
-        for (IODeclarationSymbol input : getInputs()){
-            if (input.getName().equals(name)){
-                return Optional.of(input);
-            }
-        }
-        return Optional.empty();
-    }
-
-    public Optional<IODeclarationSymbol> getOutput(String name){
-        for (IODeclarationSymbol output : getOutputs()){
-            if (output.getName().equals(name)){
-                return Optional.of(output);
-            }
-        }
-        return Optional.empty();
-    }
-
-    public Optional<VariableSymbol> getParameter(String name){
-        for (VariableSymbol parameter : getParameters()){
-            if (parameter.getName().equals(name)){
-                return Optional.of(parameter);
-            }
-        }
-        return Optional.empty();
-    }
-
-    private VariableSymbol getParameterOrError(String name){
-        Optional<VariableSymbol> param = getParameter(name);
-        if (param.isPresent()){
-            return param.get();
-        }
-        else {
-            throw new IllegalArgumentException("architecture parameter with name " + name + " does not exist.");
-        }
-    }
-
-    public void setParameter(String name, Rational value){
-        VariableSymbol parameter = getParameterOrError(name);
-        if (value.getDivisor().intValue() == 1){
-            parameter.setExpression(ArchSimpleExpressionSymbol.of(value.getDividend().intValue()));
-        }
-        else {
-            parameter.setExpression(ArchSimpleExpressionSymbol.of(value.doubleValue()));
-        }
-    }
-
-    public void setParameter(String name, boolean value){
-        VariableSymbol parameter = getParameterOrError(name);
-        parameter.setExpression(ArchSimpleExpressionSymbol.of(value));
-    }
-
-    public void setParameter(String name, int value){
-        VariableSymbol parameter = getParameterOrError(name);
-        parameter.setExpression(ArchSimpleExpressionSymbol.of(value));
-    }
-
-    public void setParameter(String name, double value){
-        VariableSymbol parameter = getParameterOrError(name);
-        parameter.setExpression(ArchSimpleExpressionSymbol.of(value));
-    }
-
-    public void setParameter(String name, String value){
-        VariableSymbol parameter = getParameterOrError(name);
-        parameter.setExpression(ArchSimpleExpressionSymbol.of(value));
     }
 }

@@ -40,9 +40,10 @@ public class CNNArchCocos {
 
     public static CNNArchCoCoChecker createPostResolveChecker() {
         return new CNNArchCoCoChecker()
+                .addCoCo(new CheckIOType())
                 .addCoCo(new CheckLayerInputs())
                 .addCoCo(new CheckIOAccessAndIOMissing())
-                .addCoCo(new CheckIOShape())
+                .addCoCo(new CheckUnusedASTIODeclaration())
                 .addCoCo(new CheckArchitectureFinished());
     }
 
@@ -53,7 +54,6 @@ public class CNNArchCocos {
                 .addCoCo(new CheckMethodLayer())
                 .addCoCo(new CheckRangeOperators())
                 .addCoCo(new CheckVariableName())
-                .addCoCo(new CheckUnknownIO())
                 .addCoCo(new CheckArgument())
                 .addCoCo(new CheckMethodName())
                 .addCoCo(new CheckMethodRecursion());

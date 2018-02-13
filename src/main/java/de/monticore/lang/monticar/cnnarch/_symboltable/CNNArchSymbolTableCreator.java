@@ -30,8 +30,11 @@ import de.monticore.lang.monticar.cnnarch._visitor.CNNArchVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CommonCNNArchDelegatorVisitor;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
+import de.monticore.lang.monticar.common2._ast.ASTCommonDimensionElement;
+import de.monticore.lang.monticar.common2._ast.ASTCommonMatrixType;
 import de.monticore.symboltable.*;
 import de.se_rwth.commons.logging.Log;
+import org.jscience.mathematics.number.Rational;
 
 import java.util.*;
 
@@ -41,8 +44,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     private String compilationUnitPackage = "";
 
     private MathSymbolTableCreator mathSTC;
-    private List<IODeclarationSymbol> inputs = new ArrayList<>();
-    private List<IODeclarationSymbol> outputs = new ArrayList<>();
+    private ArchitectureSymbol architecture;
 
 
     public CNNArchSymbolTableCreator(final ResolvingConfiguration resolvingConfig,
@@ -93,9 +95,13 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         }
     }
 
+    public MathSymbolTableCreator getMathSTC() {
+        return mathSTC;
+    }
+
     @Override
     public void visit(final ASTCNNArchCompilationUnit compilationUnit) {
-        Log.debug("Building Symboltable for Script: " + compilationUnit.getArchitecture().getName(),
+        Log.debug("Building Symboltable for Script: " + compilationUnit.getName(),
                 CNNArchSymbolTableCreator.class.getSimpleName());
 
         List<ImportStatement> imports = new ArrayList<>();
@@ -107,15 +113,26 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
 
         putOnStack(artifactScope);
 
+        CNNArchCompilationUnitSymbol compilationUnitSymbol = new CNNArchCompilationUnitSymbol(compilationUnit.getName());
+        addToScopeAndLinkWithNode(compilationUnitSymbol, compilationUnit);
     }
 
     @Override
     public void endVisit(ASTCNNArchCompilationUnit ast) {
+        CNNArchCompilationUnitSymbol compilationUnitSymbol = (CNNArchCompilationUnitSymbol) ast.getSymbol().get();
+        compilationUnitSymbol.setArchitecture((ArchitectureSymbol) ast.getArchitecture().getSymbol().get());
+
+        List<VariableSymbol> parameters = new ArrayList<>(ast.getArchitectureParameters().size());
+        for (ASTArchitectureParameter astParameter : ast.getArchitectureParameters()){
+            parameters.add((VariableSymbol) astParameter.getSymbol().get());
+        }
+        compilationUnitSymbol.setParameters(parameters);
+
         setEnclosingScopeOfNodes(ast);
     }
 
     public void visit(final ASTArchitecture node) {
-        ArchitectureSymbol architecture = new ArchitectureSymbol(node.getName());
+        architecture = new ArchitectureSymbol();
 
         addToScopeAndLinkWithNode(architecture, node);
 
@@ -124,16 +141,8 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     }
 
     public void endVisit(final ASTArchitecture node) {
-        ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
+        //ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
         architecture.setBody((LayerSymbol) node.getBody().getSymbol().get());
-        architecture.setInputs(inputs);
-        architecture.setOutputs(outputs);
-
-        List<VariableSymbol> parameters = new ArrayList<>(node.getArchitectureParameters().size());
-        for (ASTArchitectureParameter astParameter : node.getArchitectureParameters()){
-            parameters.add((VariableSymbol) astParameter.getSymbol().get());
-        }
-        architecture.setParameters(parameters);
 
         removeCurrentScope();
     }
@@ -172,15 +181,41 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         if (ast.getArrayDeclaration().isPresent()){
             iODeclaration.setArrayLength(ast.getArrayDeclaration().get().getIntLiteral().getNumber().get().getDividend().intValue());
         }
-        iODeclaration.setType((ArchTypeSymbol) ast.getType().getSymbol().get());
         iODeclaration.setInput(ast.getIn().isPresent());
-        if (iODeclaration.isInput()){
-            inputs.add(iODeclaration);
-        }
-        else {
-            outputs.add(iODeclaration);
-        }
+        iODeclaration.setType((ArchTypeSymbol) ast.getType().getSymbol().get());
     }
+
+    /*protected ArchTypeSymbol createType(ASTCommonMatrixType node){
+        ArchTypeSymbol sym = new ArchTypeSymbol();
+
+        Collection<ASTCommonDimensionElement> dimensionElements = node.getCommonDimension().getCommonDimensionElements();
+        if (dimensionElements.size() >= 1){
+            sym.setChannelIndex(0);
+        }
+        if (dimensionElements.size() >= 2){
+            sym.setHeightIndex(1);
+        }
+        if (dimensionElements.size() >= 3){
+            sym.setWidthIndex(2);
+        }
+
+        List<ArchSimpleExpressionSymbol> dimensionList = new ArrayList<>(3);
+        for (ASTCommonDimensionElement element : dimensionElements){
+            Rational rational = element.getUnitNumber().get().getNumber().get();
+            ArchSimpleExpressionSymbol exp;
+            if (rational.getDivisor().intValue() == 1){
+                exp = ArchSimpleExpressionSymbol.of(rational.getDividend().intValue());
+            }
+            else {
+                exp = ArchSimpleExpressionSymbol.of(rational.doubleValue());
+            }
+            dimensionList.add(exp);
+        }
+        sym.setDimensionSymbols(dimensionList);
+        sym.setElementType(node.getElementType());
+
+        return sym;
+    }*/
 
     @Override
     public void visit(ASTArchType ast) {
@@ -191,31 +226,23 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
     @Override
     public void endVisit(ASTArchType node) {
         ArchTypeSymbol sym = (ArchTypeSymbol) node.getSymbol().get();
-        List<ASTDimensionArgument> astDimensions = node.getShape().getDimensions();
+        List<ASTArchSimpleExpression> astDimensions = node.getShape().getDimensions();
 
+        if (astDimensions.size() >= 1){
+            sym.setChannelIndex(0);
+        }
+        if (astDimensions.size() >= 2){
+            sym.setHeightIndex(1);
+        }
+        if (astDimensions.size() >= 3){
+            sym.setWidthIndex(2);
+        }
         List<ArchSimpleExpressionSymbol> dimensionList = new ArrayList<>(3);
-        for (int i = 0; i < astDimensions.size(); i++){
-            ASTDimensionArgument dimensionArg = astDimensions.get(i);
-            if (dimensionArg.getHeight().isPresent()){
-                sym.setHeightIndex(i);
-                ArchSimpleExpressionSymbol exp = (ArchSimpleExpressionSymbol) dimensionArg.getHeight().get().getSymbol().get();
-                dimensionList.add(exp);
-            }
-            else if (dimensionArg.getWidth().isPresent()){
-                sym.setWidthIndex(i);
-                ArchSimpleExpressionSymbol exp = (ArchSimpleExpressionSymbol) dimensionArg.getWidth().get().getSymbol().get();
-                dimensionList.add(exp);
-            }
-            else {
-                sym.setChannelIndex(i);
-                ArchSimpleExpressionSymbol exp = (ArchSimpleExpressionSymbol) dimensionArg.getChannels().get().getSymbol().get();
-                dimensionList.add(exp);
-            }
+        for (ASTArchSimpleExpression astExp : astDimensions){
+            dimensionList.add((ArchSimpleExpressionSymbol) astExp.getSymbol().get());
         }
         sym.setDimensionSymbols(dimensionList);
         sym.setElementType(node.getElementType());
-
-        addToScopeAndLinkWithNode(sym, node);
     }
 
     @Override
@@ -418,6 +445,12 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         }
         else {
             IOLayerSymbol ioLayer = new IOLayerSymbol(node.getName());
+            if (isInput){
+                architecture.getInputs().add(ioLayer);
+            }
+            else {
+                architecture.getOutputs().add(ioLayer);
+            }
             addToScopeAndLinkWithNode(ioLayer, node);
         }
     }
@@ -428,6 +461,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
             for (int i = 0; i < arrayLength; i++){
                 IOLayerSymbol ioLayer = new IOLayerSymbol(node.getName());
                 ioLayer.setArrayAccess(i);
+                architecture.getInputs().add(ioLayer);
                 parallelLayers.add(ioLayer);
             }
         }
@@ -439,6 +473,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
                 IOLayerSymbol ioLayer = new IOLayerSymbol(node.getName());
                 ioLayer.setArrayAccess(i);
                 ioLayer.setAstNode(node);
+                architecture.getOutputs().add(ioLayer);
 
                 MethodLayerSymbol getLayer = new MethodLayerSymbol(AllPredefinedMethods.GET_NAME);
                 getLayer.setArguments(Collections.singletonList(

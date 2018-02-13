@@ -1,6 +1,6 @@
 architecture ArgumentConstraintTest4(img_height=224, img_width=224, img_channels=3, classes=1000){
-    def input Z(0:255)^{H:img_height, W:img_width, C:img_channels} image
-    def output Q(0:1)^{C:classes} predictions
+    def input Z(0:255)^{img_channels, img_height, img_width} image
+    def output Q(0:1)^{classes} predictions
 
     def conv(filter, channels, stride=1, act=true){
         Convolution(kernel=(filter,filter), channels=channels, stride=(stride,stride)) ->
@@ -24,10 +24,10 @@ architecture ArgumentConstraintTest4(img_height=224, img_width=224, img_channels
 
     image ->
     conv(filter=7, channels=64, stride=2) ->
-    Pooling(type="max", kernel=(3,3), stride=(2,2), padding=1) ->
+    Pooling(pool_type="max", kernel=(3,3), stride=(2,2), padding=1) ->
     resLayer(channels=64, ->=3) ->
     resLayer(channels=128, stride=2) ->
-    GlobalPooling(type="avg") ->
+    GlobalPooling(pool_type="avg") ->
     FullyConnected(units=classes) ->
     Softmax() ->
     predictions

@@ -1,6 +1,6 @@
 architecture SimpleNetworkLinear(inputs=10, classes=2){
-    def input Q(-oo:+oo)^{C:inputs} in
-    def output Q(-oo:oo)^{C:classes} out
+    def input Q(-oo:+oo)^{inputs} in
+    def output Q(-oo:oo)^{classes} out
     
     in ->
     FullyConnected(units=64, no_bias=true) ->

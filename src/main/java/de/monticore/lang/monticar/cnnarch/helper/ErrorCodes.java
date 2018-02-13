@@ -24,7 +24,7 @@ public class ErrorCodes {
 
     public static final String INVALID_ARRAY_ACCESS = "x74358";
     public static final String MISSING_IO = "x10920";
-    public static final String INVALID_IO_SHAPE = "x0601C";
+    public static final String INVALID_IO_TYPE = "x0601C";
     public static final String MISSING_VAR_VALUE = "x02572";
     public static final String ILLEGAL_ASSIGNMENT = "x03444";
     public static final String ILLEGAL_SEQUENCE_LENGTH = "x24772";

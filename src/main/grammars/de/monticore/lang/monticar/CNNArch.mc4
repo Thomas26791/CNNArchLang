@@ -2,39 +2,36 @@ package de.monticore.lang.monticar;
 
 grammar CNNArch extends de.monticore.lang.math.Math {
 
-    CNNArchCompilationUnit = Architecture;
+    symbol scope CNNArchCompilationUnit = "architecture"
+                                          name:Name&
+                                          ( "(" (ArchitectureParameter || ",")* ")" )? "{"
+                                          ioDeclarations:IODeclaration*
+                                          Architecture
+                                          "}";
 
-    symbol scope Architecture = "architecture"
-                                name:Name&
-                                ( "(" (ArchitectureParameter || ",")* ")" )? "{"
-                                declarations:ArchDeclaration*
-                                body:ArchBody "}";
+    Architecture = methodDeclaration:MethodDeclaration*
+                   body:ArchBody;
 
-    interface ArchDeclaration;
     interface ArchitectureElement;
     interface Variable;
     ast Variable = method String getName(){};
 
-    IODeclaration implements ArchDeclaration = "def"
-                                               (in:"input" | out:"output")
-                                               type:ArchType
-                                               Name&
-                                               (ArrayDeclaration)?;
+    IODeclaration = "def"
+                   (in:"input" | out:"output")
+                   type:ArchType
+                   Name&
+                   (ArrayDeclaration)?;
 
-    ArchType implements Type = ElementType "^" Shape;
+    ArchType = ElementType "^" Shape;
 
-    Shape = "{" dimensions:(DimensionArgument || ",")* "}";
-
-    DimensionArgument = (name:"H" ":" height:ArchSimpleExpression
-                      |  name:"W" ":" width:ArchSimpleExpression
-                      |  name:"C" ":" channels:ArchSimpleExpression);
+    Shape = "{" dimensions:(ArchSimpleExpression || ",")* "}";
 
     ArchitectureParameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
 
-    MethodDeclaration implements ArchDeclaration = "def"
-                                                   Name& "("
-                                                   parameters:(MethodParameter || ",")* ")" "{"
-                                                   body:ArchBody "}";
+    MethodDeclaration = "def"
+                        Name& "("
+                        parameters:(MethodParameter || ",")* ")" "{"
+                        body:ArchBody "}";
 
     MethodParameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
 
@@ -61,7 +58,7 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     ArchExpression = (expression:ArchSimpleExpression | sequence:ArchValueSequence);
 
-   interface ArchValueSequence;
+    interface ArchValueSequence;
 
     ArchParallelSequence implements ArchValueSequence = "[" parallelValues:(ArchSerialSequence || "|")* "]";
 

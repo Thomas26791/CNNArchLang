@@ -39,16 +39,6 @@ public class CheckArgument implements CNNArchASTArchArgumentCoCo {
                             "Possible arguments are: " + Joiners.COMMA.join(method.getParameters())
                     , node.get_SourcePositionStart());
         }
-        else {
-            /*if (argument.getRhs().getValue().isPresent()){
-                argument.checkConstraints();
-            }*/
-            /*if (argument.getRhs().isResolvable()) {
-                argument.getRhs().resolveOrError();
-                argument.checkConstraints();
-                argument.getRhs().reset();
-            }*/
-        }
     }
 
 }

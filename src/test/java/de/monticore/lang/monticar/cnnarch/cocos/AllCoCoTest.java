@@ -69,7 +69,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
                 new CNNArchCoCoChecker(),
                 "invalid_tests", "UnknownVariableName",
                 new ExpectedErrorInfo(1, ErrorCodes.UNKNOWN_VARIABLE_NAME));
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckUnknownIO()),
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckIOName()),
                 new CNNArchCoCoChecker(),
                 "invalid_tests", "UnknownIO",
                 new ExpectedErrorInfo(2, ErrorCodes.UNKNOWN_IO));
@@ -138,19 +138,19 @@ public class AllCoCoTest extends AbstractCoCoTest {
                 "invalid_tests", "WrongIOType",
                 new ExpectedErrorInfo(1, ErrorCodes.INVALID_LAYER_INPUT_TYPE));
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchCoCoChecker().addCoCo(new CheckIOShape()),
+                new CNNArchCoCoChecker().addCoCo(new CheckIOType()),
                 "invalid_tests", "InvalidIOShape1",
-                new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_SHAPE));
+                new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_TYPE));
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchCoCoChecker().addCoCo(new CheckIOShape()),
+                new CNNArchCoCoChecker().addCoCo(new CheckIOType()),
                 "invalid_tests", "InvalidIOShape2",
-                new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_SHAPE));
+                new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_TYPE));
         checkInvalid(new CNNArchCoCoChecker(),
                 new CNNArchCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()),
                 "invalid_tests", "NotIOArray",
                 new ExpectedErrorInfo(2, ErrorCodes.INVALID_ARRAY_ACCESS));
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()),
+                new CNNArchCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()).addCoCo(new CheckUnusedASTIODeclaration()),
                 "invalid_tests", "MissingIO",
                 new ExpectedErrorInfo(2, ErrorCodes.MISSING_IO));
         checkInvalid(new CNNArchCoCoChecker(),

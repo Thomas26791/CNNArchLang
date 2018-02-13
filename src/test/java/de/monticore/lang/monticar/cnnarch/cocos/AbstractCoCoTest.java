@@ -22,10 +22,12 @@ package de.monticore.lang.monticar.cnnarch.cocos;
 
 import de.monticore.lang.monticar.cnnarch.AbstractSymtabTest;
 import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
+import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchCompilationUnit;
 import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchNode;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCocos;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
 import de.monticore.symboltable.Scope;
 import de.se_rwth.commons.logging.Finding;
 import de.se_rwth.commons.logging.Log;
@@ -45,13 +47,13 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
 
     private static final String MODEL_PATH = "src/test/resources/";
 
-    protected static ASTArchitecture getAstNode(String modelPath, String model) {
+    protected static ASTCNNArchCompilationUnit getAstNode(String modelPath, String model) {
         Scope symTab = createSymTab(MODEL_PATH + modelPath);
-        ArchitectureSymbol comp = symTab.<ArchitectureSymbol> resolve(
-                model, ArchitectureSymbol.KIND).orElse(null);
+        CNNArchCompilationUnitSymbol comp = symTab.<CNNArchCompilationUnitSymbol> resolve(
+                model, CNNArchCompilationUnitSymbol.KIND).orElse(null);
         assertNotNull("Could not resolve model " + model, comp);
 
-        return (ASTArchitecture) comp.getAstNode().get();
+        return (ASTCNNArchCompilationUnit) comp.getAstNode().get();
     }
 
     /**
@@ -60,8 +62,6 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
      */
     @Deprecated
     protected static void runCheckerWithSymTab(String modelPath, String model) {
-        Log.getFindings().clear();
-
         runCocoCheck(CNNArchCocos.createPreResolveChecker(),
                 CNNArchCocos.createPostResolveChecker(),
                 modelPath,
@@ -73,7 +73,6 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
      * valid models.
      */
     protected static void checkValid(String modelPath, String model) {
-        Log.getFindings().clear();
         runCocoCheck(
                 CNNArchCocos.createPreResolveChecker(),
                 CNNArchCocos.createPostResolveChecker(),
@@ -91,7 +90,6 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
                                        ExpectedErrorInfo expectedErrors) {
 
         // check whether all the expected errors are present when using all cocos
-        Log.getFindings().clear();
         runCocoCheck(
                 CNNArchCocos.createPreResolveChecker(),
                 CNNArchCocos.createPostResolveChecker(),
@@ -101,7 +99,6 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
                 + "cocos. Did you forget to add the new coco to MontiArcCocos?");
 
         // check whether only the expected errors are present when using only the given cocos
-        Log.getFindings().clear();
         runCocoCheck(
                 preResolveCocos,
                 postResolveCocos,
@@ -112,11 +109,12 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
     }
 
     private static void runCocoCheck(CNNArchCoCoChecker preResolveCocos, CNNArchCoCoChecker postResolveCocos, String modelPath, String model){
-        ASTArchitecture node = getAstNode(modelPath, model);
+        Log.getFindings().clear();
+        ASTCNNArchCompilationUnit node = getAstNode(modelPath, model);
         preResolveCocos.checkAll(node);
-        if (Log.getFindings().isEmpty() && node.getSymbol().isPresent()){
-            ArchitectureSymbol architecture = ((ArchitectureSymbol)node.getSymbol().get());
-            architecture.resolve();
+        if (Log.getFindings().isEmpty()){
+            CNNArchCompilationUnitSymbol compilationUnitSymbol = ((CNNArchCompilationUnitSymbol)node.getSymbol().get());
+            compilationUnitSymbol.resolve();
             if (Log.getFindings().isEmpty()){
                 postResolveCocos.checkAll(node);
             }

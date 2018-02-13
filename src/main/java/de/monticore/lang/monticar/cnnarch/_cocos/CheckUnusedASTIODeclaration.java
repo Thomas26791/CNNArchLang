@@ -20,29 +20,19 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTIOLayer;
-import de.monticore.lang.monticar.cnnarch._symboltable.CompositeLayerSymbol;
+import de.monticore.lang.monticar.cnnarch._ast.ASTIODeclaration;
 import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.IOLayerSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.LayerSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
-import java.util.Collection;
-import java.util.Collections;
-
-public class CheckUnknownIO implements CNNArchASTIOLayerCoCo {
+public class CheckUnusedASTIODeclaration implements CNNArchASTIODeclarationCoCo {
 
     @Override
-    public void check(ASTIOLayer node) {
-        Symbol symbol = node.getSymbol().get();
-        Collection<IODeclarationSymbol> ioDeclarations = node.getEnclosingScope().get().<IODeclarationSymbol>resolveMany(node.getName(), IODeclarationSymbol.KIND);
-
-        if (ioDeclarations.isEmpty()){
-            Log.error("0" + ErrorCodes.UNKNOWN_IO + " Unknown input or output name. " +
-                            "The input or output '" + node.getName() + "' does not exist"
-                    , node.get_SourcePositionStart());
+    public void check(ASTIODeclaration node) {
+        IODeclarationSymbol ioDeclaration = (IODeclarationSymbol) node.getSymbol().get();
+        if (ioDeclaration.getConnectedLayers().isEmpty()){
+            Log.error("0" + ErrorCodes.MISSING_IO + " Input or output with name '" + ioDeclaration.getName() + "' was declared but not used. "
+                    , ioDeclaration.getSourcePosition());
         }
     }
 

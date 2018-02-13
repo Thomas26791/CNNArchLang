@@ -1,6 +1,6 @@
 architecture Fixed_ThreeInputCNN_M14(){
-    def input Z(0:255)^{H:200, W:300, C:3} image[3]
-    def output Q(0:1)^{C:3} predictions
+    def input Z(0:255)^{3, 200, 300} image[3]
+    def output Q(0:1)^{3} predictions
 
     def conv(filter, channels){
         Convolution(kernel=filter, channels=channels) ->
@@ -10,14 +10,14 @@ architecture Fixed_ThreeInputCNN_M14(){
     def inputGroup(index){
         [index] ->
         conv(filter=(3,3), channels=32, ->=3) ->
-        Pooling(type="max", kernel=(2,2), stride=(2,2))
+        Pooling(pool_type="max", kernel=(2,2), stride=(2,2))
     }
 
     image ->
     inputGroup(index=0|..|2) ->
     Concatenate() ->
     conv(filter=(3,3), channels=64) ->
-    Pooling(type="max", kernel=(2,2), stride=(2,2)) ->
+    Pooling(pool_type="max", kernel=(2,2), stride=(2,2)) ->
 
     FullyConnected(units=32) ->
     Relu() ->

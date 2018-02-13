@@ -22,6 +22,7 @@ package de.monticore.lang.monticar.cnnarch;
 
 import de.monticore.lang.monticar.cnnarch._parser.CNNArchParser;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
 import de.monticore.symboltable.Scope;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -41,36 +42,36 @@ public class SymtabTest extends AbstractSymtabTest {
     @Test
     public void testAlexnet(){
         Scope symTab = createSymTab("src/test/resources/architectures");
-        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+        CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
                 "Alexnet",
-                ArchitectureSymbol.KIND).orElse(null);
+                CNNArchCompilationUnitSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
-        a.getBody().getOutputTypes();
+        a.getArchitecture().getBody().getOutputTypes();
     }
 
     @Ignore
     @Test
     public void testResNeXt(){
         Scope symTab = createSymTab("src/test/resources/architectures");
-        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+        CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
                 "ResNeXt50",
-                ArchitectureSymbol.KIND).orElse(null);
+                CNNArchCompilationUnitSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
-        a.getBody().getOutputTypes();
+        a.getArchitecture().getBody().getOutputTypes();
     }
 
     @Ignore
     @Test
     public void test3(){
         Scope symTab = createSymTab("src/test/resources/valid_tests");
-        ArchitectureSymbol a = symTab.<ArchitectureSymbol>resolve(
+        CNNArchCompilationUnitSymbol a = symTab.<CNNArchCompilationUnitSymbol>resolve(
                 "MultipleOutputs",
-                ArchitectureSymbol.KIND).orElse(null);
+                CNNArchCompilationUnitSymbol.KIND).orElse(null);
         assertNotNull(a);
         a.resolve();
-        a.getBody().getOutputTypes();
+        a.getArchitecture().getBody().getOutputTypes();
     }
 
 }

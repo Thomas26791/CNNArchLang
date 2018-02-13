@@ -1,24 +1,24 @@
 architecture Alexnet_alt(img_height=224, img_width=224, img_channels=3, classes=10){
-    def input Z(0:255)^{H:img_height, W:img_width, C:img_channels} image
-    def output Q(0:1)^{C:classes} predictions
+    def input Z(0:255)^{img_channels, img_height, img_width} image
+    def output Q(0:1)^{classes} predictions
 
     image ->
     Convolution(kernel=(11,11), channels=96, stride=(4,4), padding="no_loss") ->
     Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-    Pooling(type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
+    Pooling(pool_type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
     Relu() ->
     Split(n=2) ->
     (
         [0] ->
         Convolution(kernel=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-        Pooling(type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
+        Pooling(pool_type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     |
         [1] ->
         Convolution(kernel=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
-        Pooling(type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
+        Pooling(pool_type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     ) ->
     Concatenate() ->
@@ -30,14 +30,14 @@ architecture Alexnet_alt(img_height=224, img_width=224, img_channels=3, classes=
         Convolution(kernel=(3,3), channels=192) ->
         Relu() ->
         Convolution(kernel=(3,3), channels=128) ->
-        Pooling(type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
+        Pooling(pool_type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     |
         [1] ->
         Convolution(kernel=(3,3), channels=192) ->
         Relu() ->
         Convolution(kernel=(3,3), channels=128) ->
-        Pooling(type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
+        Pooling(pool_type="max", kernel=(3,3), stride=(2,2), padding="no_loss") ->
         Relu()
     ) ->
     Concatenate() ->

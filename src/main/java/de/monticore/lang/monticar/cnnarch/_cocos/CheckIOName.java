@@ -20,26 +20,36 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTIODeclaration;
+import de.monticore.lang.monticar.cnnarch._ast.ASTIOLayer;
+import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.logging.Log;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CheckIOName implements CNNArchASTIODeclarationCoCo {
+public class CheckIOName implements CNNArchASTIOLayerCoCo {
 
-    Set<String> ioNames = new HashSet<>();
+    private Set<IODeclarationSymbol> checkedIODeclarations = new HashSet<>();
 
     @Override
-    public void check(ASTIODeclaration node) {
-        if (ioNames.contains(node.getName())){
-            Log.error("0" + ErrorCodes.DUPLICATED_NAME + " Duplicated IO name. " +
-                            "The name '" + node.getName() + "' is already used."
+    public void check(ASTIOLayer node) {
+        Collection<IODeclarationSymbol> ioDeclarations = node.getEnclosingScope().get().<IODeclarationSymbol>resolveMany(node.getName(), IODeclarationSymbol.KIND);
+
+        if (ioDeclarations.isEmpty()){
+            Log.error("0" + ErrorCodes.UNKNOWN_IO + " Unknown input or output name. " +
+                            "The input or output '" + node.getName() + "' does not exist"
                     , node.get_SourcePositionStart());
         }
-        else {
-            ioNames.add(node.getName());
+        else if (ioDeclarations.size() > 1){
+            IODeclarationSymbol ioDeclaration = ioDeclarations.iterator().next();
+            if (!checkedIODeclarations.contains(ioDeclaration)){
+                Log.error("0" + ErrorCodes.DUPLICATED_NAME + " Duplicated IO name. " +
+                                "The name '" + ioDeclaration.getName() + "' is already used."
+                        , ioDeclaration.getSourcePosition());
+                checkedIODeclarations.addAll(ioDeclarations);
+            }
         }
     }
 
