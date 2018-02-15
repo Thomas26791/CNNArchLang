@@ -20,9 +20,6 @@
  */
 package de.monticore.lang.monticar.cnnarch.helper;
 
-import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
-import de.se_rwth.commons.logging.Log;
-
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;

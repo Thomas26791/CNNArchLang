@@ -21,7 +21,6 @@
 package de.monticore.lang.monticar.cnnarch._cocos;
 
 import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
-import de.monticore.lang.monticar.cnnarch._ast.ASTIODeclaration;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.IOLayerSymbol;

@@ -21,14 +21,12 @@
 package de.monticore.lang.monticar.cnnarch.helper;
 
 import de.monticore.lang.math.math._symboltable.expression.*;
-import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.TupleExpressionSymbol;
 import de.monticore.lang.monticar.ranges._ast.ASTRange;
 import de.monticore.lang.monticar.types2._ast.ASTElementType;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.function.Function;
 

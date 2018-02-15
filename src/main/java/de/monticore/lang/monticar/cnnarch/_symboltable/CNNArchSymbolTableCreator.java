@@ -30,11 +30,8 @@ import de.monticore.lang.monticar.cnnarch._visitor.CNNArchVisitor;
 import de.monticore.lang.monticar.cnnarch._visitor.CommonCNNArchDelegatorVisitor;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
-import de.monticore.lang.monticar.common2._ast.ASTCommonDimensionElement;
-import de.monticore.lang.monticar.common2._ast.ASTCommonMatrixType;
 import de.monticore.symboltable.*;
 import de.se_rwth.commons.logging.Log;
-import org.jscience.mathematics.number.Rational;
 
 import java.util.*;
 

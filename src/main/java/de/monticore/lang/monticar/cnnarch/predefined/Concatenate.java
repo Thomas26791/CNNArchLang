@@ -20,19 +20,16 @@
  */
 package de.monticore.lang.monticar.cnnarch.predefined;
 
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
-import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.monticore.lang.monticar.ranges._ast.ASTRange;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
-import org.jscience.mathematics.number.Rational;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class Concatenate extends PredefinedMethodDeclaration {
 

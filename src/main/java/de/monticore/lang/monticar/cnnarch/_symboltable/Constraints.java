@@ -21,7 +21,6 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
-import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.se_rwth.commons.SourcePosition;
 import de.se_rwth.commons.logging.Log;
 

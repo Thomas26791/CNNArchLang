@@ -22,13 +22,15 @@ package de.monticore.lang.monticar.cnnarch._ast;
 
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 
+import java.util.List;
+
 public class ASTArchSpecialArgument extends ASTArchSpecialArgumentTOP {
 
     public ASTArchSpecialArgument() {
     }
 
-    public ASTArchSpecialArgument(ASTArchExpression rhs, String serial, String parallel, String conditional) {
-        super(rhs, serial, parallel, conditional);
+    public ASTArchSpecialArgument(ASTArchExpression rhs, List<String> nEWLINETOKENs, String serial, String parallel, String conditional) {
+        super(rhs, nEWLINETOKENs, serial, parallel, conditional);
     }
 
     @Override

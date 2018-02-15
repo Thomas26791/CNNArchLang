@@ -23,14 +23,12 @@
 
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
-import de.monticore.symboltable.Scope;
-import de.se_rwth.commons.Joiners;
-import de.se_rwth.commons.logging.Log;
-import org.jscience.mathematics.number.Rational;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
 

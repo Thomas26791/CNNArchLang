@@ -21,12 +21,9 @@
 package de.monticore.lang.monticar.cnnarch.cocos;
 
 import de.monticore.lang.monticar.cnnarch.AbstractSymtabTest;
-import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchCompilationUnit;
-import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchNode;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCocos;
-import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
 import de.monticore.symboltable.Scope;
 import de.se_rwth.commons.logging.Finding;

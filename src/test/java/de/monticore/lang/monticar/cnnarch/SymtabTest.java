@@ -21,7 +21,6 @@
 package de.monticore.lang.monticar.cnnarch;
 
 import de.monticore.lang.monticar.cnnarch._parser.CNNArchParser;
-import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
 import de.monticore.symboltable.Scope;
 import org.junit.Ignore;

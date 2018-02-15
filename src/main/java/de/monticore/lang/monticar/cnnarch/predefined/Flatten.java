@@ -20,9 +20,9 @@
  */
 package de.monticore.lang.monticar.cnnarch.predefined;
 
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
-import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
 
 import java.util.ArrayList;
 import java.util.Collections;

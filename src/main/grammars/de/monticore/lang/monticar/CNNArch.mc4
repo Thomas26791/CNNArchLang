@@ -9,51 +9,51 @@ grammar CNNArch extends de.monticore.lang.math.Math {
                                           Architecture
                                           "}";
 
-    Architecture = methodDeclaration:MethodDeclaration*
-                   body:ArchBody;
+    Architecture = NEWLINETOKEN* methodDeclaration:MethodDeclaration* NEWLINETOKEN*
+                   body:ArchBody NEWLINETOKEN*;
 
     interface ArchitectureElement;
     interface Variable;
     ast Variable = method String getName(){};
 
-    IODeclaration = "def"
+    IODeclaration = NEWLINETOKEN* "def"
                    (in:"input" | out:"output")
                    type:ArchType
                    Name&
-                   (ArrayDeclaration)?;
+                   (ArrayDeclaration)? NEWLINETOKEN*;
 
     ArchType = ElementType "^" Shape;
 
     Shape = "{" dimensions:(ArchSimpleExpression || ",")* "}";
 
-    ArchitectureParameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
+    ArchitectureParameter implements Variable = NEWLINETOKEN* Name& ("=" default:ArchSimpleExpression)? NEWLINETOKEN*;
 
-    MethodDeclaration = "def"
+    MethodDeclaration = NEWLINETOKEN* "def"
                         Name& "("
-                        parameters:(MethodParameter || ",")* ")" "{"
-                        body:ArchBody "}";
+                        parameters:(MethodParameter || ",")* ")" "{" NEWLINETOKEN*
+                        body:ArchBody NEWLINETOKEN* "}";
 
-    MethodParameter implements Variable = Name& ("=" default:ArchSimpleExpression)?;
+    MethodParameter implements Variable = NEWLINETOKEN* Name& ("=" default:ArchSimpleExpression)? NEWLINETOKEN*;
 
     scope ArchBody = elements:(ArchitectureElement || "->")*;
 
-    IOLayer implements ArchitectureElement = Name& ("[" index:ArchSimpleExpression "]")?;
+    IOLayer implements ArchitectureElement = NEWLINETOKEN* Name& ("[" index:ArchSimpleExpression "]")?;
 
-    MethodLayer implements ArchitectureElement = Name& "(" arguments:(ArchArgument || ",")* ")";
+    MethodLayer implements ArchitectureElement = NEWLINETOKEN* Name& "(" arguments:(ArchArgument || ",")* ")";
 
     interface ArchArgument;
     ast ArchArgument = method String getName(){}
                        method ASTArchExpression getRhs(){};
 
-    ArchParameterArgument implements ArchArgument = Name "=" rhs:ArchExpression;
+    ArchParameterArgument implements ArchArgument = NEWLINETOKEN* Name "=" rhs:ArchExpression NEWLINETOKEN*;
 
-    ArchSpecialArgument implements ArchArgument = (serial:"->" | parallel:"|" | conditional:"?") "="
-                                                  rhs:ArchExpression;
+    ArchSpecialArgument implements ArchArgument = NEWLINETOKEN* (serial:"->" | parallel:"|" | conditional:"?") "="
+                                                  rhs:ArchExpression NEWLINETOKEN*;
     ast ArchSpecialArgument = method public String getName(){return "";};
 
-    ParallelLayer implements ArchitectureElement = "(" groups:ArchBody "|" groups:(ArchBody || "|")+ ")";
+    ParallelLayer implements ArchitectureElement = NEWLINETOKEN* "(" NEWLINETOKEN* groups:ArchBody NEWLINETOKEN* "|" NEWLINETOKEN* groups:(ArchBody || "|")+ NEWLINETOKEN* ")";
 
-    ArrayAccessLayer implements ArchitectureElement = "[" index:ArchSimpleExpression "]";
+    ArrayAccessLayer implements ArchitectureElement = NEWLINETOKEN* "[" index:ArchSimpleExpression "]";
 
 
     ArchExpression = (expression:ArchSimpleExpression | sequence:ArchValueSequence);
@@ -78,4 +78,8 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     TupleExpression implements MathExpression = "(" expressions:MathExpression "," expressions:(MathExpression || ",")* ")";
 
+    token NEWLINETOKEN =
+             ('\r' '\n' |
+             '\r' |
+             '\n' ):;
 }

@@ -22,7 +22,8 @@ package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodDeclarationSymbol;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class AllPredefinedMethods {
 
