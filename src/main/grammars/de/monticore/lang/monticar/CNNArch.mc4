@@ -76,7 +76,7 @@ grammar CNNArch extends de.monticore.lang.math.Math {
                          | tupleExpression:TupleExpression
                          | string:StringLiteral);
 
-    TupleExpression implements MathExpression = "(" expressions:MathExpression "," expressions:(MathExpression || ",")* ")";
+    TupleExpression = "(" expressions:MathExpression "," expressions:(MathExpression || ",")* ")";
 
     token NEWLINETOKEN =
              ('\r' '\n' |

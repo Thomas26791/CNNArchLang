@@ -33,7 +33,7 @@ public class CheckArgument implements CNNArchASTArchArgumentCoCo {
     public void check(ASTArchArgument node) {
         ArgumentSymbol argument = (ArgumentSymbol) node.getSymbol().get();
         MethodDeclarationSymbol method = argument.getMethodLayer().getMethod();
-        if (argument.getParameter() ==  null){
+        if (method != null && argument.getParameter() ==  null){
             Log.error("0"+ ErrorCodes.UNKNOWN_ARGUMENT + " Unknown Argument. " +
                             "Parameter with name '" + node.getName() + "' does not exist. " +
                             "Possible arguments are: " + Joiners.COMMA.join(method.getParameters())

@@ -190,8 +190,9 @@ Assuming the method `m(a, b, c)` exists, the line `m(a=[5->3], b=[3|4|2], c=2)->
 However, the line `m(a=[5->3], b=[2|4->6], c=2)->` would throw an error because it is not possible to expand *a* such that it is the same size as *b*.
 
 ## Expressions
-Currently, the working expression operators are the basic arithmetic operators "+", "-", "\*", "/", the logical operators "&&", "||" and for most cases the comparison operators "==", "!=", "<", ">", "<=", ">=". 
-The comparison operators do not work reliably for the comparison of tuple (they only compare the last element in the tuples). 
+This language supports the basic arithmetic operators "+", "-", "\*", "/", the logical operators "&&", "||" and the comparison operators "==", "!=", "<", ">", "<=", ">=". 
+At the moment, it is sometimes necessary to use parentheses around an expression to avoid a parsing error. 
+For example, the line `someMethod(booleanArg = (1!=1))` does not parse without the parentheses around `1!=1`.
 
 ## Advanced Example
 This version of Alexnet, which uses method construction, argument sequences and special arguments, is identical to the one in the section Basic Structure.

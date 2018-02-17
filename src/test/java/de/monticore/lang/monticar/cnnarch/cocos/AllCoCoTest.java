@@ -61,6 +61,10 @@ public class AllCoCoTest extends AbstractCoCoTest {
 
     @Test
     public void testInvalidPreResolveCocos(){
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodLayer()),
+                new CNNArchCoCoChecker(),
+                "invalid_tests", "UnknownMethod",
+                new ExpectedErrorInfo(1, ErrorCodes.UNKNOWN_METHOD));
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckIOName()).addCoCo(new CheckVariableName()).addCoCo(new CheckMethodName()),
                 new CNNArchCoCoChecker(),
                 "invalid_tests", "DuplicatedNames",

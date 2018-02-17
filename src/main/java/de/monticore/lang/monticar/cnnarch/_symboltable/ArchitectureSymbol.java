@@ -24,11 +24,9 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
+import de.monticore.symboltable.Symbol;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
 
@@ -67,6 +65,10 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
             ioDeclarations.add(output.getDefinition());
         }
         return ioDeclarations;
+    }
+
+    public Collection<MethodDeclarationSymbol> getMethodDeclarations(){
+        return getSpannedScope().resolveLocally(MethodDeclarationSymbol.KIND);
     }
 
     public void resolve(){

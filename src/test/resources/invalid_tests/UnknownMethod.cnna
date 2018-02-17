@@ -1,0 +1,11 @@
+architecture UnknownMethod(inputs=10, classes=2){
+    def input Q(-oo:+oo)^{inputs} in
+    def output Q(0:1)^{classes} out
+
+    in ->
+    FllyConnected(units=64, no_bias=true) ->
+    Tanh() ->
+    FullyConnected(units=classes, no_bias=true) ->
+    Softmax() ->
+    out
+}

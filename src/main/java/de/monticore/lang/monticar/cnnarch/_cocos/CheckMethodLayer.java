@@ -22,13 +22,16 @@ package de.monticore.lang.monticar.cnnarch._cocos;
 
 import de.monticore.lang.monticar.cnnarch._ast.ASTArchArgument;
 import de.monticore.lang.monticar.cnnarch._ast.ASTMethodLayer;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodDeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class CheckMethodLayer implements CNNArchASTMethodLayerCoCo{
@@ -50,8 +53,10 @@ public class CheckMethodLayer implements CNNArchASTMethodLayerCoCo{
 
         MethodDeclarationSymbol method = ((MethodLayerSymbol) node.getSymbol().get()).getMethod();
         if (method == null){
+            ArchitectureSymbol architecture = node.getSymbol().get().getEnclosingScope().<ArchitectureSymbol>resolve("", ArchitectureSymbol.KIND).get();
             Log.error("0" + ErrorCodes.UNKNOWN_METHOD + " Unknown method error. " +
-                            "Method with name '" + node.getName() + "' does not exist"
+                            "Method with name '" + node.getName() + "' does not exist. " +
+                            "Existing methods: " + Joiners.COMMA.join(architecture.getMethodDeclarations()) + "."
                     , node.get_SourcePositionStart());
         }
         else {

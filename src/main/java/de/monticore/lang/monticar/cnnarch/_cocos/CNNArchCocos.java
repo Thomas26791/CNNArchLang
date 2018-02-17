@@ -54,8 +54,8 @@ public class CNNArchCocos {
                 .addCoCo(new CheckMethodLayer())
                 .addCoCo(new CheckRangeOperators())
                 .addCoCo(new CheckVariableName())
-                .addCoCo(new CheckArgument())
                 .addCoCo(new CheckMethodName())
+                .addCoCo(new CheckArgument())
                 .addCoCo(new CheckMethodRecursion());
     }
 }

@@ -43,8 +43,10 @@ public class ArgumentSymbol extends CommonSymbol {
 
     public VariableSymbol getParameter() {
         if (parameter == null){
-            Optional<VariableSymbol> optParam = getMethodLayer().getMethod().getParameter(getName());
-            optParam.ifPresent(this::setParameter);
+            if (getMethodLayer().getMethod() != null){
+                Optional<VariableSymbol> optParam = getMethodLayer().getMethod().getParameter(getName());
+                optParam.ifPresent(this::setParameter);
+            }
         }
         return parameter;
     }
