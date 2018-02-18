@@ -1,0 +1,13 @@
+architecture ArgumentSequenceTest {
+    def input Z(0:255)^{3, 224, 224} image
+    def output Q(0:1)^{10} predictions
+
+    image ->
+    Convolution(kernel=(5,5), channels=128, stride=(2,2)) ->
+    FullyConnected(units=[]) ->
+    Convolution(kernel=[ |(3,3)| (5,5)->(3,3) ], channels=[128|256|512]) ->
+    Concatenate() ->
+    FullyConnected(units=10) ->
+    Softmax() ->
+    predictions
+}

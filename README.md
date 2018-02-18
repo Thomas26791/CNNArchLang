@@ -154,8 +154,8 @@ The `?` argument is a special argument which is explained in the next section.
 ## Special Arguments
 There exists special structural arguments which can be used in each method. 
 These are `->`, `|` and `?`. `->` and `|` can only be positive integers and `?` can only be a boolean. 
-The argument `?` does not nothing if it is true and removes the layer completely if it is false. 
-The other two arguments create a repetition of the method. 
+The argument `?` does nothing if it is true and removes the layer completely if it is false. 
+The other two arguments create an iteration of the method. 
 We will show their effect with examples. 
 Assuming `a` is a method without required arguments, 
 then `a(-> = 3)->` is equal to `a()->a()->a()->`, 
@@ -163,7 +163,7 @@ then `a(-> = 3)->` is equal to `a()->a()->a()->`,
 `a(-> = 3, | = 2)->` is equal to `(a()->a()->a() | a()->a()->a())->`. 
 
 ## Argument Sequences
-It is also possible to create a repetition of a method in another way through the use of argument sequences. 
+It is also possible to iterate a method through the use of argument sequences. 
 The following are valid sequences: `[2->5->3]`, `[true|false|false]`, `[2->1|4->4->6]`, `[ |2->3]`, `1->..->5` and `3|..|-2`. 
 All values in these examples could also be replaced by variable names or expressions. 
 The first three are standard sequences and the last two are intervals. 
@@ -187,7 +187,21 @@ Assuming the method `m(a, b, c)` exists, the line `m(a=[5->3], b=[3|4|2], c=2)->
     m(a=3, b=2, c=2)
 ) ->
 ```
+And `m(a=[|5|3->4], b=[1|1|2], c=2)` is equal to: 
+```
+(
+
+|
+    m(a=5, b=1, c=2) ->
+    m(a=5, b=1, c=2)
+|
+    m(a=3, b=2, c=2) ->
+    m(a=4, b=2, c=2)
+) ->
+```
 However, the line `m(a=[5->3], b=[2|4->6], c=2)->` would throw an error because it is not possible to expand *a* such that it is the same size as *b*.
+
+
 
 ## Expressions
 This language supports the basic arithmetic operators "+", "-", "\*", "/", the logical operators "&&", "||" and the comparison operators "==", "!=", "<", ">", "<=", ">=". 

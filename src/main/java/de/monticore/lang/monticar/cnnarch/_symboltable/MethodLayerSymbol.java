@@ -420,16 +420,14 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     private int checkSerialLength(List<List<Integer>> allArgumentLengths, int serialIndex){
-        int serialLength = 0;
+        int serialLength = -1;
         for (List<Integer> argLengths : allArgumentLengths){
             int argLength = argLengths.get(serialIndex);
-            if (serialLength == 0){
+            if (serialLength == -1){
                 serialLength = argLength;
             }
             else if (serialLength == 1) {
-                if (argLength > 1){
-                    serialLength = argLength;
-                }
+                serialLength = argLength;
             }
             else if (argLength != 1 && argLength != serialLength){
                 Log.error("0" + ErrorCodes.ILLEGAL_SEQUENCE_LENGTH + " Illegal sequence length. " +
@@ -437,6 +435,9 @@ public class MethodLayerSymbol extends LayerSymbol {
                                 "All serial sequences of the same paralle dimension in the same method layer must be of the same size. "
                         , getSourcePosition());
             }
+        }
+        if (serialLength == -1){
+            serialLength = 1;
         }
         return serialLength;
     }

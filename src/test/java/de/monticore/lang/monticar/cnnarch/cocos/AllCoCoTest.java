@@ -44,6 +44,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
         checkValid("architectures", "ThreeInputCNN_M14");
         checkValid("architectures", "VGG16");
 
+        checkValid("valid_tests", "ArgumentSequenceTest");
         checkValid("valid_tests", "Fixed_Alexnet");
         checkValid("valid_tests", "Fixed_ThreeInputCNN_M14");
         checkValid("valid_tests", "ThreeInputCNN_M14_alternative");
