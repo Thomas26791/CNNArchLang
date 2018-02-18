@@ -198,7 +198,7 @@ And `m(a=[|5|3->4], b=[1|1|2], c=2)` is equal to:
     m(a=4, b=2, c=2)
 ) ->
 ```
-However, the line `m(a=[5->3], b=[2|4->6], c=2)->` would throw an error because it is not possible to expand *a* such that it is the same size as *b*.
+However, `m(a=[5->3], b=[2|4->6], c=2)->` and `m(a=[5->3], b=[2->4->6], c=2)->` would throw an error because it is not possible to expand *a* such that it is the same size as *b*.
 
 
 
