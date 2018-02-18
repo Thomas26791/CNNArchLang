@@ -166,9 +166,9 @@ then `a(-> = 3)->` is equal to `a()->a()->a()->`,
 It is also possible to iterate a method through the use of argument sequences. 
 The following are valid sequences: `[2->5->3]`, `[true|false|false]`, `[2->1|4->4->6]`, `[ |2->3]`, `1->..->5` and `3|..|-2`. 
 All values in these examples could also be replaced by variable names or expressions. 
-The first three are standard sequences and the last two are intervals. 
-An interval can be translated to a standard sequence. 
-The interval `3|..|-2` is equal to `[3|2|1|0|-1|-2]` and `1->..->5` is equal to `[1->2->3->4->5]`. 
+The first three are standard sequences and the last two are ranges. 
+A range can be translated to a standard sequence. 
+The range `3|..|-2` is equal to `[3|2|1|0|-1|-2]` and `1->..->5` is equal to `[1->2->3->4->5]`. 
 
 If a argument is set to a sequence, the method will be repeated for each value in the sequence and the connection between the layers will be the same as it is between the values of the sequence. 
 An argument which has a single value is neutral to the repetition which means that it will be repeated an arbitrary number of times without interfering with the repetition. 
