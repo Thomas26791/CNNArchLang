@@ -31,7 +31,6 @@ import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class CheckMethodLayer implements CNNArchASTMethodLayerCoCo{

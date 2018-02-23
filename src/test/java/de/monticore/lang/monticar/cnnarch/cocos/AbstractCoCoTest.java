@@ -25,7 +25,6 @@ import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchCompilationUnit;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCocos;
 import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
-import de.monticore.symboltable.Scope;
 import de.se_rwth.commons.logging.Finding;
 import de.se_rwth.commons.logging.Log;
 
@@ -38,20 +37,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class AbstractCoCoTest extends AbstractSymtabTest {
-
-    private static final String MODEL_PATH = "src/test/resources/";
-
-    protected static ASTCNNArchCompilationUnit getAstNode(String modelPath, String model) {
-        Scope symTab = createSymTab(MODEL_PATH + modelPath);
-        CNNArchCompilationUnitSymbol comp = symTab.<CNNArchCompilationUnitSymbol> resolve(
-                model, CNNArchCompilationUnitSymbol.KIND).orElse(null);
-        assertNotNull("Could not resolve model " + model, comp);
-
-        return (ASTCNNArchCompilationUnit) comp.getAstNode().get();
-    }
 
     /**
      * Checks all cocos on the given model. Don't use for writing new test cases, use checkValid and

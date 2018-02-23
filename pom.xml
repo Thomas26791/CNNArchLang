@@ -43,11 +43,13 @@
         <SIUnit.version>0.0.10-SNAPSHOT</SIUnit.version>
         <Common-MontiCar.version>0.0.10-SNAPSHOT</Common-MontiCar.version>
         <Math.version>0.0.11-SNAPSHOT</Math.version>
+
         <!-- .. Libraries .................................................. -->
         <guava.version>18.0</guava.version>
         <junit.version>4.12</junit.version>
         <logback.version>1.1.2</logback.version>
         <jscience.version>4.3.1</jscience.version>
+        <commons-cli.version>1.4</commons-cli.version>
 
         <!-- .. Plugins ....................................................... -->
         <monticore.plugin>4.5.3-SNAPSHOT</monticore.plugin>
@@ -157,6 +159,12 @@
             <version>${Math.version}</version>
             <classifier>${grammars.classifier}</classifier>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>${commons-cli.version}</version>
         </dependency>
 
 

@@ -22,6 +22,7 @@ package de.monticore.lang.monticar.cnnarch._cocos;
 
 import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchNode;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
 import de.se_rwth.commons.logging.Log;
 
 //check all cocos
@@ -29,10 +30,23 @@ public class CNNArchCocos {
 
     public static void checkAll(ArchitectureSymbol architecture){
         ASTCNNArchNode node = (ASTCNNArchNode) architecture.getAstNode().get();
+        int findings = Log.getFindings().size();
         createPreResolveChecker().checkAll(node);
-        if (Log.getFindings().isEmpty()){
+        if (findings == Log.getFindings().size()){
             architecture.resolve();
-            if (Log.getFindings().isEmpty()){
+            if (findings == Log.getFindings().size()){
+                createPostResolveChecker().checkAll(node);
+            }
+        }
+    }
+
+    public static void checkAll(CNNArchCompilationUnitSymbol compilationUnit){
+        ASTCNNArchNode node = (ASTCNNArchNode) compilationUnit.getAstNode().get();
+        int findings = Log.getFindings().size();
+        createPreResolveChecker().checkAll(node);
+        if (findings == Log.getFindings().size()){
+            compilationUnit.getArchitecture().resolve();
+            if (findings == Log.getFindings().size()){
                 createPostResolveChecker().checkAll(node);
             }
         }

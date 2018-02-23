@@ -22,13 +22,20 @@ package de.monticore.lang.monticar.cnnarch;
 
 import de.monticore.ModelingLanguageFamily;
 import de.monticore.io.paths.ModelPath;
+import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchCompilationUnit;
+import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchLanguage;
 import de.monticore.symboltable.GlobalScope;
 import de.monticore.symboltable.Scope;
 
 import java.nio.file.Paths;
 
+import static org.junit.Assert.assertNotNull;
+
 public class AbstractSymtabTest {
+
+    private static final String MODEL_PATH = "src/test/resources/";
+
     protected static Scope createSymTab(String... modelPath) {
         ModelingLanguageFamily fam = new ModelingLanguageFamily();
 
@@ -41,5 +48,14 @@ public class AbstractSymtabTest {
         GlobalScope scope = new GlobalScope(mp, fam);
 
         return scope;
+    }
+
+    protected static ASTCNNArchCompilationUnit getAstNode(String modelPath, String model) {
+        Scope symTab = createSymTab(MODEL_PATH + modelPath);
+        CNNArchCompilationUnitSymbol comp = symTab.<CNNArchCompilationUnitSymbol> resolve(
+                model, CNNArchCompilationUnitSymbol.KIND).orElse(null);
+        assertNotNull("Could not resolve model " + model, comp);
+
+        return (ASTCNNArchCompilationUnit) comp.getAstNode().get();
     }
 }

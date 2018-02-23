@@ -24,7 +24,6 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
-import de.monticore.symboltable.Symbol;
 
 import java.util.*;
 

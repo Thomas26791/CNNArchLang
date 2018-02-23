@@ -20,7 +20,7 @@ grammar CNNArch extends de.monticore.lang.math.Math {
                    (in:"input" | out:"output")
                    type:ArchType
                    Name&
-                   (ArrayDeclaration)? NEWLINETOKEN*;
+                   (ArrayDeclaration)?;
 
     ArchType = ElementType "^" Shape;
 
