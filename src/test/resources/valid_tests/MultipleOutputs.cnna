@@ -1,8 +1,8 @@
 architecture MultipleOutputs{
-    def input Q(-oo:+oo)^{10} in
-    def output Q(0:1)^{4} out[2]
+    def input Q(-oo:+oo)^{10} data
+    def output Q(0:1)^{4} pred[2]
 
-    in ->
+    data ->
     FullyConnected(units=128, no_bias=true) ->
     Tanh() ->
     (
@@ -16,6 +16,6 @@ architecture MultipleOutputs{
         FullyConnected(units=4, no_bias=true) ->
         Softmax()
     ) ->
-    out
+    pred
 
 }

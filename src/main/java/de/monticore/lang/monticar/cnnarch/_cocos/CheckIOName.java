@@ -42,13 +42,22 @@ public class CheckIOName implements CNNArchASTIOLayerCoCo {
                             "The input or output '" + node.getName() + "' does not exist"
                     , node.get_SourcePositionStart());
         }
-        else if (ioDeclarations.size() > 1){
+        else {
             IODeclarationSymbol ioDeclaration = ioDeclarations.iterator().next();
-            if (!checkedIODeclarations.contains(ioDeclaration)){
-                Log.error("0" + ErrorCodes.DUPLICATED_NAME + " Duplicated IO name. " +
-                                "The name '" + ioDeclaration.getName() + "' is already used."
-                        , ioDeclaration.getSourcePosition());
-                checkedIODeclarations.addAll(ioDeclarations);
+            if (ioDeclarations.size() > 1) {
+                if (!checkedIODeclarations.contains(ioDeclaration)) {
+                    Log.error("0" + ErrorCodes.DUPLICATED_NAME + " Duplicated IO name. " +
+                                    "The name '" + ioDeclaration.getName() + "' is already used."
+                            , ioDeclaration.getSourcePosition());
+                    checkedIODeclarations.addAll(ioDeclarations);
+                }
+            }
+            else {
+                if (ioDeclaration.getName().endsWith("_")){
+                    Log.error("0" + ErrorCodes.ILLEGAL_NAME + " Illegal IO name. " +
+                            "Input and output names cannot end with \"_\"",
+                            ioDeclaration.getSourcePosition());
+                }
             }
         }
     }

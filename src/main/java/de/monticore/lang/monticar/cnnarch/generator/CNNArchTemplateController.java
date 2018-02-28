@@ -36,7 +36,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.*;
 
-public class TemplateController {
+public class CNNArchTemplateController {
 
     public static final String FTL_FILE_ENDING = ".ftl";
     public static final String TEMPLATE_LAYER_DIR_PATH = "layers/";
@@ -44,18 +44,27 @@ public class TemplateController {
 
     private LayerNameCreator nameManager;
     private Configuration freemarkerConfig = TemplateConfiguration.get();
-
     private ArchitectureSymbol architecture;
-    private LayerSymbol currentLayer;
-    private Target target;
 
-    public TemplateController(ArchitectureSymbol architecture, Target target) {
+    private Writer writer;
+    private String mainTemplateNameWithoutEnding;
+    private Target targetLanguage;
+    private LayerSymbol currentLayer;
+
+    public CNNArchTemplateController(ArchitectureSymbol architecture) {
         setArchitecture(architecture);
-        this.target = target;
     }
 
-    public String getTarget(){
-        return target.toString();
+    public String getFileNameWithoutEnding() {
+        return mainTemplateNameWithoutEnding + "_" + getFullArchitectureName();
+    }
+
+    public Target getTargetLanguage(){
+        return targetLanguage;
+    }
+
+    public void setTargetLanguage(Target targetLanguage) {
+        this.targetLanguage = targetLanguage;
     }
 
     public LayerSymbol getCurrentLayer() {
@@ -75,23 +84,6 @@ public class TemplateController {
         this.nameManager = new LayerNameCreator(architecture);
     }
 
-    public String getCurrentOutputShape(){
-        return getOutputShape(getCurrentLayer());
-    }
-
-    public String getOutputShape(LayerSymbol layer){
-        if (layer.getOutputTypes().size() == 1){
-            return shapeToString(layer.getOutputTypes().get(0));
-        }
-        else {
-            List<String> strings = new ArrayList<>();
-            for (ArchTypeSymbol shape : layer.getOutputTypes()){
-                strings.add(shapeToString(shape));
-            }
-            return "{" + Joiners.COMMA.join(strings) + "}";
-        }
-    }
-
     private String shapeToString(ArchTypeSymbol shape){
         return "[" + Joiners.COMMA.join(shape.getDimensions()) + "]";
     }
@@ -104,15 +96,23 @@ public class TemplateController {
         return nameManager.getName(layer);
     }
 
-    public List<String> getCurrentInputs(){
-        return getInputs(getCurrentLayer());
+    public String getArchitectureName(){
+        return getArchitecture().getEnclosingScope().getSpanningSymbol().get().getName();
     }
 
-    public List<String> getInputs(LayerSymbol layer){
+    public String getFullArchitectureName(){
+        return getArchitecture().getEnclosingScope().getSpanningSymbol().get().getFullName();
+    }
+
+    public List<String> getCurrentInputs(){
+        return getLayerInputs(getCurrentLayer());
+    }
+
+    public List<String> getLayerInputs(LayerSymbol layer){
         List<String> inputNames = new ArrayList<>();
 
         if (isSoftmaxOutput(layer) || isLogisticRegressionOutput(layer)){
-            inputNames = getInputs(layer.getInputLayer().get());
+            inputNames = getLayerInputs(layer.getInputLayer().get());
         }
         else {
             for (LayerSymbol input : layer.getPrevious()) {
@@ -145,20 +145,24 @@ public class TemplateController {
         return list;
     }
 
-    public void include(String relativePath, String templateWithoutFileEnding, Writer stringWriter){
+    public void include(String relativePath, String templateWithoutFileEnding, Writer writer){
         String templatePath = relativePath + templateWithoutFileEnding + FTL_FILE_ENDING;
 
         try {
             Template template = freemarkerConfig.getTemplate(templatePath);
-            Map<String, Object> ftlContext = new HashMap<>();
-            ftlContext.put(TEMPLATE_CONTROLLER_KEY, this);
-            template.process(ftlContext, stringWriter);
+            Map<String, Object> ftlContext = Collections.singletonMap(TEMPLATE_CONTROLLER_KEY, this);
+
+            this.writer = writer;
+            template.process(ftlContext, writer);
+            this.writer = null;
         }
         catch (IOException e) {
             Log.error("Freemarker could not find template " + templatePath + " :\n" + e.getMessage());
+            System.exit(1);
         }
         catch (TemplateException e){
             Log.error("An exception occured in template " + templatePath + " :\n" + e.getMessage());
+            System.exit(1);
         }
     }
 
@@ -166,7 +170,6 @@ public class TemplateController {
         LayerSymbol previousLayer = getCurrentLayer();
         setCurrentLayer(layer);
 
-        String result;
         if (layer.isInput()){
             include(TEMPLATE_LAYER_DIR_PATH, "Input", writer);
         }
@@ -217,20 +220,30 @@ public class TemplateController {
         }
     }
 
-    public String include(LayerSymbol layer){
-        StringWriter writer = new StringWriter();
+    public void include(LayerSymbol layer){
+        if (writer == null){
+            throw new IllegalStateException("missing writer");
+        }
         include(layer, writer);
-        return writer.toString();
     }
 
-    public void process(Writer writer) throws IOException{
-        include("", "Network", writer);
-    }
-
-    public String process(){
+    public Map.Entry<String,String> process(String templateNameWithoutEnding, Target targetLanguage){
         StringWriter writer = new StringWriter();
-        include("", "Network", writer);
-        return writer.toString();
+        this.mainTemplateNameWithoutEnding = templateNameWithoutEnding;
+        this.targetLanguage = targetLanguage;
+        include("", templateNameWithoutEnding, writer);
+
+        String fileEnding = targetLanguage.toString();
+        if (targetLanguage == Target.CPP){
+            fileEnding = ".h";
+        }
+        String fileName = getFileNameWithoutEnding() + fileEnding;
+
+        Map.Entry<String,String> fileContent = new AbstractMap.SimpleEntry<>(fileName, writer.toString());
+
+        this.mainTemplateNameWithoutEnding = null;
+        this.targetLanguage = null;
+        return fileContent;
     }
 
     public String join(Iterable iterable, String separator){
@@ -399,5 +412,4 @@ public class TemplateController {
 
         return Arrays.asList(0,0,0,0,topPad,bottomPad,leftPad,rightPad);
     }
-
 }

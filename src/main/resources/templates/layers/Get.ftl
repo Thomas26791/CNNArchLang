@@ -1,5 +1,5 @@
-<#if tc.target == ".py">
+<#if tc.targetLanguage == ".py">
         ${tc.currentName} = ${tc.currentInputs[tc.index]}
-<#elseif tc.target == ".cpp">
+<#elseif tc.targetLanguage == ".cpp">
         auto ${tc.currentName} = ${tc.currentInputs[tc.index]};
 </#if>

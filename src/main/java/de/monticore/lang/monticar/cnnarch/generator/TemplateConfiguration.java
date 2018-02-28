@@ -25,11 +25,25 @@ import freemarker.template.TemplateExceptionHandler;
 
 public class TemplateConfiguration {
 
-    public static Configuration get(){
-        Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
-        cfg.setClassForTemplateLoading(TemplateConfiguration.class, "/templates/");
-        cfg.setDefaultEncoding("UTF-8");
-        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-        return cfg;
+    private static TemplateConfiguration instance;
+    private Configuration configuration;
+
+    private TemplateConfiguration() {
+        configuration = new Configuration(Configuration.VERSION_2_3_23);
+        configuration.setClassForTemplateLoading(TemplateConfiguration.class, "/templates/");
+        configuration.setDefaultEncoding("UTF-8");
+        configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
     }
+
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    public static Configuration get(){
+        if (instance == null){
+            instance = new TemplateConfiguration();
+        }
+        return instance.getConfiguration();
+    }
+
 }

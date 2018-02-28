@@ -1,4 +1,4 @@
-<#if tc.target == ".py">
+<#if tc.targetLanguage == ".py">
 <#if tc.softmaxOutput>
         self.${tc.currentName} = mx.symbol.SoftmaxOutput(data=${tc.currentInputs[0]},
             name="${tc.currentName}")
@@ -9,7 +9,7 @@
         self.${tc.currentName} = mx.symbol.LinearRegressionOutput(data=${tc.currentInputs[0]},
             name="${tc.currentName}")
 </#if>
-<#elseif tc.target == ".cpp">
+<#elseif tc.targetLanguage == ".cpp">
 <#if tc.softmaxOutput>
         m_${tc.currentName} = Operator("SoftmaxOutput")
             .SetParam("data", ${tc.currentInputs[0]})

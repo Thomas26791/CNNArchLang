@@ -1,6 +1,6 @@
 architecture ResNeXt50(img_height=224, img_width=224, img_channels=3, classes=1000){
-    def input Z(0:255)^{img_channels, img_height, img_width} image
-    def output Q(0:1)^{classes} predictions
+    def input Z(0:255)^{img_channels, img_height, img_width} data
+    def output Q(0:1)^{classes} softmax
 
     def conv(filter, channels, stride=1, act=true){
         Convolution(kernel=filter, channels=channels, stride=(stride,stride)) ->
@@ -30,7 +30,7 @@ architecture ResNeXt50(img_height=224, img_width=224, img_channels=3, classes=10
         Relu()
     }
 
-    image ->
+    data ->
     conv(filter=(7,7), channels=64, stride=2) ->
     Pooling(pool_type="max", kernel=(3,3), stride=(2,2)) ->
     resLayer(innerChannels=4, outChannels=256, changedChannels=true, -> = 3) ->
@@ -43,5 +43,5 @@ architecture ResNeXt50(img_height=224, img_width=224, img_channels=3, classes=10
     GlobalPooling(pool_type="avg") ->
     FullyConnected(units=classes) ->
     Softmax() ->
-    predictions
+    softmax
 }

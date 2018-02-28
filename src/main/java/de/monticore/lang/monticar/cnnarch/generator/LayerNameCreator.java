@@ -113,12 +113,12 @@ public class LayerNameCreator {
             IOLayerSymbol ioLayer = (IOLayerSymbol) layer;
             if (ioLayer.getArrayAccess().isPresent()){
                 int arrayAccess = ioLayer.getArrayAccess().get().getIntValue().get();
-                name = name + arrayAccess;
+                name = name + "_" + arrayAccess + "_";
             }
             return name;
         }
         else {
-            return createBaseName(layer) + stage + createStreamPostfix(streamIndices);
+            return createBaseName(layer) + stage + createStreamPostfix(streamIndices) + "_";
         }
     }
 

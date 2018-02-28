@@ -1,6 +1,6 @@
-<#if tc.target == ".py">
+<#if tc.targetLanguage == ".py">
         ${tc.currentName} = ${tc.join(tc.currentInputs, " + ")}
-<#elseif tc.target == ".cpp">
+<#elseif tc.targetLanguage == ".cpp">
         auto ${tc.currentName} = ${tc.join(tc.currentInputs, " + ")};
 </#if>
 <#include "OutputShape.ftl">

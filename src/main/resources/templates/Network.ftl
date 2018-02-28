@@ -1,4 +1,4 @@
-<#if tc.target == ".py">
+<#if tc.targetLanguage == ".py">
 import mxnet as mx
 import logging
 import os
@@ -10,7 +10,7 @@ Batch = namedtuple('Batch', ['data'])
 
 logging.basicConfig(level=logging.DEBUG)
 
-class Network:
+class ${tc.fileNameWithoutEnding}:
 <#list tc.architectureInputs as input>
     ${input} = None
 </#list>
@@ -58,16 +58,19 @@ ${tc.include(tc.architecture.body)}
                              label_names=[${tc.join(tc.architectureOutputs, ",", "'", "_label'")}],
                              context=context)
 
-<#elseif tc.target == ".cpp">
+<#elseif tc.targetLanguage == ".cpp">
+#ifndef ${tc.fileNameWithoutEnding?upper_case}
+#define ${tc.fileNameWithoutEnding?upper_case}
 #include "mxnet-cpp/MxNetCpp.h"
 
 using namespace std;
 using namespace mxnet::cpp;
 
 
-class Network{
+class ${tc.fileNameWithoutEnding}{
+    bool m_isTrained;
 <#list tc.architectureInputs as input>
-    Symbol m_${input};
+    Symbol m_${input}; //change to ${input}
 </#list>
 <#list tc.architectureOutputs as output>
     Symbol m_${output};
@@ -75,7 +78,9 @@ class Network{
     Module m_module;
 
     public:
-    Network(Context context = Context::gpu());
+    ${tc.fileNameWithoutEnding}(Context context = Context::gpu());
+    void predict();
+    void train();
 <#list tc.architectureInputs as input>
     Symbol get${input?capitalize}();
 </#list>
@@ -86,22 +91,22 @@ class Network{
 };
 
 <#list tc.architectureInputs as input>
-Symbol Network::get${input?capitalize}(){
+Symbol ${tc.fileNameWithoutEnding}::get${input?capitalize}(){
     return m_${input};
 }
 </#list>
 <#list tc.architectureOutputs as output>
-Symbol Network::get${output?capitalize}(){
+Symbol ${tc.fileNameWithoutEnding}::get${output?capitalize}(){
     return m_${output};
 }
 </#list>
-Module Network::getModule(){
+Module ${tc.fileNameWithoutEnding}::getModule(){
     return m_module;
 }
 
-Network::Network(){
+${tc.fileNameWithoutEnding}::${tc.fileNameWithoutEnding}(){
 ${tc.include(tc.architecture.body)}
-        auto _group = Operator("LRN")
+        auto _group = Operator("Group")
             .SetInput("data", {${tc.join(tc.architectureOutputs, ",", "m_", "")}});
             .CreateSymbol();
         m_module = Module(symbol=group),
@@ -109,4 +114,6 @@ ${tc.include(tc.architecture.body)}
                           label_names=[${tc.join(tc.architectureOutputs, ",", "'", "_label'")}],
                           context=context);
 }
+
+#endif
 </#if>

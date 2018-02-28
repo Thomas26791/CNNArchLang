@@ -1,7 +1,7 @@
-<#if tc.target == ".py">
-        # ${tc.currentName}, output shape: ${tc.currentOutputShape}
+<#if tc.targetLanguage == ".py">
+        # ${tc.currentName}, output shape: {<#list tc.currentLayer.outputTypes as type>[${tc.join(type.dimensions, ",")}]</#list>}
 
-<#elseif tc.target == ".cpp">
-        /* ${tc.currentName}, output shape: ${tc.currentOutputShape} */
+<#elseif tc.targetLanguage == ".cpp">
+        /* ${tc.currentName}, output shape: {<#list tc.currentLayer.outputTypes as type>[${tc.join(type.dimensions, ",")}]</#list>} */
 
 </#if>

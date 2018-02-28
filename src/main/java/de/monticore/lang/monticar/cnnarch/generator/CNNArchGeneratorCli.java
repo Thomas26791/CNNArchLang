@@ -48,12 +48,12 @@ public class CNNArchGeneratorCli {
             .required(false)
             .build();
 
-    public static final Option OPTION_TARGET_LANG = Option.builder("t")
+    /*public static final Option OPTION_TARGET_LANG = Option.builder("t")
             .longOpt("target-language")
             .desc("target language of network e.g. c++ or python")
             .hasArg(true)
             .required(false)
-            .build();
+            .build();*/
 
     private CNNArchGeneratorCli() {
     }
@@ -72,7 +72,7 @@ public class CNNArchGeneratorCli {
         options.addOption(OPTION_MODELS_PATH);
         options.addOption(OPTION_ROOT_MODEL);
         options.addOption(OPTION_OUTPUT_PATH);
-        options.addOption(OPTION_TARGET_LANG);
+        //options.addOption(OPTION_TARGET_LANG);
         return options;
     }
 
@@ -92,13 +92,10 @@ public class CNNArchGeneratorCli {
         Path modelsDirPath = Paths.get(cliArgs.getOptionValue(OPTION_MODELS_PATH.getOpt()));
         String rootModelName = cliArgs.getOptionValue(OPTION_ROOT_MODEL.getOpt());
         String outputPath = cliArgs.getOptionValue(OPTION_OUTPUT_PATH.getOpt());
-        String targetLanguage = cliArgs.getOptionValue(OPTION_TARGET_LANG.getOpt());
+        //String targetLanguage = cliArgs.getOptionValue(OPTION_TARGET_LANG.getOpt());
         CNNArchGenerator generator = new CNNArchGenerator();
         if (outputPath != null){
             generator.setGenerationTargetPath(outputPath);
-        }
-        if (targetLanguage != null){
-            generator.setTargetLanguage(Target.fromString(targetLanguage));
         }
         generator.generate(modelsDirPath, rootModelName);
     }

@@ -1,6 +1,6 @@
 architecture VGG16(img_height=224, img_width=224, img_channels=3, classes=1000){
-    def input Z(0:255)^{img_channels, img_height, img_width} image
-    def output Q(0:1)^{classes} predictions
+    def input Z(0:255)^{img_channels, img_height, img_width} data
+    def output Q(0:1)^{classes} softmax
 
     def conv(filter, channels){
         Convolution(kernel=(filter,filter), channels=channels) ->
@@ -12,7 +12,7 @@ architecture VGG16(img_height=224, img_width=224, img_channels=3, classes=1000){
         Dropout(p=0.5)
     }
 
-    image ->
+    data ->
     conv(filter=3, channels=64, ->=2) ->
     Pooling(pool_type="max", kernel=(2,2), stride=(2,2)) ->
     conv(filter=3, channels=128, ->=2) ->
@@ -27,5 +27,5 @@ architecture VGG16(img_height=224, img_width=224, img_channels=3, classes=1000){
     fc() ->
     FullyConnected(units=classes) ->
     Softmax() ->
-    predictions
+    softmax
 }

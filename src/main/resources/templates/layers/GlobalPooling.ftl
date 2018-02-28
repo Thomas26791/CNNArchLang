@@ -1,11 +1,11 @@
-<#if tc.target == ".py">
+<#if tc.targetLanguage == ".py">
         ${tc.currentName} = mx.symbol.Pooling(data=${tc.currentInputs[0]},
             global_pool=True<#if false>,
             cudnn_off=None</#if>,
             kernel=(1,1),
             pool_type=${tc.poolType},
             name="${tc.currentName}")
-<#elseif tc.target == ".cpp">
+<#elseif tc.targetLanguage == ".cpp">
         auto ${tc.currentName} = Operator("Pooling")
             .SetParam("kernel", Shape(1,1))
             .SetParam("pool_type", ${tc.poolType})

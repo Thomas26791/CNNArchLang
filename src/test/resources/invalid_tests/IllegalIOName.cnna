@@ -1,0 +1,11 @@
+architecture IllegalIOName{
+    def input Q(-oo:+oo)^{10} data_
+    def output Q(0:1)^{2} softmax_
+
+    data_ ->
+    FullyConnected(units=64, no_bias=true) ->
+    Tanh() ->
+    FullyConnected(units=2, no_bias=true) ->
+    Softmax() ->
+    softmax_
+}

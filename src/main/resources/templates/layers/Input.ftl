@@ -6,7 +6,7 @@
 <#if heightIndex != 0><#assign indexList = indexList + [heightIndex]></#if>
 <#if widthIndex != 0><#assign indexList = indexList + [widthIndex]></#if>
 <#assign dimensions = tc.currentLayer.outputTypes[0].dimensions>
-<#if tc.target == ".py">
+<#if tc.targetLanguage == ".py">
         self.${tc.currentName} = mx.sym.var("${tc.currentName}",
             shape=(0,${tc.join(dimensions, ",")}))
         ${tc.currentName} = self.${tc.currentName}
@@ -20,7 +20,7 @@
         ${tc.currentName} = mx.symbol.reshape(data=${tc.currentName},
             shape=(0,${tc.currentLayer.outputTypes[0].channels?c},${tc.currentLayer.outputTypes[0].height?c},${tc.currentLayer.outputTypes[0].width?c}))
 </#if>
-<#elseif tc.target == ".cpp">
+<#elseif tc.targetLanguage == ".cpp">
         m_${tc.currentName} = Symbol::Variable("${tc.currentName}");
         m_${tc.currentName}.SetParam("shape", Shape(0,${tc.join(dimensions, ",")}));
         auto ${tc.currentName} = m_${tc.currentName};

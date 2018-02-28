@@ -25,6 +25,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
@@ -34,6 +35,7 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
     private LayerSymbol body;
     private List<IOLayerSymbol> inputs = new ArrayList<>();
     private List<IOLayerSymbol> outputs = new ArrayList<>();
+    private Map<String, IODeclarationSymbol> ioDeclarationMap = new HashMap<>();
 
     public ArchitectureSymbol() {
         super("", KIND);
@@ -55,15 +57,23 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
         return outputs;
     }
 
-    public Set<IODeclarationSymbol> getIODeclarations(){
-        Set<IODeclarationSymbol> ioDeclarations = new HashSet<>();
-        for (IOLayerSymbol input : getInputs()){
-            ioDeclarations.add(input.getDefinition());
+    //called in IOLayer to get IODeclaration; only null if error; will be checked in coco CheckIOName
+    @Nullable
+    protected IODeclarationSymbol resolveIODeclaration(String name){
+        IODeclarationSymbol ioDeclaration = ioDeclarationMap.get(name);
+        if (ioDeclaration == null){
+            Collection<IODeclarationSymbol> ioDefCollection = getEnclosingScope().resolveMany(name, IODeclarationSymbol.KIND);
+            if (!ioDefCollection.isEmpty()){
+                ioDeclaration = ioDefCollection.iterator().next();
+                ioDeclarationMap.put(name, ioDeclaration);
+                ioDeclaration.setArchitecture(this);
+            }
         }
-        for (IOLayerSymbol output : getOutputs()){
-            ioDeclarations.add(output.getDefinition());
-        }
-        return ioDeclarations;
+        return ioDeclaration;
+    }
+
+    public Collection<IODeclarationSymbol> getIODeclarations(){
+        return ioDeclarationMap.values();
     }
 
     public Collection<MethodDeclarationSymbol> getMethodDeclarations(){

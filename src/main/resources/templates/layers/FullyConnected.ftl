@@ -1,6 +1,6 @@
 <#assign flatten = tc.currentLayer.inputTypes[0].height != 1 || tc.currentLayer.inputTypes[0].width != 1>
 <#assign input = tc.currentInputs[0]>
-<#if tc.target == ".py">
+<#if tc.targetLanguage == ".py">
 <#if flatten>
         ${tc.currentName} = mx.symbol.flatten(data=${input})
 <#assign input = tc.currentName>
@@ -9,7 +9,7 @@
             num_hidden=${tc.units?c},
             no_bias=${tc.noBias?string("True","False")},
             name="${tc.currentName}")
-<#elseif tc.target == ".cpp">
+<#elseif tc.targetLanguage == ".cpp">
 <#if flatten>
         auto ${tc.currentName} = Operator("flatten")
             .SetInput("data", ${input})

@@ -25,8 +25,9 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class IODeclarationSymbol extends CommonSymbol {
 
@@ -35,8 +36,7 @@ public class IODeclarationSymbol extends CommonSymbol {
     private ArchTypeSymbol type;
     private boolean input; //true->input, false->output
     private int arrayLength = 1;
-    private Set<IOLayerSymbol> connectedLayers = new HashSet<>();
-
+    private ArchitectureSymbol architecture = null; // set by ArchitectureSymbol
 
     protected IODeclarationSymbol(String name) {
         super(name, KIND);
@@ -50,8 +50,21 @@ public class IODeclarationSymbol extends CommonSymbol {
         this.type = type;
     }
 
-    public Set<IOLayerSymbol> getConnectedLayers() {
-        return connectedLayers;
+    public List<IOLayerSymbol> getConnectedLayers() {
+        if (getArchitecture() == null){
+            return new ArrayList<>();
+        }
+        else {
+            List<IOLayerSymbol> completeList;
+            if (input) {
+                completeList = getArchitecture().getInputs();
+            } else {
+                completeList = getArchitecture().getOutputs();
+            }
+            return completeList.stream()
+                    .filter(e -> e.getName().equals(getName()))
+                    .collect(Collectors.toList());
+        }
     }
 
     public boolean isOutput(){
@@ -74,7 +87,13 @@ public class IODeclarationSymbol extends CommonSymbol {
         this.arrayLength = arrayLength;
     }
 
+    public ArchitectureSymbol getArchitecture() {
+        return architecture;
+    }
 
+    public void setArchitecture(ArchitectureSymbol architecture) {
+        this.architecture = architecture;
+    }
 
     public static class Builder{
         private ArchTypeSymbol type;

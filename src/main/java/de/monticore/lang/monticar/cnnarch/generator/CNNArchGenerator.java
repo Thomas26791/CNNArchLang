@@ -33,37 +33,27 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class CNNArchGenerator {
 
-    private Target targetLanguage;
     private String generationTargetPath;
 
     public CNNArchGenerator() {
-        setTargetLanguage(Target.CPP);
         setGenerationTargetPath("./target/generated-sources-cnnarch/");
     }
 
-    public Target getTargetLanguage() {
-        return targetLanguage;
-    }
-
-    public void setTargetLanguage(Target targetLanguage) {
-        this.targetLanguage = targetLanguage;
-    }
-
     public String getGenerationTargetPath() {
+        if (generationTargetPath.charAt(generationTargetPath.length() - 1) != '/') {
+            this.generationTargetPath = generationTargetPath + "/";
+        }
         return generationTargetPath;
     }
 
     public void setGenerationTargetPath(String generationTargetPath) {
-        if (generationTargetPath.charAt(generationTargetPath.length() - 1) != '/') {
-            this.generationTargetPath = generationTargetPath + "/";
-        }
-        else {
-            this.generationTargetPath = generationTargetPath;
-        }
+        this.generationTargetPath = generationTargetPath;
     }
 
     public void generate(Path modelsDirPath, String rootModelName){
@@ -83,44 +73,53 @@ public class CNNArchGenerator {
 
         try{
             ArchitectureSymbol architecture = compilationUnit.get().getArchitecture();
-            generateNetworkFile(architecture);
+            generateFiles(architecture);
         }
         catch (IOException e){
             Log.error(e.toString());
         }
     }
 
-    public String generateNetworkString(ArchitectureSymbol architecture){
-        TemplateController archTc = new TemplateController(architecture, targetLanguage);
-        return archTc.process();
+    //check cocos with CNNArchCocos.checkAll(architecture) before calling this method.
+    public Map<String, String> generateStrings(ArchitectureSymbol architecture){
+        Map<String, String> fileContentMap = new HashMap<>();
+        CNNArchTemplateController archTc = new CNNArchTemplateController(architecture);
+        Map.Entry<String, String> temp;
+
+        temp = archTc.process("CNNPredictor", Target.CPP);
+        fileContentMap.put(temp.getKey(), temp.getValue());
+
+        temp = archTc.process("Network", Target.PYTHON);
+        fileContentMap.put(temp.getKey(), temp.getValue());
+
+        temp = archTc.process("execute", Target.CPP);
+        fileContentMap.put(temp.getKey().replace(".h", ""), temp.getValue());
+
+        temp = archTc.process("CNNBufferFile", Target.CPP);
+        fileContentMap.put("CNNBufferFile.h", temp.getValue());
+
+        return fileContentMap;
     }
 
-    public void generateNetworkFile(ArchitectureSymbol architecture) throws IOException{
-        File f = new File(getGenerationTargetPath() + getFileName(architecture));
-        Log.info(f.getName(), "FileCreation:");
-        if (!f.exists()) {
-            f.getParentFile().mkdirs();
-            if (!f.createNewFile()) {
-                Log.error("File could not be created");
+    //check cocos with CNNArchCocos.checkAll(architecture) before calling this method.
+    public void generateFiles(ArchitectureSymbol architecture) throws IOException{
+        CNNArchTemplateController archTc = new CNNArchTemplateController(architecture);
+        Map<String, String> fileContentMap = generateStrings(architecture);
+
+        for (String fileName : fileContentMap.keySet()){
+            File f = new File(getGenerationTargetPath() + fileName);
+            Log.info(f.getName(), "FileCreation:");
+            if (!f.exists()) {
+                f.getParentFile().mkdirs();
+                if (!f.createNewFile()) {
+                    Log.error("File could not be created");
+                }
             }
+
+            FileWriter writer = new FileWriter(f);
+            writer.write(fileContentMap.get(fileName));
+            writer.close();
         }
-
-        FileWriter writer = new FileWriter(f);
-        TemplateController archTc = new TemplateController(architecture, targetLanguage);
-        archTc.process(writer);
-        writer.close();
-    }
-
-    public String getFileName(ArchitectureSymbol architecture){
-        String name = architecture.getEnclosingScope().getSpanningSymbol().get().getFullName();
-        name = name.replaceAll("\\.", "_").replaceAll("\\[", "_").replaceAll("\\]", "_");
-
-        String fileEnding = getTargetLanguage().toString();
-        if (getTargetLanguage() == Target.CPP){
-            fileEnding = ".h";
-        }
-
-        return name + "__network" + fileEnding;
     }
 
 }

@@ -22,6 +22,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
 import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.Joiners;
 
 import java.util.*;
@@ -94,6 +95,16 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
     public boolean isOutput(){
         //override by IOLayerSymbol
         return false;
+    }
+
+    public ArchitectureSymbol getArchitecture(){
+        Symbol sym = getEnclosingScope().getSpanningSymbol().get();
+        if (sym instanceof ArchitectureSymbol){
+            return (ArchitectureSymbol) sym;
+        }
+        else {
+            return ((LayerSymbol) sym).getArchitecture();
+        }
     }
 
     /**

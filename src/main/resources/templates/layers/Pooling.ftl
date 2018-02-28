@@ -1,5 +1,5 @@
 <#assign input = tc.currentInputs[0]>
-<#if tc.target == ".py">
+<#if tc.targetLanguage == ".py">
 <#if tc.padding??>
 <#assign input = tc.currentName>
         ${tc.currentName} = mx.symbol.pad(data=${tc.currentInputs[0]},
@@ -13,7 +13,7 @@
             pool_type=${tc.poolType},
             stride=(${tc.join(tc.stride, ",")}),
             name="${tc.currentName}")
-<#elseif tc.target == ".cpp">
+<#elseif tc.targetLanguage == ".cpp">
 <#if tc.padding??>
 <#assign input = tc.currentName>
         auto ${tc.currentName} = Operator("pad")

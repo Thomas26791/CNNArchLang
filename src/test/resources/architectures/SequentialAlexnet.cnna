@@ -1,6 +1,6 @@
 architecture SequentialAlexnet(img_height=224, img_width=224, img_channels=3, classes=10){
-    def input Z(0:255)^{img_channels, img_height, img_width} image
-    def output Q(0:1)^{classes} predictions
+    def input Z(0:255)^{img_channels, img_height, img_width} data
+    def output Q(0:1)^{classes} softmax
 
     def conv(filter, channels, hasPool=true, convStride=(1,1)){
         Convolution(kernel=filter, channels=channels, stride=convStride) ->
@@ -13,7 +13,7 @@ architecture SequentialAlexnet(img_height=224, img_width=224, img_channels=3, cl
         Dropout()
     }
 
-    image ->
+    data ->
     conv(filter=(11,11), channels=96, convStride=(4,4)) ->
     Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
     conv(filter=(5,5), channels=256, convStride=(4,4)) ->
@@ -25,5 +25,5 @@ architecture SequentialAlexnet(img_height=224, img_width=224, img_channels=3, cl
     fc() ->
     FullyConnected(units=classes) ->
     Softmax() ->
-    predictions
+    softmax
 }

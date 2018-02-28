@@ -64,10 +64,24 @@ public class GenerationTest {
         CNNArchGeneratorCli.main(args);
     }
 
-    @Test
+    /*@Test
     public void testGeneratorCliPython() throws IOException, TemplateException {
         Log.getFindings().clear();
         String[] args = {"-m", "src/test/resources/architectures", "-r", "VGG16", "-t", "py"};
+        CNNArchGeneratorCli.main(args);
+    }*/
+
+    @Test
+    public void testMnist() throws IOException, TemplateException {
+        Log.getFindings().clear();
+        String[] args = {"-m", "src/test/resources/valid_tests", "-r", "MxMnistExample"};
+        CNNArchGeneratorCli.main(args);
+    }
+
+    @Test
+    public void testMultipleOutputs() throws IOException, TemplateException {
+        Log.getFindings().clear();
+        String[] args = {"-m", "src/test/resources/valid_tests", "-r", "MultipleOutputs"};
         CNNArchGeneratorCli.main(args);
     }
 }

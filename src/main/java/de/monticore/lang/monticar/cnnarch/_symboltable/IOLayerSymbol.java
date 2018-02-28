@@ -50,12 +50,10 @@ public class IOLayerSymbol extends LayerSymbol {
         this.arrayAccess = ArchSimpleExpressionSymbol.of(arrayAccess);
     }
 
+    //returns null if IODeclaration does not exist. This is checked in coco CheckIOName.
     public IODeclarationSymbol getDefinition() {
         if (definition == null){
-            Collection<IODeclarationSymbol> ioDefCollection = getEnclosingScope().resolveMany(getName(), IODeclarationSymbol.KIND);
-            if (!ioDefCollection.isEmpty()){
-                setDefinition(ioDefCollection.iterator().next());
-            }
+            this.definition = getArchitecture().resolveIODeclaration(getName());
         }
         return definition;
     }
@@ -63,11 +61,6 @@ public class IOLayerSymbol extends LayerSymbol {
     @Override
     public boolean isResolvable() {
         return super.isResolvable() && getDefinition() != null;
-    }
-
-    private void setDefinition(IODeclarationSymbol definition) {
-        this.definition = definition;
-        definition.getConnectedLayers().add(this);
     }
 
     @Override
