@@ -97,11 +97,11 @@ public class CNNArchTemplateController {
     }
 
     public String getArchitectureName(){
-        return getArchitecture().getEnclosingScope().getSpanningSymbol().get().getName();
+        return getArchitecture().getEnclosingScope().getSpanningSymbol().get().getName().replaceAll("\\.","_");
     }
 
     public String getFullArchitectureName(){
-        return getArchitecture().getEnclosingScope().getSpanningSymbol().get().getFullName();
+        return getArchitecture().getEnclosingScope().getSpanningSymbol().get().getFullName().replaceAll("\\.","_");
     }
 
     public List<String> getCurrentInputs(){

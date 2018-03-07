@@ -89,7 +89,7 @@ public class CNNArchGenerator {
         temp = archTc.process("CNNPredictor", Target.CPP);
         fileContentMap.put(temp.getKey(), temp.getValue());
 
-        temp = archTc.process("Network", Target.PYTHON);
+        temp = archTc.process("CNNCreator", Target.PYTHON);
         fileContentMap.put(temp.getKey(), temp.getValue());
 
         temp = archTc.process("execute", Target.CPP);
@@ -98,7 +98,30 @@ public class CNNArchGenerator {
         temp = archTc.process("CNNBufferFile", Target.CPP);
         fileContentMap.put("CNNBufferFile.h", temp.getValue());
 
+        checkValidGeneration(architecture);
+
         return fileContentMap;
+    }
+
+    private void checkValidGeneration(ArchitectureSymbol architecture){
+        if (architecture.getInputs().size() > 1){
+            Log.warn("This cnn architecture has multiple inputs, " +
+                            "which is currently not supported by the generator. " +
+                            "The generated code will not work correctly."
+                    , architecture.getSourcePosition());
+        }
+        if (architecture.getOutputs().size() > 1){
+            Log.warn("This cnn architecture has multiple outputs, " +
+                            "which is currently not supported by the generator. " +
+                            "The generated code will not work correctly."
+                    , architecture.getSourcePosition());
+        }
+        if (architecture.getOutputs().get(0).getDefinition().getType().getWidth() != 1 ||
+                architecture.getOutputs().get(0).getDefinition().getType().getHeight() != 1){
+            Log.error("This cnn architecture has a multi-dimensional output, " +
+                            "which is currently not supported by the generator."
+                    , architecture.getSourcePosition());
+        }
     }
 
     //check cocos with CNNArchCocos.checkAll(architecture) before calling this method.
