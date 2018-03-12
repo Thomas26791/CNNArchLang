@@ -90,7 +90,7 @@ The serial connection operator has a higher precedence than the parallel connect
 Therefore it is necessary to use brackets around each parallel group of layers.
 Each element in a parallel group has the same input stream as the whole group. 
 The output of a parallel group is a list of streams which can be merged into a single stream through use of the following methods: 
-`Convolution()`, `Add()` or `Get(index)`. 
+`Concatenate()`, `Add()` or `Get(index)`. 
 Note: `Get(index=i)` can be abbreviated by `[i]`. 
 The method `Split(n)` in the example above creates multiple output streams from a single input stream by splitting the data itself into *n* streams which can then handled separately.
 
