@@ -2,15 +2,15 @@ architecture ResNeXt50_alt(img_height=224, img_width=224, img_channels=3, classe
     def input Z(0:255)^{img_channels, img_height, img_width} image
     def output Q(0:1)^{classes} predictions
 
-    def conv(filter, channels, stride=1, act=true){
-        Convolution(kernel=filter, channels=channels, stride=(stride,stride)) ->
+    def conv(kernel, channels, stride=1, act=true){
+        Convolution(kernel=kernel, channels=channels, stride=(stride,stride)) ->
         BatchNorm() ->
         Relu(?=act)
     }
     def resGroup(innerChannels, outChannels, stride=1){
-        conv(filter=(1,1), channels=innerChannels) ->
-        conv(filter=(3,3), channels=innerChannels, stride=stride) ->
-        conv(filter=(1,1), channels=outChannels, act=false)
+        conv(kernel=(1,1), channels=innerChannels) ->
+        conv(kernel=(3,3), channels=innerChannels, stride=stride) ->
+        conv(kernel=(1,1), channels=outChannels, act=false)
     }
     def skip(outChannels, stride){
         Convolution(kernel=(1,1), channels=outChannels, stride=(stride,stride)) ->
@@ -35,7 +35,7 @@ architecture ResNeXt50_alt(img_height=224, img_width=224, img_channels=3, classe
     }
 
     image ->
-    conv(filter=(7,7), channels=64, stride=2) ->
+    conv(kernel=(7,7), channels=64, stride=2) ->
     Pooling(pool_type="max", kernel=(3,3), stride=(2,2)) ->
     resLayer(innerChannels=4, outChannels=256, changedChannels=true, -> = 3) ->
     resStructure(innerChannels=[8->16->32], outChannels=[512->1024->2048], resLayers=[4->6->3]) ->

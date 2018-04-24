@@ -1,6 +1,6 @@
 architecture Alexnet(img_height=224, img_width=224, img_channels=3, classes=10){
     def input Z(0:255)^{img_channels, img_height, img_width} data
-    def output Q(0:1)^{classes} softmax
+    def output Q(0:1)^{classes} predictions
 
     def split1(i){
         [i] ->
@@ -39,5 +39,5 @@ architecture Alexnet(img_height=224, img_width=224, img_channels=3, classes=10){
     fc(->=2) ->
     FullyConnected(units=10) ->
     Softmax() ->
-    softmax
+    predictions
 }

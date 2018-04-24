@@ -145,22 +145,7 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
             return computeValue((MathNameExpressionSymbol) getMathExpression().get());
         }
         else if (getMathExpression().get() instanceof TupleExpressionSymbol){
-            Map<String, String> replacementMap = new HashMap<>();
-            List<Object> valueList = new ArrayList<>();
-            TupleExpressionSymbol tuple = (TupleExpressionSymbol) getMathExpression().get();
-            for (MathExpressionSymbol mathExp : tuple.getExpressions()){
-                if (mathExp instanceof MathNameExpressionSymbol){
-                    valueList.add(computeValue((MathNameExpressionSymbol) mathExp));
-                }
-                else {
-                    ArchSimpleExpressionSymbol temp = ArchSimpleExpressionSymbol.of(mathExp);
-                    temp.setEnclosingScope(getEnclosingScope().getAsMutableScope());
-                    temp.resolveOrError();
-                    valueList.add(temp.getValue().get());
-                    getEnclosingScope().getAsMutableScope().remove(temp);
-                }
-            }
-            return valueList;
+            return computeValue((TupleExpressionSymbol) getMathExpression().get());
         }
         else {
             Map<String, String> replacementMap = new HashMap<>();
@@ -179,8 +164,25 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
         }
     }
 
+    private List<Object> computeValue(TupleExpressionSymbol tupleExpression){
+        List<Object> valueList = new ArrayList<>();
+        for (MathExpressionSymbol mathExp : tupleExpression.getExpressions()){
+            if (mathExp instanceof MathNameExpressionSymbol){
+                valueList.add(computeValue((MathNameExpressionSymbol) mathExp));
+            }
+            else {
+                ArchSimpleExpressionSymbol temp = ArchSimpleExpressionSymbol.of(mathExp);
+                temp.setEnclosingScope(getEnclosingScope().getAsMutableScope());
+                temp.resolveOrError();
+                valueList.add(temp.getValue().get());
+                getEnclosingScope().getAsMutableScope().remove(temp);
+            }
+        }
+        return valueList;
+    }
+
     private Object computeValue(MathNameExpressionSymbol mathExpression){
-        String name = ((MathNameExpressionSymbol) mathExpression).getNameToAccess();
+        String name = mathExpression.getNameToAccess();
         VariableSymbol variable = (VariableSymbol) getEnclosingScope().resolve(name, VariableSymbol.KIND).get();
         variable.getExpression().resolveOrError();
 

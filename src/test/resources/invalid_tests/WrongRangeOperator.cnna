@@ -3,9 +3,9 @@ architecture WrongRangeOperator(inputs=10, classes=2){
     def output Q(0:1)^{classes} out
 
     in ->
-    FullyConnected(units=64->..|65) ->
+    FullyConnected(units=[64->..|65]) ->
     Tanh() ->
-    FullyConnected(units=classes |..-> classes + 1 ) ->
+    FullyConnected(units=[classes |..-> classes + 1] ) ->
     Softmax() ->
     out
 }

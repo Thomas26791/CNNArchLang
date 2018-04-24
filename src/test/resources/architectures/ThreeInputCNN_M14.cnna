@@ -5,28 +5,28 @@ architecture ThreeInputCNN_M14(img_height=200, img_width=300, img_channels=3, cl
      *Year: 2017*/
 
     def input Z(0:255)^{img_channels, img_height, img_width} data[3]
-    def output Q(0:1)^{classes} softmax
+    def output Q(0:1)^{classes} predictions
 
-    def conv(filter, channels){
-        Convolution(kernel=filter, channels=channels) ->
+    def conv(kernel, channels){
+        Convolution(kernel=kernel, channels=channels) ->
         Relu()
     }
 
     def inputGroup(index){
         [index] ->
-        conv(filter=(3,3), channels=32, ->=3) ->
+        conv(kernel=(3,3), channels=32, ->=3) ->
         Pooling(pool_type="max", kernel=(2,2), stride=(2,2))
     }
 
     data ->
-    inputGroup(index=0|..|2) ->
+    inputGroup(index=[0|..|2]) ->
     Concatenate() ->
-    conv(filter=(3,3), channels=64) ->
+    conv(kernel=(3,3), channels=64) ->
     Pooling(pool_type="max", kernel=(2,2), stride=(2,2)) ->
 
     FullyConnected(units=32) ->
     Relu() ->
     FullyConnected(units=classes) ->
     Softmax() ->
-    softmax
+    predictions
 }

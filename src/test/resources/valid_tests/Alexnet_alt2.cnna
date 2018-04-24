@@ -2,20 +2,20 @@ architecture Alexnet_alt2(img_height=224, img_width=224, img_channels=3, classes
     def input Z(0:255)^{img_channels, img_height, img_width} image
     def output Q(0:1)^{classes} predictions
     
-    def conv(filter, channels, convStride=1, poolStride=1, hasLrn=false, convPadding="same"){
-    	Convolution(kernel=(filter,filter), channels=channels, stride=(convStride,convStride), padding=convPadding) ->
+    def conv(kernel, channels, convStride=1, poolStride=1, hasLrn=false, convPadding="same"){
+    	Convolution(kernel=(kernel,kernel), channels=channels, stride=(convStride,convStride), padding=convPadding) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75, ?=hasLrn) ->
         Pooling(pool_type="max", kernel=(3,3), stride=(poolStride,poolStride), padding="no_loss", ?=(poolStride != 1)) ->
         Relu()
     }
     def split1(i){
         [i] ->
-        conv(filter=5, channels=128, poolStride=2, hasLrn=true)
+        conv(kernel=5, channels=128, poolStride=2, hasLrn=true)
     }
     def split2(i){
         [i] ->
-        conv(filter=3, channels=192) ->
-        conv(filter=3, channels=128, poolStride=2)
+        conv(kernel=3, channels=192) ->
+        conv(kernel=3, channels=128, poolStride=2)
     }
     def fc(){
         FullyConnected(units=4096) ->
@@ -24,11 +24,11 @@ architecture Alexnet_alt2(img_height=224, img_width=224, img_channels=3, classes
     }
 
     image ->
-    conv(filter=11, channels=96, convStride=4, poolStride=2, hasLrn=true, convPadding="no_loss") ->
+    conv(kernel=11, channels=96, convStride=4, poolStride=2, hasLrn=true, convPadding="no_loss") ->
     Split(n=2) ->
     split1(i=[0|1]) ->
     Concatenate() ->
-    conv(filter=3, channels=384) ->
+    conv(kernel=3, channels=384) ->
     Split(n=2) ->
     split2(i=[0|1]) ->
     Concatenate() ->

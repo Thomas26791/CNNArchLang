@@ -23,9 +23,12 @@ package de.monticore.lang.monticar.cnnarch.cocos;
 import de.monticore.lang.monticar.cnnarch._cocos.*;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.logging.Log;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static de.monticore.lang.monticar.cnnarch.ParserTest.ENABLE_FAIL_QUICK;
 
 public class AllCoCoTest extends AbstractCoCoTest {
     String baseDir="src/test/resources";
@@ -34,9 +37,17 @@ public class AllCoCoTest extends AbstractCoCoTest {
         Log.enableFailQuick(false);
     }
 
+    @Before
+    public void setUp() {
+        // ensure an empty log
+        Log.getFindings().clear();
+        Log.enableFailQuick(ENABLE_FAIL_QUICK);
+    }
+
     @Test
     public void testValidCoCos() throws IOException {
 
+        checkValid("architectures", "ResNet152");
         checkValid("architectures", "Alexnet");
         checkValid("architectures", "ResNeXt50");
         checkValid("architectures", "ResNet34");

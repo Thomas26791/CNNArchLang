@@ -128,21 +128,17 @@ The body of a new method is constructed from other layers including other user-d
 The compiler will throw an error if recursion occurs. 
 The following is a example of multiple method declarations.
 ```
-    def conv(filter, channels, stride=1, act=true){
+    def conv(kernel, channels, stride=1, act=true){
         Convolution(kernel=(filter,filter), channels=channels, stride=(stride,stride)) ->
         BatchNorm() ->
         Relu(?=act)
     }
-    def skip(channels, stride){
-        Convolution(kernel=(1,1), channels=channels, stride=(stride,stride)) ->
-        BatchNorm()
-    }
     def resLayer(channels, stride=1){
         (
-            conv(filter=3, channels=channels, stride=stride) ->
-            conv(filter=3, channels=channels, act=false)
+            conv(kernel=3, channels=channels, stride=stride) ->
+            conv(kernel=3, channels=channels, act=false)
         |
-            skip(channels=channels, stride=stride, ?=(stride!=1))
+            conv(kernel=1, channels=channels, stride=stride, act=false, ?=(stride!=1))
         ) ->
         Add() ->
         Relu()
@@ -151,30 +147,18 @@ The following is a example of multiple method declarations.
 The method `resLayer` in this example corresponds to a building block of a Residual Network. 
 The `?` argument is a special argument which is explained in the next section.
 
-## Special Arguments
-There exists special structural arguments which can be used in each method. 
-These are `->`, `|` and `?`. `->` and `|` can only be positive integers and `?` can only be a boolean. 
-The argument `?` does nothing if it is true and removes the layer completely if it is false. 
-The other two arguments create an iteration of the method. 
-We will show their effect with examples. 
+## Structural Arguments
+Structural arguments are special arguments which can be set for each layer and which do not correspond to a layer parameter. The three structural arguments are "?", "->" and "|". The conditional argument "?" is a boolean. It does nothing if it is true and it removes the layer completely if it is false. This argument is only useful for layer construction. The other two structural arguments are non-negative integers which repeat the layer *x* number of times where *x* is equal to their value. The layer operator between each repetition has the same symbol as the argument.
+
 Assuming `a` is a method without required arguments, 
 then `a(-> = 3)->` is equal to `a()->a()->a()->`, 
 `a(| = 3)->` is equal to `(a() | a() | a())->` and 
 `a(-> = 3, | = 2)->` is equal to `(a()->a()->a() | a()->a()->a())->`. 
 
 ## Argument Sequences
-It is also possible to iterate a method through the use of argument sequences. 
-The following are valid sequences: `[2->5->3]`, `[true|false|false]`, `[2->1|4->4->6]`, `[ |2->3]`, `1->..->5` and `3|..|-2`. 
-All values in these examples could also be replaced by variable names or expressions. 
-The first three are standard sequences and the last two are ranges. 
-A range can be translated to a standard sequence. 
-The range `3|..|-2` is equal to `[3|2|1|0|-1|-2]` and `1->..->5` is equal to `[1->2->3->4->5]`. 
+Argument sequences can be used instead of regular arguments to declare that a layer should be repeated with the values of the given sequence. The operator between these so stacked layers is also given by the sequence. Other arguments that only have a single value are neutral to the repetition which means that the single value will be repeated an arbitrary number of times without having influence on the number of repetitions.
 
-If a argument is set to a sequence, the method will be repeated for each value in the sequence and the connection between the layers will be the same as it is between the values of the sequence. 
-An argument which has a single value is neutral to the repetition which means that it will be repeated an arbitrary number of times without interfering with the repetition. 
-If a method contains multiple argument sequences, CNNArch will try to combine the sequences. 
-The language will throw an error at compile time if this fails. 
-Assuming the method `m(a, b, c)` exists, the line `m(a=[5->3], b=[3|4|2], c=2)->` is equal to:
+The following are valid sequences: `[1->2->3->4]`, `[true | false]`, `{[1 | 3->2]`, `[ |2->3]` and `[1->..->4]`. All values in these examples could also be replaced by variable names or arithmetic or logical expressions. The last sequence is defined as a range and equal to the first one. A range in CNNArch is closed which means the start and end value are both in the sequence. Moreover, a range has always a step size of one. Thus, the range `[0|..|-4]` would be empty. The data flow operators can be used both in the same argument sequence in which case a single parallelization block is created. A parallel group in this block can be empty, which is why `[ |2->3]` is a valid sequence. If a method contains multiple argument sequences, the language will try to combine them by expanding the smaller one and will throw an error at model creation if this fails. Let `m` be a layer with parameters `a`, `b` and `c`, then the expression `m(a=[3->2],b=1)` is equal to `m(a=3,b=1)->m(a=2,b=1)`. Furthermore, the line `m(a=[5->3],b=[3|4|2],c=2)->` is equal to:
 ```
 (
     m(a=5, b=3, c=2) ->
@@ -187,7 +171,7 @@ Assuming the method `m(a, b, c)` exists, the line `m(a=[5->3], b=[3|4|2], c=2)->
     m(a=3, b=2, c=2)
 ) ->
 ```
-And `m(a=[|5|3->4], b=[1|1|2], c=2)` is equal to: 
+And `m(a=[|5|3->4], b=[|1|2], c=2)` is equal to: 
 ```
 (
 
@@ -198,7 +182,7 @@ And `m(a=[|5|3->4], b=[1|1|2], c=2)` is equal to:
     m(a=4, b=2, c=2)
 ) ->
 ```
-However, `m(a=[5->3], b=[2|4->6], c=2)->` and `m(a=[5->3], b=[2->4->6], c=2)->` would throw an error because it is not possible to expand *a* such that it is the same size as *b*.
+However, `m(a=[5->3], b=[2|4->6], c=2)->` and `m(a=[5->3], b=[2->4->6], c=2)->` would fail because it is not possible to expand *a* such that it is the same size as *b*.
 
 
 

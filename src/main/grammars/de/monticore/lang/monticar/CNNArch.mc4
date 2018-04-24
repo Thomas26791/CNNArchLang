@@ -64,11 +64,11 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     ArchSerialSequence = serialValues:(ArchSimpleExpression || "->")*;
 
-    ArchValueRange implements ArchValueSequence = start:ArchSimpleExpression
+    ArchValueRange implements ArchValueSequence = "[" start:ArchSimpleExpression
                                                   (serial:"->" | parallel:"|")
                                                   ".."
                                                   (serial2:"->" | parallel2:"|")
-                                                  end:ArchSimpleExpression;
+                                                  end:ArchSimpleExpression "]";
 
 
     ArchSimpleExpression = (arithmeticExpression:MathArithmeticExpression

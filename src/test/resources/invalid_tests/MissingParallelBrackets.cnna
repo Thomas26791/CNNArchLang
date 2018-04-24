@@ -2,8 +2,8 @@ architecture MissingParallelBrackets(img_height=224, img_width=224, img_channels
     def input Z(0:255)^{img_channels, img_height, img_width} image
     def output Q(0:1)^{classes} predictions
 
-    def conv(filter, channels, hasPool=true, convStride=(1,1)){
-        Convolution(kernel=filter, channels=channels, stride=convStride) ->
+    def conv(kernel, channels, hasPool=true, convStride=(1,1)){
+        Convolution(kernel=kernel, channels=channels, stride=convStride) ->
         Relu() ->
         Pooling(pool_type="max", kernel=(3,3), stride=(2,2), ?=hasPool)
     }
@@ -14,27 +14,27 @@ architecture MissingParallelBrackets(img_height=224, img_width=224, img_channels
     }
 
     image ->
-    conv(filter=(11,11), channels=96, convStride=(4,4)) ->
+    conv(kernel=(11,11), channels=96, convStride=(4,4)) ->
     Lrn(nsize=5, alpha=0.0001, beta=0.75) ->
 
         SplitData(index=0, n=2) ->
-        conv(filter=(5,5), channels=128) ->
+        conv(kernel=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75)
     |
         SplitData(index=1, n=2) ->
-        conv(filter=(5,5), channels=128) ->
+        conv(kernel=(5,5), channels=128) ->
         Lrn(nsize=5, alpha=0.0001, beta=0.75)
     ->
 
-    conv(filter=(3,3), channels=384 ,hasPool=false) ->
+    conv(kernel=(3,3), channels=384 ,hasPool=false) ->
 
         SplitData(index=0, n=2) ->
-        conv(filter=(3,3), channels=192, hasPool=false) ->
-        conv(filter=(3,3), channels=128)
+        conv(kernel=(3,3), channels=192, hasPool=false) ->
+        conv(kernel=(3,3), channels=128)
     |
         SplitData(index=1, n=2) ->
-        conv(filter=(3,3), channels=192, hasPool=false) ->
-        conv(filter=(3,3), channels=128)
+        conv(kernel=(3,3), channels=192, hasPool=false) ->
+        conv(kernel=(3,3), channels=128)
     ->
 
     fc() ->

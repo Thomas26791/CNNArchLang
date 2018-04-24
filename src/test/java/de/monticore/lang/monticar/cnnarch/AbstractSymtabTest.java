@@ -27,9 +27,11 @@ import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSym
 import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchLanguage;
 import de.monticore.symboltable.GlobalScope;
 import de.monticore.symboltable.Scope;
+import de.se_rwth.commons.logging.Log;
 
 import java.nio.file.Paths;
 
+import static de.monticore.lang.monticar.cnnarch.ParserTest.ENABLE_FAIL_QUICK;
 import static org.junit.Assert.assertNotNull;
 
 public class AbstractSymtabTest {

@@ -1,9 +1,9 @@
 architecture VGG16(img_height=224, img_width=224, img_channels=3, classes=1000){
     def input Z(0:255)^{img_channels, img_height, img_width} data
-    def output Q(0:1)^{classes} softmax
+    def output Q(0:1)^{classes} predictions
 
-    def conv(filter, channels){
-        Convolution(kernel=(filter,filter), channels=channels) ->
+    def conv(kernel, channels){
+        Convolution(kernel=(kernel,kernel), channels=channels) ->
         Relu()
     }
     def fc(){
@@ -13,19 +13,19 @@ architecture VGG16(img_height=224, img_width=224, img_channels=3, classes=1000){
     }
 
     data ->
-    conv(filter=3, channels=64, ->=2) ->
+    conv(kernel=3, channels=64, ->=2) ->
     Pooling(pool_type="max", kernel=(2,2), stride=(2,2)) ->
-    conv(filter=3, channels=128, ->=2) ->
+    conv(kernel=3, channels=128, ->=2) ->
     Pooling(pool_type="max", kernel=(2,2), stride=(2,2)) ->
-    conv(filter=3, channels=256, ->=3) ->
+    conv(kernel=3, channels=256, ->=3) ->
     Pooling(pool_type="max", kernel=(2,2), stride=(2,2)) ->
-    conv(filter=3, channels=512, ->=3) ->
+    conv(kernel=3, channels=512, ->=3) ->
     Pooling(pool_type="max", kernel=(2,2), stride=(2,2)) ->
-    conv(filter=3, channels=512, ->=3) ->
+    conv(kernel=3, channels=512, ->=3) ->
     Pooling(pool_type="max", kernel=(2,2), stride=(2,2)) ->
     fc() ->
     fc() ->
     FullyConnected(units=classes) ->
     Softmax() ->
-    softmax
+    predictions
 }
