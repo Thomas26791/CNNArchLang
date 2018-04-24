@@ -191,7 +191,7 @@ This language supports the basic arithmetic operators "+", "-", "\*", "/", the l
 At the moment, it is sometimes necessary to use parentheses around an expression to avoid a parsing error. 
 For example, the line `someMethod(booleanArg = (1!=1))` does not parse without the parentheses around `1!=1`.
 
-## Advanced Example
+## Advanced Examples
 This version of Alexnet, which uses method construction, argument sequences and special arguments, is identical to the one in the section Basic Structure.
 ```
 architecture Alexnet_alt2(img_height=224, img_width=224, img_channels=3, classes=10){
@@ -235,6 +235,46 @@ architecture Alexnet_alt2(img_height=224, img_width=224, img_channels=3, classes
 }
 ```
 
+The following architecture defines ResNet-152.
+```
+architecture ResNet152(img_height=224, img_width=224, img_channels=3, classes=1000){
+    def input Z(0:255)^{img_channels, img_height, img_width} data
+    def output Q(0:1)^{classes} predictions
+
+    def conv(kernel, channels, stride=1, act=true){
+        Convolution(kernel=(kernel,kernel), channels=channels, stride=(stride,stride)) ->
+        BatchNorm() ->
+        Relu(?=act)
+    }
+    def resLayer(channels, stride=1, addSkipConv=false){
+        (
+            conv(kernel=1, channels=channels, stride=stride) ->
+            conv(kernel=3, channels=channels) ->
+            conv(kernel=1, channels=4*channels, act=false)
+        |
+            conv(kernel=1, channels=4*channels, stride=stride, act=false, ? = addSkipConv)
+        ) ->
+        Add() ->
+        Relu()
+    }
+
+    data ->
+    conv(kernel=7, channels=64, stride=2) ->
+    Pooling(pool_type="max", kernel=(3,3), stride=(2,2)) ->
+    resLayer(channels=64, addSkipConv=true) ->
+    resLayer(channels=64, ->=2) ->
+    resLayer(channels=128, stride=2, addSkipConv=true) ->
+    resLayer(channels=128, ->=7) ->
+    resLayer(channels=256, stride=2, addSkipConv=true) ->
+    resLayer(channels=256, ->=35) ->
+    resLayer(channels=512, stride=2, addSkipConv=true) ->
+    resLayer(channels=512, ->=2) ->
+    GlobalPooling(pool_type="avg") ->
+    FullyConnected(units=classes) ->
+    Softmax() ->
+    predictions
+}
+```
 
 ## Predefined Layers
 All methods with the exception of *Concatenate*, *Add*, *Get* and *Split* can only handle 1 input stream and have 1 output stream. 
