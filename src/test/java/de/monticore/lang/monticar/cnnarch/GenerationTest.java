@@ -24,11 +24,14 @@ import de.monticore.lang.monticar.cnnarch.generator.CNNArchGenerator;
 import de.monticore.lang.monticar.cnnarch.generator.CNNArchGeneratorCli;
 import de.se_rwth.commons.logging.Log;
 import freemarker.template.TemplateException;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static de.monticore.lang.monticar.cnnarch.ParserTest.ENABLE_FAIL_QUICK;
 
 public class GenerationTest {
 
@@ -36,6 +39,13 @@ public class GenerationTest {
         Path modelPath = Paths.get("./src/test/resources/architectures");
         CNNArchGenerator gen =  new CNNArchGenerator();
         gen.generate(modelPath, qualifiedName);
+    }
+
+    @Before
+    public void setUp() {
+        // ensure an empty log
+        Log.getFindings().clear();
+        Log.enableFailQuick(ENABLE_FAIL_QUICK);
     }
 
 

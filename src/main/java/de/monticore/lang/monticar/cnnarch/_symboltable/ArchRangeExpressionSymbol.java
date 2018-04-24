@@ -120,12 +120,7 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
                 int start = startSymbol.getIntValue().get();
                 int end = endSymbol.getIntValue().get();
                 List<Integer> range;
-                if (start <= end){
-                    range = IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList());
-                }
-                else {
-                    range = IntStream.rangeClosed(-start, -end).map(e -> -e).boxed().collect(Collectors.toList());
-                }
+                range = IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList());
 
                 List<List<ArchSimpleExpressionSymbol>> elementList = new ArrayList<>();
                 if (isParallel()){

@@ -3,18 +3,14 @@ architecture ResNeXt50(img_height=224, img_width=224, img_channels=3, classes=10
     def output Q(0:1)^{classes} predictions
 
     def conv(kernel, channels, stride=1, act=true){
-        Convolution(kernel=kernel, channels=channels, stride=(stride,stride)) ->
+        Convolution(kernel=(kernel,kernel), channels=channels, stride=(stride,stride)) ->
         BatchNorm() ->
         Relu(?=act)
     }
     def resGroup(innerChannels, outChannels, stride=1){
-        conv(kernel=(1,1), channels=innerChannels) ->
-        conv(kernel=(3,3), channels=innerChannels, stride=stride) ->
-        conv(kernel=(1,1), channels=outChannels, act=false)
-    }
-    def skip(outChannels, stride){
-        Convolution(kernel=(1,1), channels=outChannels, stride=(stride,stride)) ->
-        BatchNorm()
+        conv(kernel=1, channels=innerChannels) ->
+        conv(kernel=3, channels=innerChannels, stride=stride) ->
+        conv(kernel=1, channels=outChannels, act=false)
     }
     def resLayer(innerChannels, outChannels, stride=1, addSkipConv=false){
         (
@@ -24,14 +20,14 @@ architecture ResNeXt50(img_height=224, img_width=224, img_channels=3, classes=10
                      | = 32) ->
             Add()
         |
-            skip(outChannels=outChannels, stride=stride, ? = addSkipConv)
+            conv(kernel=1, channels=outChannels, stride=stride, act=false, ? = addSkipConv)
         ) ->
         Add() ->
         Relu()
     }
 
     data ->
-    conv(kernel=(7,7), channels=64, stride=2) ->
+    conv(kernel=7, channels=64, stride=2) ->
     Pooling(pool_type="max", kernel=(3,3), stride=(2,2)) ->
     resLayer(innerChannels=4, outChannels=256, addSkipConv=true) ->
     resLayer(innerChannels=4, outChannels=256, -> = 2) ->

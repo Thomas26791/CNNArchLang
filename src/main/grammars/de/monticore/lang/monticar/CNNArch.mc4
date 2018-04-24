@@ -2,6 +2,21 @@ package de.monticore.lang.monticar;
 
 grammar CNNArch extends de.monticore.lang.math.Math {
 
+    token NEWLINETOKEN =
+                 ('\r' '\n' |
+                 '\r' |
+                 '\n' ):;
+
+    /* =================================*/
+    /* ========== PRODUCTIONS ==========*/
+    /* =================================*/
+
+    /* ========== Declarations =========*/
+
+    /**
+        The complete file.
+        Use nonterminal Architecture for embedding in another language (e.g. EmbeddedMontiArc)
+    */
     symbol scope CNNArchCompilationUnit = "architecture"
                                           name:Name&
                                           ( "(" (ArchitectureParameter || ",")* ")" )? "{"
@@ -9,53 +24,76 @@ grammar CNNArch extends de.monticore.lang.math.Math {
                                           Architecture
                                           "}";
 
-    Architecture = NEWLINETOKEN* methodDeclaration:MethodDeclaration* NEWLINETOKEN*
-                   body:ArchBody NEWLINETOKEN*;
-
-    interface ArchitectureElement;
-    interface Variable;
-    ast Variable = method String getName(){};
-
-    IODeclaration = NEWLINETOKEN* "def"
-                   (in:"input" | out:"output")
-                   type:ArchType
-                   Name&
-                   (ArrayDeclaration)?;
-
-    ArchType = ElementType "^" Shape;
-
-    Shape = "{" dimensions:(ArchSimpleExpression || ",")* "}";
-
-    ArchitectureParameter implements Variable = NEWLINETOKEN* Name& ("=" default:ArchSimpleExpression)? NEWLINETOKEN*;
-
     MethodDeclaration = NEWLINETOKEN* "def"
                         Name& "("
                         parameters:(MethodParameter || ",")* ")" "{" NEWLINETOKEN*
                         body:ArchBody NEWLINETOKEN* "}";
 
-    MethodParameter implements Variable = NEWLINETOKEN* Name& ("=" default:ArchSimpleExpression)? NEWLINETOKEN*;
+    IODeclaration = NEWLINETOKEN* "def"
+                    (in:"input" | out:"output")
+                    type:ArchType
+                    Name&
+                    (ArrayDeclaration)?;
+
+
+    /* ============== Type =============*/
+
+    /**
+         Similar to EmbeddedMontiArc port types.
+         ArchType and Shape are not used if the Architecture is integrated into EmbeddedMontiArc
+    */
+    ArchType = ElementType "^" Shape;
+
+    Shape = "{" dimensions:(ArchSimpleExpression || ",")* "}";
+
+
+    /* ========= Architecture  =========*/
+
+    /**
+        Defines the architecture of the neural network.
+        This NT is used for integration in EmbeddedMontiArc.
+        @attribute methodDeclaration*
+                 A list of new methods/layers which can be used in the architecture.
+        @attribute body
+                 The architecture of the neural network.
+    */
+    Architecture = NEWLINETOKEN* methodDeclaration:MethodDeclaration* NEWLINETOKEN*
+                   body:ArchBody NEWLINETOKEN*;
 
     scope ArchBody = elements:(ArchitectureElement || "->")*;
+
+    interface ArchitectureElement;
 
     IOLayer implements ArchitectureElement = NEWLINETOKEN* Name& ("[" index:ArchSimpleExpression "]")?;
 
     MethodLayer implements ArchitectureElement = NEWLINETOKEN* Name& "(" arguments:(ArchArgument || ",")* ")";
-
-    interface ArchArgument;
-    ast ArchArgument = method String getName(){}
-                       method ASTArchExpression getRhs(){};
-
-    ArchParameterArgument implements ArchArgument = NEWLINETOKEN* Name "=" rhs:ArchExpression NEWLINETOKEN*;
-
-    ArchSpecialArgument implements ArchArgument = NEWLINETOKEN* (serial:"->" | parallel:"|" | conditional:"?") "="
-                                                  rhs:ArchExpression NEWLINETOKEN*;
-    ast ArchSpecialArgument = method public String getName(){return "";};
 
     ParallelLayer implements ArchitectureElement = NEWLINETOKEN* "(" NEWLINETOKEN* groups:ArchBody NEWLINETOKEN* "|" NEWLINETOKEN* groups:(ArchBody || "|")+ NEWLINETOKEN* ")";
 
     ArrayAccessLayer implements ArchitectureElement = NEWLINETOKEN* "[" index:ArchSimpleExpression "]";
 
 
+    /* ====== Variables/Arguments ======*/
+
+    interface Variable;
+
+    ArchitectureParameter implements Variable = NEWLINETOKEN* Name& ("=" default:ArchSimpleExpression)? NEWLINETOKEN*;
+
+    MethodParameter implements Variable = NEWLINETOKEN* Name& ("=" default:ArchSimpleExpression)? NEWLINETOKEN*;
+
+    interface ArchArgument;
+
+    ArchParameterArgument implements ArchArgument = NEWLINETOKEN* Name "=" rhs:ArchExpression NEWLINETOKEN*;
+
+    ArchSpecialArgument implements ArchArgument = NEWLINETOKEN* (serial:"->" | parallel:"|" | conditional:"?") "="
+                                                      rhs:ArchExpression NEWLINETOKEN*;
+
+
+    /* ======= Value Expressions =======*/
+
+    /**
+        Expression used for method arguments.
+    */
     ArchExpression = (expression:ArchSimpleExpression | sequence:ArchValueSequence);
 
     interface ArchValueSequence;
@@ -69,8 +107,9 @@ grammar CNNArch extends de.monticore.lang.math.Math {
                                                   ".."
                                                   (serial2:"->" | parallel2:"|")
                                                   end:ArchSimpleExpression "]";
-
-
+    /**
+        Expression for variable values.
+    */
     ArchSimpleExpression = (arithmeticExpression:MathArithmeticExpression
                          | booleanExpression:MathBooleanExpression
                          | tupleExpression:TupleExpression
@@ -78,8 +117,13 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     TupleExpression = "(" expressions:MathExpression "," expressions:(MathExpression || ",")* ")";
 
-    token NEWLINETOKEN =
-             ('\r' '\n' |
-             '\r' |
-             '\n' ):;
+
+    /* =================================*/
+    /* ============ ASTRULES ===========*/
+    /* =================================*/
+    ast Variable = method String getName(){};
+    ast ArchSpecialArgument = method public String getName(){return "";}; //Override is necessary
+    ast ArchArgument = method String getName(){}
+                       method ASTArchExpression getRhs(){};
+
 }
