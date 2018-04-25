@@ -24,8 +24,11 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
+import de.monticore.symboltable.Scope;
+import de.monticore.symboltable.Symbol;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -93,6 +96,27 @@ public class IODeclarationSymbol extends CommonSymbol {
 
     public void setArchitecture(ArchitectureSymbol architecture) {
         this.architecture = architecture;
+    }
+
+    public void putInScope(Scope scope){
+        Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
+        if (symbolsInScope == null || !symbolsInScope.contains(this)) {
+            scope.getAsMutableScope().add(this);
+            getType().putInScope(scope);
+        }
+    }
+
+    public IODeclarationSymbol preResolveDeepCopy(){
+        IODeclarationSymbol copy = new IODeclarationSymbol(getName());
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
+
+        copy.setInput(isInput());
+        copy.setArrayLength(getArrayLength());
+        copy.setType(getType().preResolveDeepCopy());
+
+        return copy;
     }
 
     public static class Builder{

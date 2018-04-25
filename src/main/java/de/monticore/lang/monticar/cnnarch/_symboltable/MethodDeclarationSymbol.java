@@ -25,7 +25,9 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
+import de.monticore.symboltable.Symbol;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -108,7 +110,7 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
             reset();
             set(layer.getArguments());
 
-            CompositeLayerSymbol copy = getBody().copy();
+            CompositeLayerSymbol copy = getBody().preResolveDeepCopy();
             copy.putInScope(getSpannedScope());
             copy.resolveOrError();
             getSpannedScope().remove(copy);
@@ -141,6 +143,24 @@ public class MethodDeclarationSymbol extends CommonScopeSpanningSymbol {
         if (!valid){
             throw new IllegalArgumentException("Arguments with sequence expressions have to be resolved first before calling the method.");
         }
+    }
+
+    public MethodDeclarationSymbol deepCopy() {
+        MethodDeclarationSymbol copy = new MethodDeclarationSymbol(getName());
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
+
+        List<VariableSymbol> parameterCopies = new ArrayList<>(getParameters().size());
+        for (VariableSymbol parameter : getParameters()){
+            VariableSymbol parameterCopy = parameter.deepCopy();
+            parameterCopies.add(parameterCopy);
+            parameterCopy.putInScope(copy.getSpannedScope());
+        }
+        copy.setParameters(parameterCopies);
+        copy.setBody(getBody().preResolveDeepCopy());
+        copy.getBody().putInScope(copy.getSpannedScope());
+        return copy;
     }
 
 

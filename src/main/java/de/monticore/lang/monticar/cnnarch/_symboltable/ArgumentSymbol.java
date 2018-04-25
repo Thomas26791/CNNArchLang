@@ -177,14 +177,13 @@ public class ArgumentSymbol extends CommonSymbol {
         }
     }
 
-    public ArgumentSymbol copy(){
-        ArgumentSymbol copy = new Builder()
-                .parameter(getParameter())
-                .value(getRhs().copy())
-                .build();
+    protected ArgumentSymbol preResolveDeepCopy(){
+        ArgumentSymbol copy = new ArgumentSymbol(getName());
         if (getAstNode().isPresent()){
             copy.setAstNode(getAstNode().get());
         }
+
+        copy.setRhs(getRhs().preResolveDeepCopy());
         return copy;
     }
 

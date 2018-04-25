@@ -21,6 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Scope;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,15 +153,6 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
         unresolvableVariables.addAll(getEndSymbol().getUnresolvableVariables());
     }
 
-    public ArchRangeExpressionSymbol copy(){
-        ArchRangeExpressionSymbol copy = new ArchRangeExpressionSymbol();
-        copy.setParallel(isParallel());
-        copy.setStartSymbol(getStartSymbol().copy());
-        copy.setEndSymbol(getEndSymbol().copy());
-        copy.setUnresolvableVariables(getUnresolvableVariables());
-        return copy;
-    }
-
     @Override
     public String getTextualRepresentation() {
         String separator = isParallel() ? "|" : "->";
@@ -168,10 +160,23 @@ public class ArchRangeExpressionSymbol extends ArchAbstractSequenceExpression {
     }
 
     @Override
-    protected void putInScope(MutableScope scope) {
+    protected void putInScope(Scope scope) {
         super.putInScope(scope);
         getStartSymbol().putInScope(scope);
         getEndSymbol().putInScope(scope);
+    }
+
+    @Override
+    public ArchRangeExpressionSymbol preResolveDeepCopy(){
+        ArchRangeExpressionSymbol copy = new ArchRangeExpressionSymbol();
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
+
+        copy.setParallel(isParallel());
+        copy.setStartSymbol(getStartSymbol().preResolveDeepCopy());
+        copy.setEndSymbol(getEndSymbol().preResolveDeepCopy());
+        return copy;
     }
 
     public static ArchRangeExpressionSymbol of(ArchSimpleExpressionSymbol start, ArchSimpleExpressionSymbol end, boolean parallel){

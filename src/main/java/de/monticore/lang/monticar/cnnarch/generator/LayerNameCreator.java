@@ -44,7 +44,27 @@ public class LayerNameCreator {
         return layerToName.get(layer);
     }
 
-    protected int name(CompositeLayerSymbol compositeLayer, int stage, List<Integer> streamIndices){
+    protected int name(LayerSymbol layer, int stage, List<Integer> streamIndices){
+        if (layer instanceof CompositeLayerSymbol){
+            return nameComposite((CompositeLayerSymbol) layer, stage, streamIndices);
+        }
+        else{
+            if (layer.isAtomic()){
+                if (layer.getMaxSerialLength().get() > 0){
+                    return add(layer, stage, streamIndices);
+                }
+                else {
+                    return stage;
+                }
+            }
+            else {
+                LayerSymbol resolvedLayer = layer.getResolvedThis().get();
+                return name(resolvedLayer, stage, streamIndices);
+            }
+        }
+    }
+
+    protected int nameComposite(CompositeLayerSymbol compositeLayer, int stage, List<Integer> streamIndices){
         if (compositeLayer.isParallel()){
             int startStage = stage + 1;
             streamIndices.add(1);
@@ -65,29 +85,6 @@ public class LayerNameCreator {
                 endStage = name(subLayer, endStage, streamIndices);
             }
             return endStage;
-        }
-    }
-
-    protected int name(LayerSymbol layer, int stage, List<Integer> streamIndices){
-        if (layer instanceof CompositeLayerSymbol){
-            return name((CompositeLayerSymbol) layer, stage, streamIndices);
-        }
-        else if (layer instanceof MethodLayerSymbol){
-            if (layer.isAtomic()){
-                if (layer.getMaxSerialLength().get() > 0){
-                    return add(layer, stage, streamIndices);
-                }
-                else {
-                    return stage;
-                }
-            }
-            else {
-                LayerSymbol resolvedLayer = ((MethodLayerSymbol) layer).getResolvedThis().get();
-                return (name(resolvedLayer, stage, streamIndices));
-            }
-        }
-        else {
-            return add(layer, stage, streamIndices);
         }
     }
 

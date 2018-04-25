@@ -23,7 +23,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
-import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Scope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
@@ -34,7 +34,6 @@ public class MethodLayerSymbol extends LayerSymbol {
 
     private MethodDeclarationSymbol method = null;
     private List<ArgumentSymbol> arguments;
-    private LayerSymbol resolvedThis = null;
 
     protected MethodLayerSymbol(String name) {
         super(name);
@@ -77,23 +76,6 @@ public class MethodLayerSymbol extends LayerSymbol {
         }
     }
 
-    public Optional<LayerSymbol> getResolvedThis() {
-        return Optional.ofNullable(resolvedThis);
-    }
-
-    protected void setResolvedThis(LayerSymbol resolvedThis) {
-        if (resolvedThis != null && resolvedThis != this){
-            resolvedThis.putInScope(getSpannedScope());
-            if (getInputLayer().isPresent()){
-                resolvedThis.setInputLayer(getInputLayer().get());
-            }
-            if (getOutputLayer().isPresent()){
-                resolvedThis.setOutputLayer(getOutputLayer().get());
-            }
-        }
-        this.resolvedThis = resolvedThis;
-    }
-
     @Override
     public void setInputLayer(LayerSymbol inputLayer) {
         super.setInputLayer(inputLayer);
@@ -111,10 +93,10 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected void putInScope(MutableScope scope){
+    protected void putInScope(Scope scope){
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)){
-            scope.add(this);
+            scope.getAsMutableScope().add(this);
             /*if (getResolvedThis().isPresent()){
                 getResolvedThis().get().putInScope(getSpannedScope());
             }*/
@@ -146,15 +128,6 @@ public class MethodLayerSymbol extends LayerSymbol {
         }
         else {
             return getResolvedThis().get().getLastAtomicLayers();
-        }
-    }
-
-    public boolean isResolved(){
-        if (getResolvedThis().isPresent() && getResolvedThis().get() != this){
-            return getResolvedThis().get().isResolved();
-        }
-        else {
-            return getResolvedThis().isPresent();
         }
     }
 
@@ -466,17 +439,18 @@ public class MethodLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public LayerSymbol copy() {
+    protected LayerSymbol preResolveDeepCopy() {
         MethodLayerSymbol copy = new MethodLayerSymbol(getName());
-        List<ArgumentSymbol> args = new ArrayList<>(getArguments().size());
-        for (ArgumentSymbol argument : getArguments()){
-            args.add(argument.copy());
-        }
-        copy.setArguments(args);
-        copy.setMethod(getMethod());
         if (getAstNode().isPresent()){
             copy.setAstNode(getAstNode().get());
         }
+
+        List<ArgumentSymbol> args = new ArrayList<>(getArguments().size());
+        for (ArgumentSymbol argument : getArguments()){
+            args.add(argument.preResolveDeepCopy());
+        }
+        copy.setArguments(args);
+
         return copy;
     }
 

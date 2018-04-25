@@ -28,36 +28,39 @@ import de.se_rwth.commons.logging.Log;
 //check all cocos
 public class CNNArchCocos {
 
-    public static void checkAll(ArchitectureSymbol architecture){
+    public static ArchitectureSymbol checkAll(ArchitectureSymbol architecture){
+        ArchitectureSymbol resolvedArchitecture = null;
         ASTCNNArchNode node = (ASTCNNArchNode) architecture.getAstNode().get();
         int findings = Log.getFindings().size();
         createPreResolveChecker().checkAll(node);
         if (findings == Log.getFindings().size()){
-            architecture.resolve();
+            resolvedArchitecture = architecture.resolve();
             if (findings == Log.getFindings().size()){
-                createPostResolveChecker().checkAll(node);
+                createPostResolveChecker().checkAll(resolvedArchitecture);
             }
         }
+        return resolvedArchitecture;
     }
 
-    public static void checkAll(CNNArchCompilationUnitSymbol compilationUnit){
+    public static ArchitectureSymbol checkAll(CNNArchCompilationUnitSymbol compilationUnit){
+        ArchitectureSymbol resolvedArchitecture = null;
         ASTCNNArchNode node = (ASTCNNArchNode) compilationUnit.getAstNode().get();
         int findings = Log.getFindings().size();
         createPreResolveChecker().checkAll(node);
         if (findings == Log.getFindings().size()){
-            compilationUnit.getArchitecture().resolve();
+            resolvedArchitecture = compilationUnit.getArchitecture().resolve();
             if (findings == Log.getFindings().size()){
-                createPostResolveChecker().checkAll(node);
+                createPostResolveChecker().checkAll(resolvedArchitecture);
             }
         }
+        return resolvedArchitecture;
     }
 
-    public static CNNArchCoCoChecker createPostResolveChecker() {
-        return new CNNArchCoCoChecker()
+    public static CNNArchExtendedCoCoChecker createPostResolveChecker() {
+        return new CNNArchExtendedCoCoChecker()
                 .addCoCo(new CheckIOType())
                 .addCoCo(new CheckLayerInputs())
                 .addCoCo(new CheckIOAccessAndIOMissing())
-                .addCoCo(new CheckUnusedASTIODeclaration())
                 .addCoCo(new CheckArchitectureFinished());
     }
 

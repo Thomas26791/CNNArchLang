@@ -24,10 +24,11 @@ import de.monticore.lang.math.math._symboltable.expression.*;
 import de.monticore.lang.monticar.cnnarch._symboltable.TupleExpressionSymbol;
 import de.monticore.lang.monticar.ranges._ast.ASTRange;
 import de.monticore.lang.monticar.types2._ast.ASTElementType;
+import de.monticore.symboltable.Scope;
+import de.monticore.symboltable.Symbol;
+import de.monticore.symboltable.resolving.ResolvingFilter;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class Utils {
@@ -37,6 +38,7 @@ public class Utils {
         List<MathExpressionSymbol> list = new LinkedList<>();
         list.add(expression);
 
+        //switch expression.class
         if (expression instanceof MathParenthesisExpressionSymbol){
             MathParenthesisExpressionSymbol exp = (MathParenthesisExpressionSymbol) expression;
             list.addAll(createSubExpressionList(exp.getMathExpressionSymbol()));
@@ -92,6 +94,65 @@ public class Utils {
         return builder.toString();
     }
 
+    public static MathExpressionSymbol copy(MathExpressionSymbol expression){
+        MathExpressionSymbol copy;
+
+        //switch expression.class
+        if (expression instanceof MathParenthesisExpressionSymbol){
+            MathParenthesisExpressionSymbol exp = (MathParenthesisExpressionSymbol) expression;
+            copy = new MathParenthesisExpressionSymbol(copy(exp.getMathExpressionSymbol()));
+        }
+        else if (expression instanceof MathCompareExpressionSymbol){
+            MathCompareExpressionSymbol exp = (MathCompareExpressionSymbol) expression;
+            MathCompareExpressionSymbol castedCopy = new MathCompareExpressionSymbol();
+            castedCopy.setCompareOperator(exp.getCompareOperator());
+            castedCopy.setLeftExpression(copy(exp.getLeftExpression()));
+            castedCopy.setRightExpression(copy(exp.getRightExpression()));
+            copy = castedCopy;
+        }
+        else if (expression instanceof MathArithmeticExpressionSymbol){
+            MathArithmeticExpressionSymbol exp = (MathArithmeticExpressionSymbol) expression;
+            MathArithmeticExpressionSymbol castedCopy = new MathArithmeticExpressionSymbol();
+            castedCopy.setMathOperator(exp.getMathOperator());
+            castedCopy.setLeftExpression(copy(exp.getLeftExpression()));
+            castedCopy.setRightExpression(copy(exp.getRightExpression()));
+            copy = castedCopy;
+        }
+        else if (expression instanceof MathPreOperatorExpressionSymbol){
+            MathPreOperatorExpressionSymbol exp = (MathPreOperatorExpressionSymbol) expression;
+            MathPreOperatorExpressionSymbol castedCopy = new MathPreOperatorExpressionSymbol();
+            castedCopy.setOperator(exp.getOperator());
+            castedCopy.setMathExpressionSymbol(copy(exp.getMathExpressionSymbol()));
+            copy = castedCopy;
+        }
+        else if (expression instanceof TupleExpressionSymbol){
+            TupleExpressionSymbol exp = (TupleExpressionSymbol) expression;
+            TupleExpressionSymbol castedCopy = new TupleExpressionSymbol();
+            List<MathExpressionSymbol> elementCopies = new ArrayList<>();
+            for (MathExpressionSymbol element : exp.getExpressions()){
+                elementCopies.add(copy(element));
+            }
+            castedCopy.setExpressions(elementCopies);
+            copy = castedCopy;
+        }
+        else if (expression instanceof MathNameExpressionSymbol){
+            MathNameExpressionSymbol exp = (MathNameExpressionSymbol) expression;
+            copy = new MathNameExpressionSymbol(exp.getNameToResolveValue());
+        }
+        else if (expression instanceof MathNumberExpressionSymbol){
+            MathNumberExpressionSymbol exp = (MathNumberExpressionSymbol) expression;
+            copy = new MathNumberExpressionSymbol(exp.getValue().getRealNumber());
+        }
+        else {
+            throw new IllegalArgumentException("Unknown expression type: " + expression.getClass().getSimpleName());
+        }
+
+        copy.setID(expression.getExpressionID());
+        if (expression.getAstNode().isPresent()){
+            copy.setAstNode(expression.getAstNode().get());
+        }
+        return copy;
+    }
 
     public static boolean equals(ASTElementType firstType, ASTElementType secondType){
         if (firstType.isIsBoolean() ^ secondType.isIsBoolean()
@@ -132,5 +193,12 @@ public class Utils {
         }
 
         return true;
+    }
+
+    public static void recursiveSetResolvingFilters(Scope scope, Collection<ResolvingFilter<? extends Symbol>> resolvingFilters){
+        scope.getAsMutableScope().setResolvingFilters(resolvingFilters);
+        for (Scope subScope : scope.getSubScopes()){
+            recursiveSetResolvingFilters(subScope, resolvingFilters);
+        }
     }
 }

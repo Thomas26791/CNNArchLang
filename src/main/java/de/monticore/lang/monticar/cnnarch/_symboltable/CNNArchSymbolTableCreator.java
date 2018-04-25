@@ -125,6 +125,12 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         }
         compilationUnitSymbol.setParameters(parameters);
 
+        List<IODeclarationSymbol> ioDeclarations = new ArrayList<>();
+        for (ASTIODeclaration astIODeclaration : ast.getIoDeclarations()){
+            ioDeclarations.add((IODeclarationSymbol) astIODeclaration.getSymbol().get());
+        }
+        compilationUnitSymbol.setIoDeclarations(ioDeclarations);
+
         setEnclosingScopeOfNodes(ast);
     }
 
@@ -413,7 +419,21 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         addToScopeAndLinkWithNode(argument, node);
     }
 
+    public void visit(ASTIOLayer node) {
+        IOLayerSymbol ioLayer = new IOLayerSymbol(node.getName());
+        addToScopeAndLinkWithNode(ioLayer, node);
+    }
+
     @Override
+    public void endVisit(ASTIOLayer node) {
+        IOLayerSymbol sym = (IOLayerSymbol) node.getSymbol().get();
+        if (node.getIndex().isPresent()){
+            sym.setArrayAccess((ArchSimpleExpressionSymbol) node.getIndex().get().getSymbol().get());
+        }
+        removeCurrentScope();
+    }
+
+    /*@Override
     public void visit(ASTIOLayer node) {
         Collection<IODeclarationSymbol> ioDefCollection = currentScope().get().<IODeclarationSymbol>resolveMany(node.getName(), IODeclarationSymbol.KIND);
         int arrayLength = 1;
@@ -495,7 +515,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
             sym.setArrayAccess((ArchSimpleExpressionSymbol) node.getIndex().get().getSymbol().get());
         }
         removeCurrentScope();
-    }
+    }*/
 
     @Override
     public void visit(ASTArrayAccessLayer node) {

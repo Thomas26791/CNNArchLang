@@ -21,7 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Scope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
@@ -34,6 +34,7 @@ public class CompositeLayerSymbol extends LayerSymbol {
 
     protected CompositeLayerSymbol() {
         super("");
+        setResolvedThis(this);
     }
 
     public boolean isParallel() {
@@ -244,10 +245,10 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected void putInScope(MutableScope scope) {
+    protected void putInScope(Scope scope) {
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)) {
-            scope.add(this);
+            scope.getAsMutableScope().add(this);
             for (LayerSymbol layer : getLayers()) {
                 layer.putInScope(getSpannedScope());
             }
@@ -255,15 +256,17 @@ public class CompositeLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public CompositeLayerSymbol copy() {
+    protected CompositeLayerSymbol preResolveDeepCopy() {
         CompositeLayerSymbol copy = new CompositeLayerSymbol();
         copy.setParallel(isParallel());
-        List<LayerSymbol> layers = new ArrayList<>(getLayers().size());
-        for (LayerSymbol layer : getLayers()){
-            layers.add(layer.copy());
-        }
         if (getAstNode().isPresent()){
             copy.setAstNode(getAstNode().get());
+        }
+
+        List<LayerSymbol> layers = new ArrayList<>(getLayers().size());
+        for (LayerSymbol layer : getLayers()){
+            LayerSymbol layerCopy = layer.preResolveDeepCopy();
+            layers.add(layerCopy);
         }
         copy.setLayers(layers);
         return copy;

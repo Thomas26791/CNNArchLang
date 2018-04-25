@@ -23,6 +23,8 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 import de.monticore.lang.monticar.types2._ast.ASTElementType;
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Scope;
+import de.monticore.symboltable.Symbol;
 
 import java.util.*;
 
@@ -37,9 +39,8 @@ public class ArchTypeSymbol extends CommonSymbol {
     private int channelIndex = -1;
     private int heightIndex = -1;
     private int widthIndex = -1;
-
-
     private List<ArchSimpleExpressionSymbol> dimensions = new ArrayList<>();
+
 
     public ArchTypeSymbol() {
         super("", KIND);
@@ -188,6 +189,35 @@ public class ArchTypeSymbol extends CommonSymbol {
         for (ArchSimpleExpressionSymbol dimension : getDimensionSymbols()){
             dimension.putInScope(scope);
         }
+    }
+
+    public void putInScope(Scope scope) {
+        Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
+        if (symbolsInScope == null || !symbolsInScope.contains(this)) {
+            scope.getAsMutableScope().add(this);
+            for (ArchSimpleExpressionSymbol dimension : getDimensionSymbols()){
+                dimension.putInScope(scope);
+            }
+        }
+    }
+
+    public ArchTypeSymbol preResolveDeepCopy() {
+        ArchTypeSymbol copy = new ArchTypeSymbol();
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
+
+        copy.setElementType(getElementType());
+        copy.setWidthIndex(getWidthIndex());
+        copy.setChannelIndex(getChannelIndex());
+        copy.setHeightIndex(getHeightIndex());
+        List<ArchSimpleExpressionSymbol> dimensionCopies = new ArrayList<>();
+        for (ArchSimpleExpressionSymbol dimension : getDimensionSymbols()){
+            dimensionCopies.add(dimension.preResolveDeepCopy());
+        }
+        copy.setDimensionSymbols(dimensionCopies);
+
+        return copy;
     }
 
     public static class Builder{

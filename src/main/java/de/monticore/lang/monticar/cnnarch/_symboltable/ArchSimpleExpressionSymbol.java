@@ -23,6 +23,9 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 import de.monticore.lang.math.math._symboltable.expression.*;
 import de.monticore.lang.monticar.cnnarch.helper.Calculator;
 import de.monticore.lang.monticar.cnnarch.helper.Utils;
+import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Scope;
+import de.monticore.symboltable.Symbol;
 
 import java.util.*;
 
@@ -214,11 +217,31 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
         return getValue().isPresent() || !getMathExpression().isPresent();
     }
 
-    public ArchSimpleExpressionSymbol copy(){
+    @Override
+    protected void putInScope(Scope scope) {
+        super.putInScope(scope);
+        if (getMathExpression().isPresent()){
+            for (MathExpressionSymbol exp : Utils.createSubExpressionList(getMathExpression().get())) {
+                Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(exp.getName());
+                if (symbolsInScope == null || !symbolsInScope.contains(exp)) {
+                    scope.getAsMutableScope().add(exp);
+                }
+            }
+        }
+    }
+
+    @Override
+    public ArchSimpleExpressionSymbol preResolveDeepCopy(){
         ArchSimpleExpressionSymbol copy = new ArchSimpleExpressionSymbol();
-        copy.setMathExpression(mathExpression);
-        copy.setValue(value);
-        copy.setUnresolvableVariables(getUnresolvableVariables());
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
+        if (getMathExpression().isPresent()){
+            copy.setMathExpression(Utils.copy(getMathExpression().get()));
+        }
+        else {
+            copy.setValue(value);
+        }
         return copy;
     }
 

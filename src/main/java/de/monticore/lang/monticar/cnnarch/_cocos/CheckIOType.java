@@ -30,12 +30,10 @@ import de.se_rwth.commons.logging.Log;
 
 import java.util.Optional;
 
-public class CheckIOType implements CNNArchASTArchitectureCoCo {
+public class CheckIOType implements CNNArchSymbolCoCo {
 
     @Override
-    public void check(ASTArchitecture node) {
-        ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
-
+    public void check(ArchitectureSymbol architecture) {
         for (IODeclarationSymbol ioDeclaration : architecture.getIODeclarations()){
             check(ioDeclaration);
         }

@@ -55,6 +55,11 @@ abstract public class PredefinedMethodDeclaration extends MethodDeclarationSymbo
 
     abstract public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer);
 
+    @Override
+    public PredefinedMethodDeclaration deepCopy() {
+        throw new IllegalStateException("Copy method is not implemented for predefined methods. " +
+                "Use class AllPredefinedMethods instead.");
+    }
 
     //the following methods are only here to avoid duplication. They are used by multiple subclasses.
 

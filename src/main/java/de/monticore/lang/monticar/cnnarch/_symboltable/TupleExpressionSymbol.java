@@ -49,4 +49,8 @@ public class TupleExpressionSymbol extends MathExpressionSymbol {
     public List<MathExpressionSymbol> getExpressions() {
         return expressions;
     }
+
+    public void setExpressions(List<MathExpressionSymbol> expressions) {
+        this.expressions = expressions;
+    }
 }

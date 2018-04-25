@@ -21,7 +21,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
-import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Scope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.Joiners;
 
@@ -35,6 +35,7 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
     private LayerSymbol outputLayer;
     private List<ArchTypeSymbol> outputTypes = null;
     private Set<VariableSymbol> unresolvableVariables = null;
+    private LayerSymbol resolvedThis = null;
 
     protected LayerSymbol(String name) {
         super(name, KIND);
@@ -176,10 +177,36 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         setUnresolvableVariables(unresolvableVariables);
     }
 
+    public Optional<LayerSymbol> getResolvedThis() {
+        return Optional.ofNullable(resolvedThis);
+    }
+
+    protected void setResolvedThis(LayerSymbol resolvedThis) {
+        if (resolvedThis != null && resolvedThis != this){
+            resolvedThis.putInScope(getSpannedScope());
+            if (getInputLayer().isPresent()){
+                resolvedThis.setInputLayer(getInputLayer().get());
+            }
+            if (getOutputLayer().isPresent()){
+                resolvedThis.setOutputLayer(getOutputLayer().get());
+            }
+        }
+        this.resolvedThis = resolvedThis;
+    }
+
     public void resolveOrError() throws ArchResolveException{
         Set<VariableSymbol> names = resolve();
         if (!isResolved()){
             throw new IllegalStateException("The following names could not be resolved: " + Joiners.COMMA.join(getUnresolvableVariables()));
+        }
+    }
+
+    public boolean isResolved(){
+        if (getResolvedThis().isPresent() && getResolvedThis().get() != this){
+            return getResolvedThis().get().isResolved();
+        }
+        else {
+            return getResolvedThis().isPresent();
         }
     }
 
@@ -198,8 +225,6 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
     protected abstract List<ArchTypeSymbol> computeOutputTypes();
 
     abstract protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables);
-
-    abstract public boolean isResolved();
 
     abstract public Optional<Integer> getParallelLength();
 
@@ -221,13 +246,7 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
         }
     }
 
-    /**
-     * deepCopy for LayerSymbols, ArgumentSymbol and ArchExpressionSymbols but does not copy math expressions.
-     * @return returns a copy of this object
-     */
-    abstract public LayerSymbol copy();
-
-    abstract protected void putInScope(MutableScope scope);
+    abstract protected void putInScope(Scope scope);
 
     abstract protected void resolveExpressions() throws ArchResolveException;
 
@@ -253,4 +272,9 @@ public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
     //only call after resolve; used in coco CheckLayerInputs to check the input type and shape of each layer.
     abstract public void checkInput();
 
+    /**
+     * preResolveDeepCopy for LayerSymbols, ArgumentSymbol and ArchExpressionSymbols but does not copy math expressions.
+     * @return returns a copy of this object
+     */
+    protected abstract LayerSymbol preResolveDeepCopy();
 }

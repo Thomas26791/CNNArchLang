@@ -20,20 +20,30 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTIODeclaration;
-import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
-import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
-import de.se_rwth.commons.logging.Log;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 
-public class CheckUnusedASTIODeclaration implements CNNArchASTIODeclarationCoCo {
+import java.util.ArrayList;
+import java.util.List;
 
-    @Override
-    public void check(ASTIODeclaration node) {
-        IODeclarationSymbol ioDeclaration = (IODeclarationSymbol) node.getSymbol().get();
-        if (ioDeclaration.getConnectedLayers().isEmpty()){
-            Log.error("0" + ErrorCodes.MISSING_IO + " Input or output with name '" + ioDeclaration.getName() + "' was declared but not used. "
-                    , ioDeclaration.getSourcePosition());
-        }
+public class CNNArchExtendedCoCoChecker{
+
+    private List<CNNArchSymbolCoCo> cocos =  new ArrayList<>();
+
+    public List<CNNArchSymbolCoCo> getCocos() {
+        return cocos;
     }
 
+    public CNNArchExtendedCoCoChecker addCoCo(CNNArchSymbolCoCo coco) {
+        getCocos().add(coco);
+        return this;
+    }
+
+    public void checkAll(ArchitectureSymbol resolvedArchitecture) {
+        if (!resolvedArchitecture.isResolved()){
+            throw new IllegalStateException("Architecture has to be resolved to check symboltable cocos");
+        }
+        for (CNNArchSymbolCoCo coco : getCocos()){
+            coco.check(resolvedArchitecture);
+        }
+    }
 }

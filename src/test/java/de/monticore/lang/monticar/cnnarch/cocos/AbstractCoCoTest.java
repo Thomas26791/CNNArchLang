@@ -23,7 +23,9 @@ package de.monticore.lang.monticar.cnnarch.cocos;
 import de.monticore.lang.monticar.cnnarch.AbstractSymtabTest;
 import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchCompilationUnit;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
+import de.monticore.lang.monticar.cnnarch._cocos.CNNArchExtendedCoCoChecker;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCocos;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
 import de.se_rwth.commons.logging.Finding;
 import de.se_rwth.commons.logging.Log;
@@ -72,7 +74,7 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
      * the expected errors are present; once only with the given cocos, checking that no addditional
      * errors are present.
      */
-    protected static void checkInvalid(CNNArchCoCoChecker preResolveCocos, CNNArchCoCoChecker postResolveCocos, String modelPath, String model,
+    protected static void checkInvalid(CNNArchCoCoChecker preResolveCocos, CNNArchExtendedCoCoChecker postResolveCocos, String modelPath, String model,
                                        ExpectedErrorInfo expectedErrors) {
 
         // check whether all the expected errors are present when using all cocos
@@ -94,15 +96,15 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
                 + "the given coco. Did you pass an empty coco checker?");
     }
 
-    private static void runCocoCheck(CNNArchCoCoChecker preResolveCocos, CNNArchCoCoChecker postResolveCocos, String modelPath, String model){
+    private static void runCocoCheck(CNNArchCoCoChecker preResolveCocos, CNNArchExtendedCoCoChecker postResolveCocos, String modelPath, String model){
         Log.getFindings().clear();
         ASTCNNArchCompilationUnit node = getAstNode(modelPath, model);
         preResolveCocos.checkAll(node);
         if (Log.getFindings().isEmpty()){
             CNNArchCompilationUnitSymbol compilationUnitSymbol = ((CNNArchCompilationUnitSymbol)node.getSymbol().get());
-            compilationUnitSymbol.resolve();
+            ArchitectureSymbol resolvedArchitecture = compilationUnitSymbol.resolve();
             if (Log.getFindings().isEmpty()){
-                postResolveCocos.checkAll(node);
+                postResolveCocos.checkAll(resolvedArchitecture);
             }
         }
     }

@@ -22,6 +22,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Scope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
@@ -142,14 +143,28 @@ public class VariableSymbol extends CommonSymbol {
         currentExpression = null;
     }
 
-    public void putInScope(MutableScope scope){
+    public void putInScope(Scope scope){
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)) {
-            scope.add(this);
+            scope.getAsMutableScope().add(this);
             if (getDefaultExpression().isPresent()){
                 getDefaultExpression().get().putInScope(scope);
             }
         }
+    }
+
+    public VariableSymbol deepCopy() {
+        VariableSymbol copy = new VariableSymbol(getName());
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
+
+        copy.setType(getType());
+        copy.setConstraints(getConstraints());
+        if (getDefaultExpression().isPresent()){
+            copy.setDefaultExpression(getDefaultExpression().get().preResolveDeepCopy());
+        }
+        return copy;
     }
 
 

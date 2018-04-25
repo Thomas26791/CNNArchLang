@@ -34,12 +34,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class CheckIOAccessAndIOMissing implements CNNArchASTArchitectureCoCo {
+public class CheckIOAccessAndIOMissing implements CNNArchSymbolCoCo {
 
     @Override
-    public void check(ASTArchitecture node) {
-        ArchitectureSymbol architecture = (ArchitectureSymbol) node.getSymbol().get();
-
+    public void check(ArchitectureSymbol architecture) {
         for (IODeclarationSymbol ioDeclaration : architecture.getIODeclarations()){
             if (ioDeclaration.getArrayLength() == 1){
                 checkSingleIO(ioDeclaration);
@@ -49,7 +47,6 @@ public class CheckIOAccessAndIOMissing implements CNNArchASTArchitectureCoCo {
             }
         }
     }
-
 
     private void checkSingleIO(IODeclarationSymbol ioDeclaration){
         if (ioDeclaration.getConnectedLayers().isEmpty()){

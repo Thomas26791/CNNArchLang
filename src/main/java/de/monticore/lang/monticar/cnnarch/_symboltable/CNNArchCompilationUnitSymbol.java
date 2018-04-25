@@ -21,16 +21,20 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.monticore.lang.monticar.cnnarch.helper.Utils;
 import de.se_rwth.commons.logging.Log;
 import org.jscience.mathematics.number.Rational;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class CNNArchCompilationUnitSymbol extends CNNArchCompilationUnitSymbolTOP{
 
     private List<VariableSymbol> parameters;
+    private List<IODeclarationSymbol> ioDeclarations;
     private ArchitectureSymbol architecture;
+    private boolean isCopy = false;
 
     public CNNArchCompilationUnitSymbol(String name) {
         super(name);
@@ -44,17 +48,29 @@ public class CNNArchCompilationUnitSymbol extends CNNArchCompilationUnitSymbolTO
         this.architecture = architecture;
     }
 
+    public List<IODeclarationSymbol> getIoDeclarations() {
+        return ioDeclarations;
+    }
+
+    public void setIoDeclarations(List<IODeclarationSymbol> ioDeclarations) {
+        this.ioDeclarations = ioDeclarations;
+    }
+
     public List<VariableSymbol> getParameters() {
         return parameters;
     }
 
-    protected void setParameters(List<VariableSymbol> parameters) {
+    public void setParameters(List<VariableSymbol> parameters) {
         this.parameters = parameters;
     }
 
-    public void resolve(){
+    public boolean isCopy() {
+        return isCopy;
+    }
+
+    public ArchitectureSymbol resolve(){
         checkParameters();
-        getArchitecture().resolve();
+        return getArchitecture().resolve();
     }
 
 
@@ -114,5 +130,40 @@ public class CNNArchCompilationUnitSymbol extends CNNArchCompilationUnitSymbolTO
     public void setParameter(String name, String value){
         VariableSymbol parameter = getParameterOrError(name);
         parameter.setExpression(ArchSimpleExpressionSymbol.of(value));
+    }
+
+
+    public CNNArchCompilationUnitSymbol preResolveDeepCopy(){
+        return preResolveDeepCopy(getName());
+    }
+
+    public CNNArchCompilationUnitSymbol preResolveDeepCopy(String newName){
+        CNNArchCompilationUnitSymbol copy = new CNNArchCompilationUnitSymbol(newName);
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
+
+        List<VariableSymbol> parameterCopies = new ArrayList<>(getParameters().size());
+        for (VariableSymbol param : getParameters()){
+            VariableSymbol paramCopy = param.deepCopy();
+            parameterCopies.add(paramCopy);
+            paramCopy.putInScope(copy.getSpannedScope());
+        }
+        copy.setParameters(parameterCopies);
+
+        List<IODeclarationSymbol> ioCopies = new ArrayList<>(getIoDeclarations().size());
+        for (IODeclarationSymbol ioDeclaration : getIoDeclarations()){
+            IODeclarationSymbol ioCopy = ioDeclaration.preResolveDeepCopy();
+            ioCopies.add(ioCopy);
+            ioCopy.putInScope(copy.getSpannedScope());
+        }
+        copy.setIoDeclarations(ioCopies);
+
+        ArchitectureSymbol architecture = getArchitecture().preResolveDeepCopy();
+        copy.setArchitecture(architecture);
+        architecture.putInScope(copy.getSpannedScope());
+        Utils.recursiveSetResolvingFilters(copy.getSpannedScope(), getSpannedScope().getResolvingFilters());
+        copy.isCopy = true;
+        return copy;
     }
 }

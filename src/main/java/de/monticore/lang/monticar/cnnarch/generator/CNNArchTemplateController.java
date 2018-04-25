@@ -170,31 +170,37 @@ public class CNNArchTemplateController {
         LayerSymbol previousLayer = getCurrentLayer();
         setCurrentLayer(layer);
 
-        if (layer.isInput()){
-            include(TEMPLATE_LAYER_DIR_PATH, "Input", writer);
+        if (layer.isAtomic()){
+            if (layer.isInput()){
+                include(TEMPLATE_LAYER_DIR_PATH, "Input", writer);
+            }
+            else {
+                include(TEMPLATE_LAYER_DIR_PATH, "Output", writer);
+            }
         }
         else {
-            include(TEMPLATE_LAYER_DIR_PATH, "Output", writer);
+            include(layer.getResolvedThis().get(), writer);
         }
+
         setCurrentLayer(previousLayer);
     }
 
     public void include(MethodLayerSymbol layer, Writer writer){
         LayerSymbol previousLayer = getCurrentLayer();
         setCurrentLayer(layer);
-        if (layer.isAtomic()){
 
+        if (layer.isAtomic()){
             LayerSymbol nextLayer = layer.getOutputLayer().get();
             if (!isSoftmaxOutput(nextLayer) && !isLogisticRegressionOutput(nextLayer)){
                 String templateName = layer.getMethod().getName();
                 include(TEMPLATE_LAYER_DIR_PATH, templateName, writer);
             }
-
-            setCurrentLayer(previousLayer);
         }
         else {
             include(layer.getResolvedThis().get(), writer);
         }
+
+        setCurrentLayer(previousLayer);
     }
 
     public void include(CompositeLayerSymbol compositeLayer, Writer writer){

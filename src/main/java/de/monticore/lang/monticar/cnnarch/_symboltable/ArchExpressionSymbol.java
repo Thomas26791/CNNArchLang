@@ -22,6 +22,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
 import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Scope;
 import de.monticore.symboltable.Symbol;
 
 import java.util.*;
@@ -359,13 +360,13 @@ abstract public class ArchExpressionSymbol extends CommonSymbol {
      */
     abstract public boolean isResolved();
 
-    abstract public ArchExpressionSymbol copy();
-
-    protected void putInScope(MutableScope scope){
+    protected void putInScope(Scope scope){
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)) {
-            scope.add(this);
+            scope.getAsMutableScope().add(this);
         }
     }
+
+    abstract protected ArchExpressionSymbol preResolveDeepCopy();
 
 }

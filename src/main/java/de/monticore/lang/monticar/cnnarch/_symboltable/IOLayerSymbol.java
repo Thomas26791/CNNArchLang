@@ -22,8 +22,9 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.lang.monticar.cnnarch.helper.Utils;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
 import de.monticore.lang.monticar.types2._ast.ASTElementType;
-import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Scope;
 import de.monticore.symboltable.Symbol;
 import de.se_rwth.commons.logging.Log;
 
@@ -48,6 +49,7 @@ public class IOLayerSymbol extends LayerSymbol {
 
     protected void setArrayAccess(int arrayAccess) {
         this.arrayAccess = ArchSimpleExpressionSymbol.of(arrayAccess);
+        this.arrayAccess.putInScope(getSpannedScope());
     }
 
     //returns null if IODeclaration does not exist. This is checked in coco CheckIOName.
@@ -75,17 +77,27 @@ public class IOLayerSymbol extends LayerSymbol {
 
     @Override
     public boolean isAtomic(){
-        return true;
+        return getResolvedThis().isPresent() && getResolvedThis().get() == this;
     }
 
     @Override
     public List<LayerSymbol> getFirstAtomicLayers() {
-        return Collections.singletonList(this);
+        if (getResolvedThis().isPresent() && getResolvedThis().get() != this){
+            return getResolvedThis().get().getFirstAtomicLayers();
+        }
+        else {
+            return Collections.singletonList(this);
+        }
     }
 
     @Override
     public List<LayerSymbol> getLastAtomicLayers() {
-        return Collections.singletonList(this);
+        if (getResolvedThis().isPresent() && getResolvedThis().get() != this){
+            return getResolvedThis().get().getLastAtomicLayers();
+        }
+        else {
+            return Collections.singletonList(this);
+        }
     }
 
     @Override
@@ -94,23 +106,78 @@ public class IOLayerSymbol extends LayerSymbol {
             if (isResolvable()) {
                 resolveExpressions();
                 getDefinition().getType().resolve();
+
+                if (!getArrayAccess().isPresent() && getDefinition().getArrayLength() > 1){
+                    //transform io array into parallel composite
+                    List<LayerSymbol> parallelLayers = createExpandedParallelLayers();
+                    CompositeLayerSymbol composite = new CompositeLayerSymbol.Builder()
+                            .parallel(true)
+                            .layers(parallelLayers)
+                            .build();
+
+                    getSpannedScope().getAsMutableScope().add(composite);
+                    composite.setAstNode(getAstNode().get());
+                    for (LayerSymbol layer : parallelLayers){
+                        layer.putInScope(composite.getSpannedScope());
+                        layer.setAstNode(getAstNode().get());
+                    }
+                    if (getInputLayer().isPresent()){
+                        composite.setInputLayer(getInputLayer().get());
+                    }
+                    if (getOutputLayer().isPresent()){
+                        composite.setOutputLayer(getOutputLayer().get());
+                    }
+                    composite.resolveOrError();
+                    setResolvedThis(composite);
+                }
+                else {
+                    //Add port to the ports stored in ArchitectureSymbol
+                    if (getDefinition().isInput()){
+                        getArchitecture().getInputs().add(this);
+                    }
+                    else {
+                        getArchitecture().getOutputs().add(this);
+                    }
+                    setResolvedThis(this);
+                }
+
             }
         }
         return getUnresolvableVariables();
     }
 
-    @Override
-    public boolean isResolved() {
-        boolean isResolved = true;
-        if (getArrayAccess().isPresent()){
-            if (!getArrayAccess().get().isResolved()){
-                isResolved = false;
+    private List<LayerSymbol> createExpandedParallelLayers() throws ArchResolveException{
+        List<LayerSymbol> parallelLayers = new ArrayList<>(getDefinition().getArrayLength());
+        if (getDefinition().isInput()){
+            for (int i = 0; i < getDefinition().getArrayLength(); i++){
+                IOLayerSymbol ioLayer = new IOLayerSymbol(getName());
+                ioLayer.setArrayAccess(i);
+                parallelLayers.add(ioLayer);
             }
         }
-        if (!getDefinition().getType().isResolved()){
-            isResolved = false;
+        else {
+            for (int i = 0; i < getDefinition().getArrayLength(); i++){
+                CompositeLayerSymbol serialComposite = new CompositeLayerSymbol();
+                serialComposite.setParallel(false);
+
+                IOLayerSymbol ioLayer = new IOLayerSymbol(getName());
+                ioLayer.setArrayAccess(i);
+                ioLayer.setAstNode(getAstNode().get());
+
+                MethodLayerSymbol getLayer = new MethodLayerSymbol(AllPredefinedMethods.GET_NAME);
+                getLayer.setArguments(Collections.singletonList(
+                        new ArgumentSymbol.Builder()
+                                .parameter(AllPredefinedMethods.INDEX_NAME)
+                                .value(ArchSimpleExpressionSymbol.of(i))
+                                .build()));
+                getLayer.setAstNode(getAstNode().get());
+
+                serialComposite.setLayers(Arrays.asList(getLayer, ioLayer));
+
+                parallelLayers.add(serialComposite);
+            }
         }
-        return isResolved;
+        return parallelLayers;
     }
 
     @Override
@@ -126,38 +193,53 @@ public class IOLayerSymbol extends LayerSymbol {
     @Override
     public List<ArchTypeSymbol> computeOutputTypes() {
         List<ArchTypeSymbol> outputShapes;
-        if (isInput()){
-            outputShapes = Collections.singletonList(getDefinition().getType());
+        if (isAtomic()){
+            if (isInput()){
+                outputShapes = Collections.singletonList(getDefinition().getType());
+            }
+            else {
+                outputShapes = Collections.emptyList();
+            }
         }
         else {
-            outputShapes = Collections.emptyList();
+            if (!getResolvedThis().isPresent()){
+                throw new IllegalStateException("The architecture resolve() method was never called");
+            }
+            outputShapes = getResolvedThis().get().computeOutputTypes();
         }
         return outputShapes;
     }
 
     @Override
     public void checkInput() {
-        if (isOutput()){
-            String name = getName();
-            if (getArrayAccess().isPresent()){
-                name = name + "[" + getArrayAccess().get().getIntValue().get() + "]";
-            }
-
-            if (getInputTypes().size() != 1){
-                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_SHAPE + " Invalid number of input streams. " +
-                                "The number of input streams for the output '" + name + "' is " + getInputTypes().size() + "."
-                        , getSourcePosition());
-            }
-            else {
-                ASTElementType inputType = getInputTypes().get(0).getElementType();
-                if (!Utils.equals(inputType, getDefinition().getType().getElementType())){
-                    Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_TYPE + " " +
-                            "The declared output type of '" + name + "' does not match with the actual type. " +
-                            "Declared type: " + getDefinition().getType().getElementType().getTElementType().get() + ". " +
-                            "Actual type: " + inputType.getTElementType().get() + ".");
+        if (isAtomic()) {
+            if (isOutput()) {
+                String name = getName();
+                if (getArrayAccess().isPresent()) {
+                    name = name + "[" + getArrayAccess().get().getIntValue().get() + "]";
                 }
-            }
 
+                if (getInputTypes().size() != 1) {
+                    Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_SHAPE + " Invalid number of input streams. " +
+                                    "The number of input streams for the output '" + name + "' is " + getInputTypes().size() + "."
+                            , getSourcePosition());
+                } else {
+                    ASTElementType inputType = getInputTypes().get(0).getElementType();
+                    if (!Utils.equals(inputType, getDefinition().getType().getElementType())) {
+                        Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_TYPE + " " +
+                                "The declared output type of '" + name + "' does not match with the actual type. " +
+                                "Declared type: " + getDefinition().getType().getElementType().getTElementType().get() + ". " +
+                                "Actual type: " + inputType.getTElementType().get() + ".");
+                    }
+                }
+
+            }
+        }
+        else {
+            if (!getResolvedThis().isPresent()){
+                throw new IllegalStateException("The architecture resolve() method was never called");
+            }
+            getResolvedThis().get().checkInput();
         }
     }
 
@@ -172,10 +254,10 @@ public class IOLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    protected void putInScope(MutableScope scope) {
+    protected void putInScope(Scope scope) {
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)) {
-            scope.add(this);
+            scope.getAsMutableScope().add(this);
             if (getArrayAccess().isPresent()){
                 getArrayAccess().get().putInScope(getSpannedScope());
             }
@@ -183,32 +265,30 @@ public class IOLayerSymbol extends LayerSymbol {
     }
 
     @Override
-    public LayerSymbol copy() {
-        ArchSimpleExpressionSymbol arrayAccessCopy = null;
-        if (getArrayAccess().isPresent()){
-            arrayAccessCopy = getArrayAccess().get().copy();
-        }
-        IOLayerSymbol copy = new Builder()
-                .definition(getDefinition())
-                .arrayAccess(arrayAccessCopy)
-                .build();
-        if (getAstNode().isPresent()){
-            copy.setAstNode(getAstNode().get());
-        }
-        return copy;
-    }
-
-    @Override
     protected void resolveExpressions() throws ArchResolveException {
         if (getArrayAccess().isPresent()){
             getArrayAccess().get().resolveOrError();
-            boolean valid = true;
-            valid = valid && Constraints.INTEGER.check(getArrayAccess().get(), getSourcePosition(), getName());
+            boolean valid;
+            valid = Constraints.INTEGER.check(getArrayAccess().get(), getSourcePosition(), getName());
             valid = valid && Constraints.NON_NEGATIVE.check(getArrayAccess().get(), getSourcePosition(), getName());
             if (!valid){
                 throw new ArchResolveException();
             }
         }
+    }
+
+    @Override
+    protected LayerSymbol preResolveDeepCopy() {
+        IOLayerSymbol copy = new IOLayerSymbol(getName());
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
+
+        if (getArrayAccess().isPresent()) {
+            copy.setArrayAccess(getArrayAccess().get().preResolveDeepCopy());
+        }
+
+        return copy;
     }
 
     public static class Builder{

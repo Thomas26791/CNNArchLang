@@ -22,6 +22,7 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import com.google.common.base.Joiner;
 import de.monticore.symboltable.MutableScope;
+import de.monticore.symboltable.Scope;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,21 +116,6 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
         }
     }
 
-    public ArchSequenceExpressionSymbol copy(){
-        ArchSequenceExpressionSymbol copy = new ArchSequenceExpressionSymbol();
-        List<List<ArchSimpleExpressionSymbol>> elementsCopy = new ArrayList<>(getElements().get().size());
-        for (List<ArchSimpleExpressionSymbol> serialList : getElements().get()){
-            List<ArchSimpleExpressionSymbol> serialListCopy = new ArrayList<>(serialList.size());
-            for (ArchSimpleExpressionSymbol element : serialList){
-                serialListCopy.add(element.copy());
-            }
-            elementsCopy.add(serialListCopy);
-        }
-        copy.setElements(getElements().get());
-        copy.setUnresolvableVariables(getUnresolvableVariables());
-        return copy;
-    }
-
     @Override
     public String getTextualRepresentation() {
         List<String> parallelExpressions = new ArrayList<>();
@@ -140,7 +126,7 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
     }
 
     @Override
-    protected void putInScope(MutableScope scope) {
+    protected void putInScope(Scope scope) {
         super.putInScope(scope);
         for (List<ArchSimpleExpressionSymbol> serialList : _getElements()){
             for (ArchSimpleExpressionSymbol element : serialList){
@@ -148,6 +134,25 @@ public class ArchSequenceExpressionSymbol extends ArchAbstractSequenceExpression
             }
         }
     }
+
+    @Override
+    public ArchSequenceExpressionSymbol preResolveDeepCopy(){
+        ArchSequenceExpressionSymbol copy = new ArchSequenceExpressionSymbol();
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
+        List<List<ArchSimpleExpressionSymbol>> elementsCopy = new ArrayList<>(_getElements().size());
+        for (List<ArchSimpleExpressionSymbol> serialList : _getElements()){
+            List<ArchSimpleExpressionSymbol> serialListCopy = new ArrayList<>(serialList.size());
+            for (ArchSimpleExpressionSymbol element : serialList){
+                serialListCopy.add(element.preResolveDeepCopy());
+            }
+            elementsCopy.add(serialListCopy);
+        }
+        copy.setElements(elementsCopy);
+        return copy;
+    }
+
 
     public static ArchSequenceExpressionSymbol of(List<List<ArchSimpleExpressionSymbol>> elements){
         ArchSequenceExpressionSymbol sym = new ArchSequenceExpressionSymbol();

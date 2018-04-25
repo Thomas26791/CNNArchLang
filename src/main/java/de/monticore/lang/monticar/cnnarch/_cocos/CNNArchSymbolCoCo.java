@@ -20,13 +20,9 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 
-public class CheckLayerInputs implements CNNArchSymbolCoCo {
+public interface CNNArchSymbolCoCo {
 
-    @Override
-    public void check(ArchitectureSymbol architecture) {
-        architecture.getBody().checkInput();
-    }
+    void check(ArchitectureSymbol architecture);
 }
