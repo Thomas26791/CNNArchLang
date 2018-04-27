@@ -20,9 +20,87 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
+import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.*;
+import de.monticore.symboltable.Symbol;
 
-public interface CNNArchSymbolCoCo {
+public class CNNArchSymbolCoCo {
 
-    void check(ArchitectureSymbol architecture);
+    public void check(Symbol sym){
+        if (sym instanceof ArchitectureSymbol){
+            check((ArchitectureSymbol) sym);
+        }
+        else if (sym instanceof MethodDeclarationSymbol){
+            check((MethodDeclarationSymbol) sym);
+        }
+        else if (sym instanceof LayerSymbol){
+            check((LayerSymbol) sym);
+        }
+        else if (sym instanceof ArchExpressionSymbol){
+            check((ArchExpressionSymbol) sym);
+        }
+        else if (sym instanceof ArchTypeSymbol){
+            check((ArchTypeSymbol) sym);
+        }
+        else if (sym instanceof VariableSymbol){
+            check((VariableSymbol) sym);
+        }
+        else if (sym instanceof ArgumentSymbol){
+            check((ArgumentSymbol) sym);
+        }
+        else if (sym instanceof CNNArchCompilationUnitSymbol){
+            check((CNNArchCompilationUnitSymbol) sym);
+        }
+        else if (sym instanceof IODeclarationSymbol){
+            check((IODeclarationSymbol) sym);
+        }
+        else if (sym instanceof MathExpressionSymbol){
+            check((MathExpressionSymbol) sym);
+        }
+        else{
+            throw new IllegalStateException("Symbol class is unknown in CNNArchSymbolCoCo: "
+                    + sym.getClass().getSimpleName());
+        }
+    }
+
+
+    public void check(ArchitectureSymbol sym){
+        //Override if needed
+    }
+
+    public void check(MethodDeclarationSymbol sym){
+        //Override if needed
+    }
+
+    public void check(LayerSymbol sym){
+        //Override if needed
+    }
+
+    public void check(ArchExpressionSymbol sym){
+        //Override if needed
+    }
+
+    public void check(ArchTypeSymbol sym){
+        //Override if needed
+    }
+
+    public void check(VariableSymbol sym){
+        //Override if needed
+    }
+
+    public void check(ArgumentSymbol sym){
+        //Override if needed
+    }
+
+    public void check(CNNArchCompilationUnitSymbol sym){
+        //Override if needed
+    }
+
+    public void check(IODeclarationSymbol sym){
+        //Override if needed
+    }
+
+    public void check(MathExpressionSymbol sym){
+        //Override if needed
+    }
 }

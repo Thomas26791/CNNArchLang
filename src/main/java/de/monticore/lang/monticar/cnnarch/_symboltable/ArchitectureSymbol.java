@@ -41,14 +41,9 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
     private List<IOLayerSymbol> inputs = new ArrayList<>();
     private List<IOLayerSymbol> outputs = new ArrayList<>();
     private Map<String, IODeclarationSymbol> ioDeclarationMap = new HashMap<>();
-    private boolean isCopy = false;
 
     public ArchitectureSymbol() {
         super("", KIND);
-    }
-
-    public ArchitectureSymbol(String name) {
-        super(name, KIND);
     }
 
     public LayerSymbol getBody() {
@@ -65,10 +60,6 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
 
     public List<IOLayerSymbol> getOutputs() {
         return outputs;
-    }
-
-    public boolean isCopy() {
-        return isCopy;
     }
 
     //called in IOLayer to get IODeclaration; only null if error; will be checked in coco CheckIOName
@@ -94,28 +85,15 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
         return getSpannedScope().resolveLocally(MethodDeclarationSymbol.KIND);
     }
 
-    //useful to resolve the architecture in a component instance
-    public ArchitectureSymbol resolveInScope(Scope scope){
-        if (isCopy()){
-            getBody().checkIfResolvable();
-            try{
-                getBody().resolveOrError();
-            }
-            catch (ArchResolveException e){
-                //do nothing; error is already logged
-            }
-            return this;
-        }
-        else {
-            ArchitectureSymbol copy = preResolveDeepCopy();
-            copy.putInScope(scope);
-            copy.resolve();
-            return copy;
-        }
-    }
 
-    public ArchitectureSymbol resolve(){
-        return resolveInScope(getEnclosingScope());
+    public void resolve(){
+        getBody().checkIfResolvable();
+        try{
+            getBody().resolveOrError();
+        }
+        catch (ArchResolveException e){
+            //do nothing; error is already logged
+        }
     }
 
     public List<LayerSymbol> getFirstLayers(){
@@ -137,13 +115,18 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)){
             scope.getAsMutableScope().add(this);
-            getSpannedScope().getAsMutableScope().setResolvingFilters(scope.getResolvingFilters());
             Utils.recursiveSetResolvingFilters(getSpannedScope(), scope.getResolvingFilters());
         }
     }
 
-    public ArchitectureSymbol preResolveDeepCopy(){
-        ArchitectureSymbol copy = new ArchitectureSymbol("instance");
+    /*
+      Creates a unresolved copy of this architecture and
+      adds the copy to the scope given as argument.
+      Useful to create instances.
+      This works even if "this" is already resolved.
+     */
+    public ArchitectureSymbol preResolveDeepCopy(Scope enclosingScopeOfCopy){
+        ArchitectureSymbol copy = new ArchitectureSymbol();
         copy.setBody(getBody().preResolveDeepCopy());
         if (getAstNode().isPresent()){
             copy.setAstNode(getAstNode().get());
@@ -160,7 +143,7 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
         }
 
         copy.getBody().putInScope(copy.getSpannedScope());
-        copy.isCopy = true;
+        copy.putInScope(enclosingScopeOfCopy);
         return copy;
     }
 }

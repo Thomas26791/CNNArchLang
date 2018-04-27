@@ -23,9 +23,9 @@ package de.monticore.lang.monticar.cnnarch._symboltable;
 import de.monticore.lang.math.math._symboltable.expression.*;
 import de.monticore.lang.monticar.cnnarch.helper.Calculator;
 import de.monticore.lang.monticar.cnnarch.helper.Utils;
-import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Scope;
 import de.monticore.symboltable.Symbol;
+import org.jscience.mathematics.number.Rational;
 
 import java.util.*;
 
@@ -245,6 +245,17 @@ public class ArchSimpleExpressionSymbol extends ArchExpressionSymbol {
         return copy;
     }
 
+
+    public static ArchSimpleExpressionSymbol of(Rational value){
+        ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol();
+        if (value.getDivisor().intValue() == 1){
+            res.setValue(value.getDividend().intValue());
+        }
+        else {
+            res.setValue(value.doubleValue());
+        }
+        return res;
+    }
 
     public static ArchSimpleExpressionSymbol of(int value){
         ArchSimpleExpressionSymbol res = new ArchSimpleExpressionSymbol();

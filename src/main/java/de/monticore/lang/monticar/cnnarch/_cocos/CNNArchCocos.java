@@ -28,46 +28,55 @@ import de.se_rwth.commons.logging.Log;
 //check all cocos
 public class CNNArchCocos {
 
-    public static ArchitectureSymbol checkAll(ArchitectureSymbol architecture){
-        ArchitectureSymbol resolvedArchitecture = null;
+    public static void checkAll(ArchitectureSymbol architecture){
         ASTCNNArchNode node = (ASTCNNArchNode) architecture.getAstNode().get();
         int findings = Log.getFindings().size();
-        createPreResolveChecker().checkAll(node);
-        if (findings == Log.getFindings().size()){
-            resolvedArchitecture = architecture.resolve();
-            if (findings == Log.getFindings().size()){
-                createPostResolveChecker().checkAll(resolvedArchitecture);
+        createASTChecker().checkAll(node);
+        if (findings == Log.getFindings().size()) {
+            createCNNArchPreResolveSymbolChecker().checkAll(architecture);
+            if (findings == Log.getFindings().size()) {
+                architecture.resolve();
+                if (findings == Log.getFindings().size()) {
+                    createCNNArchPostResolveSymbolChecker().checkAll(architecture);
+                }
             }
         }
-        return resolvedArchitecture;
     }
 
-    public static ArchitectureSymbol checkAll(CNNArchCompilationUnitSymbol compilationUnit){
-        ArchitectureSymbol resolvedArchitecture = null;
+    public static void checkAll(CNNArchCompilationUnitSymbol compilationUnit){
         ASTCNNArchNode node = (ASTCNNArchNode) compilationUnit.getAstNode().get();
         int findings = Log.getFindings().size();
-        createPreResolveChecker().checkAll(node);
-        if (findings == Log.getFindings().size()){
-            resolvedArchitecture = compilationUnit.getArchitecture().resolve();
-            if (findings == Log.getFindings().size()){
-                createPostResolveChecker().checkAll(resolvedArchitecture);
+        createASTChecker().checkAll(node);
+        if (findings == Log.getFindings().size()) {
+            createCNNArchPreResolveSymbolChecker().checkAll(compilationUnit);
+            if (findings == Log.getFindings().size()) {
+                compilationUnit.getArchitecture().resolve();
+                if (findings == Log.getFindings().size()) {
+                    createCNNArchPostResolveSymbolChecker().checkAll(compilationUnit);
+                }
             }
         }
-        return resolvedArchitecture;
     }
 
-    public static CNNArchExtendedCoCoChecker createPostResolveChecker() {
-        return new CNNArchExtendedCoCoChecker()
+    //checks cocos based on symbols after the resolve method of the ArchitectureSymbol is called
+    public static CNNArchSymbolCoCoChecker createCNNArchPostResolveSymbolChecker() {
+        return new CNNArchSymbolCoCoChecker()
                 .addCoCo(new CheckIOType())
                 .addCoCo(new CheckLayerInputs())
                 .addCoCo(new CheckIOAccessAndIOMissing())
                 .addCoCo(new CheckArchitectureFinished());
     }
 
-    public static CNNArchCoCoChecker createPreResolveChecker() {
-        return new CNNArchCoCoChecker()
+    //checks cocos based on symbols before the resolve method of the ArchitectureSymbol is called
+    public static CNNArchSymbolCoCoChecker createCNNArchPreResolveSymbolChecker() {
+        return new CNNArchSymbolCoCoChecker()
                 .addCoCo(new CheckIOName())
-                .addCoCo(new CheckNameExpression())
+                .addCoCo(new CheckNameExpression());
+    }
+
+    //checks all normal cocos
+    public static CNNArchCoCoChecker createASTChecker() {
+        return new CNNArchCoCoChecker()
                 .addCoCo(new CheckMethodLayer())
                 .addCoCo(new CheckRangeOperators())
                 .addCoCo(new CheckVariableName())

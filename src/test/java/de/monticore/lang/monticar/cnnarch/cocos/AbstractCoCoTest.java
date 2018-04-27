@@ -23,7 +23,7 @@ package de.monticore.lang.monticar.cnnarch.cocos;
 import de.monticore.lang.monticar.cnnarch.AbstractSymtabTest;
 import de.monticore.lang.monticar.cnnarch._ast.ASTCNNArchCompilationUnit;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCoCoChecker;
-import de.monticore.lang.monticar.cnnarch._cocos.CNNArchExtendedCoCoChecker;
+import de.monticore.lang.monticar.cnnarch._cocos.CNNArchSymbolCoCoChecker;
 import de.monticore.lang.monticar.cnnarch._cocos.CNNArchCocos;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
@@ -50,8 +50,9 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
      */
     @Deprecated
     protected static void runCheckerWithSymTab(String modelPath, String model) {
-        runCocoCheck(CNNArchCocos.createPreResolveChecker(),
-                CNNArchCocos.createPostResolveChecker(),
+        runCocoCheck(CNNArchCocos.createASTChecker(),
+                CNNArchCocos.createCNNArchPreResolveSymbolChecker(),
+                CNNArchCocos.createCNNArchPostResolveSymbolChecker(),
                 modelPath,
                 model);
     }
@@ -61,9 +62,9 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
      * valid models.
      */
     protected static void checkValid(String modelPath, String model) {
-        runCocoCheck(
-                CNNArchCocos.createPreResolveChecker(),
-                CNNArchCocos.createPostResolveChecker(),
+        runCocoCheck(CNNArchCocos.createASTChecker(),
+                CNNArchCocos.createCNNArchPreResolveSymbolChecker(),
+                CNNArchCocos.createCNNArchPostResolveSymbolChecker(),
                 modelPath,
                 model);
         new ExpectedErrorInfo().checkOnlyExpectedPresent(Log.getFindings());
@@ -74,13 +75,17 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
      * the expected errors are present; once only with the given cocos, checking that no addditional
      * errors are present.
      */
-    protected static void checkInvalid(CNNArchCoCoChecker preResolveCocos, CNNArchExtendedCoCoChecker postResolveCocos, String modelPath, String model,
+    protected static void checkInvalid(CNNArchCoCoChecker astChecker,
+                                       CNNArchSymbolCoCoChecker preResolveCocos,
+                                       CNNArchSymbolCoCoChecker postResolveCocos,
+                                       String modelPath, String model,
                                        ExpectedErrorInfo expectedErrors) {
 
         // check whether all the expected errors are present when using all cocos
         runCocoCheck(
-                CNNArchCocos.createPreResolveChecker(),
-                CNNArchCocos.createPostResolveChecker(),
+                CNNArchCocos.createASTChecker(),
+                CNNArchCocos.createCNNArchPreResolveSymbolChecker(),
+                CNNArchCocos.createCNNArchPostResolveSymbolChecker(),
                 modelPath,
                 model);
         expectedErrors.checkExpectedPresent(Log.getFindings(), "Got no findings when checking all "
@@ -88,6 +93,7 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
 
         // check whether only the expected errors are present when using only the given cocos
         runCocoCheck(
+                astChecker,
                 preResolveCocos,
                 postResolveCocos,
                 modelPath,
@@ -96,15 +102,21 @@ public class AbstractCoCoTest extends AbstractSymtabTest {
                 + "the given coco. Did you pass an empty coco checker?");
     }
 
-    private static void runCocoCheck(CNNArchCoCoChecker preResolveCocos, CNNArchExtendedCoCoChecker postResolveCocos, String modelPath, String model){
+    private static void runCocoCheck(CNNArchCoCoChecker astChecker,
+                                     CNNArchSymbolCoCoChecker preResolveCocos,
+                                     CNNArchSymbolCoCoChecker postResolveCocos,
+                                     String modelPath, String model){
         Log.getFindings().clear();
-        ASTCNNArchCompilationUnit node = getAstNode(modelPath, model);
-        preResolveCocos.checkAll(node);
-        if (Log.getFindings().isEmpty()){
-            CNNArchCompilationUnitSymbol compilationUnitSymbol = ((CNNArchCompilationUnitSymbol)node.getSymbol().get());
-            ArchitectureSymbol resolvedArchitecture = compilationUnitSymbol.resolve();
-            if (Log.getFindings().isEmpty()){
-                postResolveCocos.checkAll(resolvedArchitecture);
+        CNNArchCompilationUnitSymbol compilationUnit = getCompilationUnitSymbol(modelPath, model);
+        int findings = Log.getFindings().size();
+        astChecker.checkAll((ASTCNNArchCompilationUnit)compilationUnit.getAstNode().get());
+        if (findings == Log.getFindings().size()) {
+            preResolveCocos.checkAll(compilationUnit);
+            if (findings == Log.getFindings().size()) {
+                compilationUnit.getArchitecture().resolve();
+                if (findings == Log.getFindings().size()) {
+                    postResolveCocos.checkAll(compilationUnit);
+                }
             }
         }
     }

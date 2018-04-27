@@ -69,10 +69,10 @@ public class CNNArchGenerator {
             System.exit(1);
         }
 
-        ArchitectureSymbol architecture = CNNArchCocos.checkAll(compilationUnit.get());
+        CNNArchCocos.checkAll(compilationUnit.get());
 
         try{
-            generateFiles(architecture);
+            generateFiles(compilationUnit.get().getArchitecture());
         }
         catch (IOException e){
             Log.error(e.toString());

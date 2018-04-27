@@ -20,7 +20,6 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
@@ -30,16 +29,16 @@ import de.se_rwth.commons.logging.Log;
 
 import java.util.Optional;
 
-public class CheckIOType implements CNNArchSymbolCoCo {
+public class CheckIOType extends CNNArchSymbolCoCo {
 
     @Override
     public void check(ArchitectureSymbol architecture) {
         for (IODeclarationSymbol ioDeclaration : architecture.getIODeclarations()){
-            check(ioDeclaration);
+            checkIO(ioDeclaration);
         }
     }
 
-    public void check(IODeclarationSymbol ioDeclaration) {
+    public void checkIO(IODeclarationSymbol ioDeclaration) {
         ArchTypeSymbol type = ioDeclaration.getType();
 
         if (type.getElementType().isIsComplex() || type.getElementType().isIsBoolean()){

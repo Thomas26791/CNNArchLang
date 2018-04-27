@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static de.monticore.lang.monticar.cnnarch.ParserTest.ENABLE_FAIL_QUICK;
+import static junit.framework.TestCase.assertTrue;
 
 public class GenerationTest {
 
@@ -53,18 +54,21 @@ public class GenerationTest {
     public void testAlexnetGeneration() throws IOException, TemplateException {
         Log.getFindings().clear();
         generate("Alexnet");
+        assertTrue(Log.getFindings().isEmpty());
     }
 
     @Test
     public void testResNeXtGeneration() throws IOException, TemplateException {
         Log.getFindings().clear();
         generate("ResNeXt50");
+        assertTrue(Log.getFindings().isEmpty());
     }
 
     @Test
     public void testThreeInputCNNGeneration() throws IOException, TemplateException {
         Log.getFindings().clear();
         generate("ThreeInputCNN_M14");
+        assertTrue(Log.getFindings().size() == 1);
     }
 
     @Test
@@ -72,6 +76,7 @@ public class GenerationTest {
         Log.getFindings().clear();
         String[] args = {"-m", "src/test/resources/architectures", "-r", "VGG16"};
         CNNArchGeneratorCli.main(args);
+        assertTrue(Log.getFindings().isEmpty());
     }
 
     /*@Test
@@ -86,6 +91,7 @@ public class GenerationTest {
         Log.getFindings().clear();
         String[] args = {"-m", "src/test/resources/valid_tests", "-r", "MxMnistExample"};
         CNNArchGeneratorCli.main(args);
+        assertTrue(Log.getFindings().isEmpty());
     }
 
     @Test
@@ -93,5 +99,6 @@ public class GenerationTest {
         Log.getFindings().clear();
         String[] args = {"-m", "src/test/resources/valid_tests", "-r", "MultipleOutputs"};
         CNNArchGeneratorCli.main(args);
+        assertTrue(Log.getFindings().size() == 3);
     }
 }

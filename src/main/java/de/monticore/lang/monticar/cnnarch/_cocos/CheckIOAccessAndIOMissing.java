@@ -20,7 +20,6 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.IOLayerSymbol;
@@ -34,7 +33,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class CheckIOAccessAndIOMissing implements CNNArchSymbolCoCo {
+public class CheckIOAccessAndIOMissing extends CNNArchSymbolCoCo {
 
     @Override
     public void check(ArchitectureSymbol architecture) {

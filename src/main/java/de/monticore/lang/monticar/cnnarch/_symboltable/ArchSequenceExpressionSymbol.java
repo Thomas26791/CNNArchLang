@@ -21,7 +21,6 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import com.google.common.base.Joiner;
-import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Scope;
 
 import java.util.ArrayList;

@@ -34,7 +34,6 @@ public class CNNArchCompilationUnitSymbol extends CNNArchCompilationUnitSymbolTO
     private List<VariableSymbol> parameters;
     private List<IODeclarationSymbol> ioDeclarations;
     private ArchitectureSymbol architecture;
-    private boolean isCopy = false;
 
     public CNNArchCompilationUnitSymbol(String name) {
         super(name);
@@ -64,13 +63,10 @@ public class CNNArchCompilationUnitSymbol extends CNNArchCompilationUnitSymbolTO
         this.parameters = parameters;
     }
 
-    public boolean isCopy() {
-        return isCopy;
-    }
-
     public ArchitectureSymbol resolve(){
         checkParameters();
-        return getArchitecture().resolve();
+        getArchitecture().resolve();
+        return getArchitecture();
     }
 
 
@@ -159,11 +155,9 @@ public class CNNArchCompilationUnitSymbol extends CNNArchCompilationUnitSymbolTO
         }
         copy.setIoDeclarations(ioCopies);
 
-        ArchitectureSymbol architecture = getArchitecture().preResolveDeepCopy();
+        ArchitectureSymbol architecture = getArchitecture().preResolveDeepCopy(copy.getSpannedScope());
         copy.setArchitecture(architecture);
-        architecture.putInScope(copy.getSpannedScope());
         Utils.recursiveSetResolvingFilters(copy.getSpannedScope(), getSpannedScope().getResolvingFilters());
-        copy.isCopy = true;
         return copy;
     }
 }

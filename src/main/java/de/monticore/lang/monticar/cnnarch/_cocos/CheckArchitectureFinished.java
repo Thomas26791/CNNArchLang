@@ -20,12 +20,11 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTArchitecture;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.logging.Log;
 
-public class CheckArchitectureFinished implements CNNArchSymbolCoCo {
+public class CheckArchitectureFinished extends CNNArchSymbolCoCo {
 
     @Override
     public void check(ArchitectureSymbol architecture) {

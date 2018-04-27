@@ -52,12 +52,21 @@ public class AbstractSymtabTest {
         return scope;
     }
 
-    protected static ASTCNNArchCompilationUnit getAstNode(String modelPath, String model) {
+/*    protected static ASTCNNArchCompilationUnit getAstNode(String modelPath, String model) {
         Scope symTab = createSymTab(MODEL_PATH + modelPath);
         CNNArchCompilationUnitSymbol comp = symTab.<CNNArchCompilationUnitSymbol> resolve(
                 model, CNNArchCompilationUnitSymbol.KIND).orElse(null);
         assertNotNull("Could not resolve model " + model, comp);
 
         return (ASTCNNArchCompilationUnit) comp.getAstNode().get();
+    }*/
+
+    protected static CNNArchCompilationUnitSymbol getCompilationUnitSymbol(String modelPath, String model) {
+        Scope symTab = createSymTab(MODEL_PATH + modelPath);
+        CNNArchCompilationUnitSymbol comp = symTab.<CNNArchCompilationUnitSymbol> resolve(
+                model, CNNArchCompilationUnitSymbol.KIND).orElse(null);
+        assertNotNull("Could not resolve model " + model, comp);
+
+        return comp;
     }
 }

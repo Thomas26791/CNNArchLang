@@ -21,7 +21,6 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.symboltable.CommonSymbol;
-import de.monticore.symboltable.MutableScope;
 import de.monticore.symboltable.Scope;
 import de.monticore.symboltable.Symbol;
 

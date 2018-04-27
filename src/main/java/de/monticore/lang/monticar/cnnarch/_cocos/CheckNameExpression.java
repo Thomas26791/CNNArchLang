@@ -22,7 +22,7 @@ package de.monticore.lang.monticar.cnnarch._cocos;
 
 import de.monticore.lang.math.math._symboltable.expression.MathExpressionSymbol;
 import de.monticore.lang.math.math._symboltable.expression.MathNameExpressionSymbol;
-import de.monticore.lang.monticar.cnnarch._ast.ASTArchSimpleExpression;
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchSimpleExpressionSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.VariableSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
@@ -31,18 +31,23 @@ import de.se_rwth.commons.logging.Log;
 
 import java.util.Collection;
 
-public class CheckNameExpression implements CNNArchASTArchSimpleExpressionCoCo {
+public class CheckNameExpression extends CNNArchSymbolCoCo {
 
     @Override
-    public void check(ASTArchSimpleExpression node) {
-        ArchSimpleExpressionSymbol expression = (ArchSimpleExpressionSymbol) node.getSymbol().get();
+    public void check(ArchExpressionSymbol sym) {
+        if (sym instanceof ArchSimpleExpressionSymbol){
+            checkSimpleExpression((ArchSimpleExpressionSymbol) sym);
+        }
+    }
+
+    public void checkSimpleExpression(ArchSimpleExpressionSymbol expression) {
         if (expression.getMathExpression().isPresent()){
             MathExpressionSymbol mathExpression = expression.getMathExpression().get();
 
             for (MathExpressionSymbol subMathExp : Utils.createSubExpressionList(mathExpression)){
                 if (subMathExp instanceof MathNameExpressionSymbol){
                     String name = ((MathNameExpressionSymbol) subMathExp).getNameToAccess();
-                    Collection<VariableSymbol> variableCollection = node.getEnclosingScope().get().resolveMany(name, VariableSymbol.KIND);
+                    Collection<VariableSymbol> variableCollection = expression.getEnclosingScope().resolveMany(name, VariableSymbol.KIND);
 
                     if (variableCollection.isEmpty()){
                         Log.error("0" + ErrorCodes.UNKNOWN_VARIABLE_NAME + " Unknown variable name. " +

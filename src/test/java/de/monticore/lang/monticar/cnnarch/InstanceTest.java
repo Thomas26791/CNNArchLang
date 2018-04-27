@@ -20,8 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch;
 
-import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.CNNArchCompilationUnitSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.*;
 import de.monticore.symboltable.Scope;
 import de.se_rwth.commons.logging.Log;
 import org.junit.Before;
@@ -47,8 +46,6 @@ public class InstanceTest extends AbstractSymtabTest {
                 "SequentialAlexnet",
                 CNNArchCompilationUnitSymbol.KIND).orElse(null);
         assertNotNull(compilationUnitSymbol);
-
-        //CNNArchCompilationUnitSymbol compilationUnit1 = compilationUnitSymbol.preResolveDeepCopy();
 
         compilationUnitSymbol.setParameter("classes", 100);
         ArchitectureSymbol instance1 = compilationUnitSymbol.resolve();
@@ -77,5 +74,29 @@ public class InstanceTest extends AbstractSymtabTest {
         assertEquals(200, height2);
         assertEquals(10, channels2);
         assertEquals(10, lastLayerChannels2);
+    }
+
+    @Test
+    public void testInstanceCreation2(){
+        Scope symTab = createSymTab("src/test/resources/valid_tests");
+        CNNArchCompilationUnitSymbol compilationUnitSymbol = symTab.<CNNArchCompilationUnitSymbol>resolve(
+                "ResNeXt50_InstanceTest",
+                CNNArchCompilationUnitSymbol.KIND).orElse(null);
+        assertNotNull(compilationUnitSymbol);
+
+
+        compilationUnitSymbol.setParameter("cardinality", 32);
+        ArchitectureSymbol instance1 = compilationUnitSymbol.resolve();
+
+
+        CNNArchCompilationUnitSymbol compilationUnit2 = compilationUnitSymbol.preResolveDeepCopy();
+        compilationUnit2.setParameter("cardinality", 2);
+        ArchitectureSymbol instance2 = compilationUnit2.resolve();
+        ArchRangeExpressionSymbol range1 = (ArchRangeExpressionSymbol) ((MethodLayerSymbol)(((CompositeLayerSymbol)((CompositeLayerSymbol)((CompositeLayerSymbol)((CompositeLayerSymbol) instance1.getBody()).getLayers().get(5).getResolvedThis().get()).getLayers().get(0)).getLayers().get(0)).getLayers().get(0))).getArgument("|").get().getRhs();
+        ArchRangeExpressionSymbol range2 = (ArchRangeExpressionSymbol) ((MethodLayerSymbol)(((CompositeLayerSymbol)((CompositeLayerSymbol)((CompositeLayerSymbol)((CompositeLayerSymbol) instance2.getBody()).getLayers().get(5).getResolvedThis().get()).getLayers().get(0)).getLayers().get(0)).getLayers().get(0))).getArgument("|").get().getRhs();
+
+        assertEquals(32, range1.getElements().get().size());
+        assertEquals(2, range2.getElements().get().size());
+
     }
 }

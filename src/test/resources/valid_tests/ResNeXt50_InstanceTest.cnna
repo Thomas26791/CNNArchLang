@@ -1,0 +1,44 @@
+architecture ResNeXt50_InstanceTest(img_height=224, img_width=224, img_channels=3, classes=1000, cardinality=32){
+    def input Z(0:255)^{img_channels, img_height, img_width} data
+    def output Q(0:1)^{classes} predictions
+
+    def conv(kernel, channels, stride=1, act=true){
+        Convolution(kernel=(kernel,kernel), channels=channels, stride=(stride,stride)) ->
+        BatchNorm() ->
+        Relu(?=act)
+    }
+    def resGroup(innerChannels, outChannels, stride=1){
+        conv(kernel=1, channels=innerChannels) ->
+        conv(kernel=3, channels=innerChannels, stride=stride) ->
+        conv(kernel=1, channels=outChannels, act=false)
+    }
+    def resLayer(innerChannels, outChannels, stride=1, addSkipConv=false){
+        (
+            resGroup(innerChannels=innerChannels,
+                     outChannels=outChannels,
+                     stride=stride,
+                     | = cardinality) ->
+            Add()
+        |
+            conv(kernel=1, channels=outChannels, stride=stride, act=false, ? = addSkipConv)
+        ) ->
+        Add() ->
+        Relu()
+    }
+
+    data ->
+    conv(kernel=7, channels=64, stride=2) ->
+    Pooling(pool_type="max", kernel=(3,3), stride=(2,2)) ->
+    resLayer(innerChannels=4, outChannels=256, addSkipConv=true) ->
+    resLayer(innerChannels=4, outChannels=256, -> = 2) ->
+    resLayer(innerChannels=8, outChannels=512, stride=2, addSkipConv=true) ->
+    resLayer(innerChannels=8, outChannels=512, -> = 3) ->
+    resLayer(innerChannels=16, outChannels=1024, stride=2, addSkipConv=true) ->
+    resLayer(innerChannels=16, outChannels=1024, -> = 5) ->
+    resLayer(innerChannels=32, outChannels=2048, stride=2, addSkipConv=true) ->
+    resLayer(innerChannels=32, outChannels=2048, -> = 2) ->
+    GlobalPooling(pool_type="avg") ->
+    FullyConnected(units=classes) ->
+    Softmax() ->
+    predictions
+}

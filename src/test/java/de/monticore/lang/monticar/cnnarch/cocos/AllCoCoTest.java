@@ -72,113 +72,245 @@ public class AllCoCoTest extends AbstractCoCoTest {
     }
 
     @Test
-    public void testInvalidPreResolveCocos(){
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckIOName()),
-                new CNNArchExtendedCoCoChecker(),
+    public void testIllegalIONames(){
+        checkInvalid(
+                new CNNArchCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckIOName()),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "IllegalIOName",
                 new ExpectedErrorInfo(2, ErrorCodes.ILLEGAL_NAME));
+    }
+
+    @Test
+    public void testUnknownMethod(){
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodLayer()),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "UnknownMethod",
                 new ExpectedErrorInfo(1, ErrorCodes.UNKNOWN_METHOD));
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckIOName()).addCoCo(new CheckVariableName()).addCoCo(new CheckMethodName()),
-                new CNNArchExtendedCoCoChecker(),
+    }
+
+    @Test
+    public void testDuplicatedNames(){
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckVariableName()).addCoCo(new CheckMethodName()),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "DuplicatedNames",
-                new ExpectedErrorInfo(3, ErrorCodes.DUPLICATED_NAME));
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckNameExpression()),
-                new CNNArchExtendedCoCoChecker(),
+                new ExpectedErrorInfo(2, ErrorCodes.DUPLICATED_NAME));
+    }
+
+    @Test
+    public void testDuplicatedIONames(){
+        checkInvalid(new CNNArchCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckIOName()),
+                new CNNArchSymbolCoCoChecker(),
+                "invalid_tests", "DuplicatedIONames",
+                new ExpectedErrorInfo(1, ErrorCodes.DUPLICATED_NAME));
+    }
+
+    @Test
+    public void testUnknownVariableName(){
+        checkInvalid(new CNNArchCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckNameExpression()),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "UnknownVariableName",
                 new ExpectedErrorInfo(1, ErrorCodes.UNKNOWN_VARIABLE_NAME));
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckIOName()),
-                new CNNArchExtendedCoCoChecker(),
+    }
+
+    @Test
+    public void testUnknownIO(){
+        checkInvalid(new CNNArchCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckIOName()),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "UnknownIO",
                 new ExpectedErrorInfo(2, ErrorCodes.UNKNOWN_IO));
+    }
+
+    @Test
+    public void testDuplicatedArgument(){
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodLayer()),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "DuplicatedArgument",
                 new ExpectedErrorInfo(1, ErrorCodes.DUPLICATED_ARG));
+    }
+
+    @Test
+    public void testWrongArgument(){
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckArgument()).addCoCo(new CheckMethodLayer()),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "WrongArgument",
                 new ExpectedErrorInfo(4, ErrorCodes.UNKNOWN_ARGUMENT, ErrorCodes.MISSING_ARGUMENT));
+    }
+
+    @Test
+    public void testInvalidRecursion(){
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodRecursion()),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "InvalidRecursion",
                 new ExpectedErrorInfo(1, ErrorCodes.RECURSION_ERROR));
+    }
+
+    @Test
+    public void testArgumentConstraintTest1(){
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "ArgumentConstraintTest1",
                 new ExpectedErrorInfo(1, ErrorCodes.ILLEGAL_ASSIGNMENT));
+    }
+
+    @Test
+    public void testArgumentConstraintTest2(){
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "ArgumentConstraintTest2",
                 new ExpectedErrorInfo(1, ErrorCodes.ILLEGAL_ASSIGNMENT));
+    }
+
+    @Test
+    public void testWrongRangeOperator(){
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckRangeOperators()),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "WrongRangeOperator",
                 new ExpectedErrorInfo(2, ErrorCodes.DIFFERENT_RANGE_OPERATORS));
+    }
+
+    @Test
+    public void testArgumentConstraintTest3(){
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "ArgumentConstraintTest3",
                 new ExpectedErrorInfo(1, ErrorCodes.ILLEGAL_ASSIGNMENT));
+    }
+
+    @Test
+    public void testArgumentConstraintTest4(){
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "ArgumentConstraintTest4",
                 new ExpectedErrorInfo(1, ErrorCodes.ILLEGAL_ASSIGNMENT));
+    }
+
+    @Test
+    public void testArgumentConstraintTest5(){
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "ArgumentConstraintTest5",
                 new ExpectedErrorInfo(1, ErrorCodes.ILLEGAL_ASSIGNMENT));
+    }
+
+    @Test
+    public void testArgumentConstraintTest6(){
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "ArgumentConstraintTest6",
                 new ExpectedErrorInfo(1, ErrorCodes.ILLEGAL_ASSIGNMENT));
+    }
+
+    @Test
+    public void testMissingArgument(){
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodLayer()),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "MissingArgument",
                 new ExpectedErrorInfo(3, ErrorCodes.MISSING_ARGUMENT));
+    }
+
+    @Test
+    public void testIllegalName(){
         checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckVariableName()).addCoCo(new CheckMethodName()),
-                new CNNArchExtendedCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "IllegalName",
                 new ExpectedErrorInfo(2, ErrorCodes.ILLEGAL_NAME));
     }
 
     @Test
-    public void testInvalidPostResolveCocos(){
+    public void testUnfinishedArchitecture(){
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker().addCoCo(new CheckArchitectureFinished()),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckArchitectureFinished()),
                 "invalid_tests", "UnfinishedArchitecture",
                 new ExpectedErrorInfo(1, ErrorCodes.UNFINISHED_ARCHITECTURE));
+    }
+
+    @Test
+    public void testInvalidInputShape(){
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker().addCoCo(new CheckLayerInputs()),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckLayerInputs()),
                 "invalid_tests", "InvalidInputShape",
                 new ExpectedErrorInfo(2, ErrorCodes.INVALID_LAYER_INPUT_SHAPE));
+    }
+
+    @Test
+    public void testWrongIOType() {
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker().addCoCo(new CheckLayerInputs()),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckLayerInputs()),
                 "invalid_tests", "WrongIOType",
                 new ExpectedErrorInfo(1, ErrorCodes.INVALID_LAYER_INPUT_TYPE));
+    }
+
+    @Test
+    public void testInvalidIOShape1() {
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker().addCoCo(new CheckIOType()),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckIOType()),
                 "invalid_tests", "InvalidIOShape1",
                 new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_TYPE));
+    }
+
+    @Test
+    public void testInvalidIOShape2() {
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker().addCoCo(new CheckIOType()),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckIOType()),
                 "invalid_tests", "InvalidIOShape2",
                 new ExpectedErrorInfo(2, ErrorCodes.INVALID_IO_TYPE));
+    }
+
+    @Test
+    public void testNotIOArray() {
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()),
                 "invalid_tests", "NotIOArray",
                 new ExpectedErrorInfo(2, ErrorCodes.INVALID_ARRAY_ACCESS));
+    }
+
+    @Test
+    public void testMissingIO2() {
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()),
                 "invalid_tests", "MissingIO2",
                 new ExpectedErrorInfo(2, ErrorCodes.MISSING_IO));
+    }
+
+    @Test
+    public void testInvalidArrayAccessValue() {
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckIOAccessAndIOMissing()),
                 "invalid_tests", "InvalidArrayAccessValue",
                 new ExpectedErrorInfo(1, ErrorCodes.INVALID_ARRAY_ACCESS));
+    }
+
+    @Test
+    public void testMissingMerge() {
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchExtendedCoCoChecker().addCoCo(new CheckLayerInputs()),
+                new CNNArchSymbolCoCoChecker(),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckLayerInputs()),
                 "invalid_tests", "MissingMerge",
                 new ExpectedErrorInfo(2, ErrorCodes.MISSING_MERGE));
     }

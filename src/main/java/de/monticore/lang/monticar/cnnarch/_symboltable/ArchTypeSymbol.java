@@ -114,7 +114,7 @@ public class ArchTypeSymbol extends CommonSymbol {
         return getChannelsSymbol().getIntValue().get();
     }
 
-    protected void setDimensionSymbols(List<ArchSimpleExpressionSymbol> dimensions) {
+    public void setDimensionSymbols(List<ArchSimpleExpressionSymbol> dimensions) {
         this.dimensions = dimensions;
     }
 
