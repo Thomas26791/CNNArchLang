@@ -4,11 +4,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/EmbeddedMontiArc/CNNArchLang/badge.svg?branch=master)](https://coveralls.io/github/EmbeddedMontiArc/CNNArchLang?branch=master)
 
 # CNNArch
-**work in progress**
 ## Introduction
-CNNArch is a declarative language to build architectures of feedforward neural networks with a special focus on convolutional neural networks. 
-It is being developed for use in the MontiCar language family, along with CNNTrain which configures the training of the network and EmbeddedMontiArcDL 
-which combines the languages into a EmbeddedMontiArc component.
+CNNArch is a declarative language to model architectures of feedforward neural networks with a special focus on convolutional neural networks. 
+It is being developed for use in the MontiCar language family, along with CNNTrain, which configures the training of the network, and EmbeddedMontiArcDL, which integrates CNNArch into EmbeddedMontiArc.
 The inputs and outputs of a network are strongly typed and the validity of a network is checked at compile time.
 In the following, we will explain the syntax and all features of CNNArch in combination with code examples to show how these can be used.
 
@@ -16,9 +14,10 @@ In the following, we will explain the syntax and all features of CNNArch in comb
 The syntax of this language has many similarities to python in the way how variables and methods are handled. 
 Variables which occur only in form of parameters are seemingly untyped. 
 However, the correctness of their values is checked at compile time.
-The header of the architecture declares architecture parameters which are usually used to define the Dimensions of inputs and outputs.
-The top part of the architecture consists of input, output or method declarations.
-The main part is the actual definition of the architecture in the form of a collection of layers which are connected through the two operators "->" and "|". 
+The header of the architecture declares architecture parameters that can be used in all following expressions. 
+In this way, different instances of the same architecture can be created.
+The top part of the architecture consists of input, output and method declarations.
+The main part is the actual architecture definition in the form of a collection of layers which are connected through the two operators "->" and "|". 
 A layer can either be a method, an input or an output. 
 The following is a complete example of the original version of Alexnet by A. Krizhevsky. 
 There are more compact versions of the same architecture but we will get to that later. 
@@ -92,7 +91,7 @@ Each element in a parallel group has the same input stream as the whole group.
 The output of a parallel group is a list of streams which can be merged into a single stream through use of the following methods: 
 `Concatenate()`, `Add()` or `Get(index)`. 
 Note: `Get(index=i)` can be abbreviated by `[i]`. 
-The method `Split(n)` in the example above creates multiple output streams from a single input stream by splitting the data itself into *n* streams which can then handled separately.
+The method `Split(n)` in the example above creates multiple output streams from a single input stream by splitting the channels of the input data into *n* streams.
 
 
 ## Inputs and Outputs
@@ -158,7 +157,7 @@ then `a(-> = 3)->` is equal to `a()->a()->a()->`,
 ## Argument Sequences
 Argument sequences can be used instead of regular arguments to declare that a layer should be repeated with the values of the given sequence. The operator between these so stacked layers is also given by the sequence. Other arguments that only have a single value are neutral to the repetition which means that the single value will be repeated an arbitrary number of times without having influence on the number of repetitions.
 
-The following are valid sequences: `[1->2->3->4]`, `[true | false]`, `{[1 | 3->2]`, `[ |2->3]` and `[1->..->4]`. All values in these examples could also be replaced by variable names or arithmetic or logical expressions. The last sequence is defined as a range and equal to the first one. A range in CNNArch is closed which means the start and end value are both in the sequence. Moreover, a range has always a step size of one. Thus, the range `[0|..|-4]` would be empty. The data flow operators can be used both in the same argument sequence in which case a single parallelization block is created. A parallel group in this block can be empty, which is why `[ |2->3]` is a valid sequence. If a method contains multiple argument sequences, the language will try to combine them by expanding the smaller one and will throw an error at model creation if this fails. Let `m` be a layer with parameters `a`, `b` and `c`, then the expression `m(a=[3->2],b=1)` is equal to `m(a=3,b=1)->m(a=2,b=1)`. Furthermore, the line `m(a=[5->3],b=[3|4|2],c=2)->` is equal to:
+The following are valid sequences: `[1->2->3->4]`, `[true | false]`, `{[1 | 3->2]`, `[ |2->3]` and `[1->..->4]`. All values in these examples could also be replaced by variable names or arithmetic or logical expressions. The last sequence is defined as a range and equal to the first one. A range in CNNArch is closed which means the start and end value are both in the sequence. Moreover, a range has always a step size of +1. Thus, the range `[0|..|-4]` would be empty. The data flow operators can be used both in the same argument sequence in which case a single parallelization block is created. A parallel group in this block can be empty, which is why `[ |2->3]` is a valid sequence. If a method contains multiple argument sequences, the language will try to combine them by expanding the smaller one and will throw an error at model creation if this fails. Let `m` be a layer with parameters `a`, `b` and `c`, then the expression `m(a=[3->2],b=1)` is equal to `m(a=3,b=1)->m(a=2,b=1)`. Furthermore, the line `m(a=[5->3],b=[3|4|2],c=2)->` is equal to:
 ```
 (
     m(a=5, b=3, c=2) ->
