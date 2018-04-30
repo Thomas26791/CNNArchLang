@@ -5,9 +5,9 @@
 
 # CNNArch
 ## Introduction
-CNNArch is a declarative language to model architectures of feedforward neural networks with a special focus on convolutional neural networks. 
+CNNArch is a descriptive language to model architectures of feedforward neural networks with a special focus on convolutional neural networks. 
 It is being developed for use in the MontiCar language family, along with CNNTrain, which configures the training of the network, and EmbeddedMontiArcDL, which integrates CNNArch into EmbeddedMontiArc.
-The inputs and outputs of a network are strongly typed and the validity of a network is checked at compile time.
+The inputs and outputs of a network are strongly typed and the validity of a network is checked at model creation.
 In the following, we will explain the syntax and all features of CNNArch in combination with code examples to show how these can be used.
 
 ## Basic Structure
