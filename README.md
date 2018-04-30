@@ -80,7 +80,7 @@ architecture Alexnet_alt(img_height=224, img_width=224, img_channels=3, classes=
 *Note: The third convolutional and the first two fully connected layers are not divided into two streams like they are in the original Alexnet. 
 This is done for the sake of simplicity. However, this change should not affect the actual computation.*
 
-## Layer Operators
+## Data Flow Operators
 This language does not use symbols to denote a connections between layers like most deep learning frameworks but instead uses a approach which describes the data flow through the network. 
 The first operator is the serial connection "->". The operator simply connects the output of the first layer to the input of the second layer. 
 Despite being sequential in nature, CNNArch is still able to describe complex networks like ResNeXt through the use of the parallelization operator "|". 
@@ -119,11 +119,11 @@ Furthermore, assuming *out* is a output array of size 2, the line `-> out` would
 Inputs and outputs can also be used in the middle of an architecture. 
 In general, inputs create new streams and outputs consume existing streams.
 
-## Methods
-It is possible to declare and construct new methods. The method declaration is similar to python. 
+## Layer Construction
+It is possible to declare and construct new layer methods. The method declaration is similar to python. 
 Each parameter can have a default value that makes it an optional argument. 
 The method call is also similar to python but, in contrast to python, it is necessary to specify the name of each argument. 
-The body of a new method is constructed from other layers including other user-defined methods. However, recursion is not allowed. 
+The body of a new layer is constructed from other layers including other constructed layers. However, recursion is not allowed. 
 The compiler will throw an error if recursion occurs. 
 The following is a example of multiple method declarations.
 ```
