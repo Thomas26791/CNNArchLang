@@ -1,12 +1,12 @@
 <#if tc.targetLanguage == ".py">
 <#if tc.softmaxOutput>
-        self.${tc.currentName} = mx.symbol.SoftmaxOutput(data=${tc.currentInputs[0]},
+        ${tc.currentName} = mx.symbol.SoftmaxOutput(data=${tc.currentInputs[0]},
             name="${tc.currentName}")
 <#elseif tc.logisticRegressionOutput>
-        self.${tc.currentName} = mx.symbol.LogisticRegressionOutput(data=${tc.currentInputs[0]},
+        ${tc.currentName} = mx.symbol.LogisticRegressionOutput(data=${tc.currentInputs[0]},
             name="${tc.currentName}")
 <#elseif tc.linearRegressionOutput>
-        self.${tc.currentName} = mx.symbol.LinearRegressionOutput(data=${tc.currentInputs[0]},
+        ${tc.currentName} = mx.symbol.LinearRegressionOutput(data=${tc.currentInputs[0]},
             name="${tc.currentName}")
 </#if>
 <#elseif tc.targetLanguage == ".cpp">

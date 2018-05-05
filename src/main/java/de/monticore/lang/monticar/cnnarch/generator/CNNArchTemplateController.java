@@ -261,7 +261,7 @@ public class CNNArchTemplateController {
         boolean isFirst = true;
         for (Object element : iterable){
             if (!isFirst){
-                stringBuilder.append(",");
+                stringBuilder.append(separator);
             }
             stringBuilder.append(elementPrefix);
             stringBuilder.append(element.toString());

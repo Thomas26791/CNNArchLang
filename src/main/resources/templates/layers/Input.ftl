@@ -7,9 +7,8 @@
 <#if widthIndex != 0><#assign indexList = indexList + [widthIndex]></#if>
 <#assign dimensions = tc.currentLayer.outputTypes[0].dimensions>
 <#if tc.targetLanguage == ".py">
-        self.${tc.currentName} = mx.sym.var("${tc.currentName}",
+        ${tc.currentName} = mx.sym.var("${tc.currentName}",
             shape=(0,${tc.join(dimensions, ",")}))
-        ${tc.currentName} = self.${tc.currentName}
 <#include "OutputShape.ftl">
 <#if heightIndex != channelIndex + 1 || widthIndex != heightIndex + 1>
         ${tc.currentName} = mx.symbol.transpose(data=${tc.currentName},
@@ -20,22 +19,12 @@
         ${tc.currentName} = mx.symbol.reshape(data=${tc.currentName},
             shape=(0,${tc.currentLayer.outputTypes[0].channels?c},${tc.currentLayer.outputTypes[0].height?c},${tc.currentLayer.outputTypes[0].width?c}))
 </#if>
-<#elseif tc.targetLanguage == ".cpp">
-        m_${tc.currentName} = Symbol::Variable("${tc.currentName}");
-        m_${tc.currentName}.SetParam("shape", Shape(0,${tc.join(dimensions, ",")}));
-        auto ${tc.currentName} = m_${tc.currentName};
-<#include "OutputShape.ftl">
-<#if heightIndex != channelIndex + 1 || widthIndex != heightIndex + 1>
-        ${tc.currentName} = Operator("transpose")
-            .SetParam("axes", Shape(0,${tc.join(indexList, ",")}))
-            .SetInput("data", ${tc.currentName})
-            .CreateSymbol();
-
-</#if>
-<#if indexList?size != 3>
-        ${tc.currentName} = Operator("reshape")
-            .SetParam("shape", Shape(0,${tc.currentLayer.outputTypes[0].channels?c},${tc.currentLayer.outputTypes[0].height?c},${tc.currentLayer.outputTypes[0].width?c}))
-            .SetInput("data", ${tc.currentName})
-            .CreateSymbol();
-</#if>
+        if not data_mean is None:
+            assert(not data_std is None)
+            _data_mean_ = mx.sym.Variable("_data_mean_", shape=(${tc.join(dimensions, ",")}), init=MyConstant(value=data_mean.tolist()))
+            _data_mean_ = mx.sym.BlockGrad(_data_mean_)
+            _data_std_ = mx.sym.Variable("_data_std_", shape=(${tc.join(dimensions, ",")}), init=MyConstant(value=data_mean.tolist()))
+            _data_std_ = mx.sym.BlockGrad(_data_std_)
+            ${tc.currentName} = mx.symbol.broadcast_sub(${tc.currentName}, _data_mean_)
+            ${tc.currentName} = mx.symbol.broadcast_div(${tc.currentName}, _data_std_)
 </#if>

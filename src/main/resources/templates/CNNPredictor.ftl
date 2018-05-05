@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
-#include <CNNBufferfile.h>
+#include <CNNBufferFile.h>
 
 class ${tc.fileNameWithoutEnding}{
 public:
-    const std::string json_file = "model/${tc.fullArchitectureName}/${tc.architectureName}-symbol.json";
-    const std::string param_file = "model/${tc.fullArchitectureName}/${tc.architectureName}.params";
+    const std::string json_file = "model/${tc.fullArchitectureName}/${tc.architectureName}_newest-symbol.json";
+    const std::string param_file = "model/${tc.fullArchitectureName}/${tc.architectureName}_newest-0000.params";
     const std::vector<std::string> input_keys = {"data"};
     //const std::vector<std::string> input_keys = {${tc.join(tc.architectureInputs, ",", "\"", "\"")}};
     const std::vector<std::vector<mx_uint>> input_shapes = {<#list tc.architecture.inputs as input>{1,${tc.join(input.definition.type.dimensions, ",")}}<#if input?has_next>,</#if></#list>};
