@@ -46,7 +46,7 @@ public class CheckLayerRecursion implements CNNArchASTLayerDeclarationCoCo {
     private void checkForRecursion(LayerDeclarationSymbol startingLayer, ArchitectureElementSymbol current){
         if (!done) {
             if (current instanceof CompositeElementSymbol) {
-                for (ArchitectureElementSymbol architectureElement : ((CompositeElementSymbol) current).getElement()) {
+                for (ArchitectureElementSymbol architectureElement : ((CompositeElementSymbol) current).getElements()) {
                     checkForRecursion(startingLayer, architectureElement);
                 }
             }

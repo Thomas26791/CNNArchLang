@@ -30,7 +30,7 @@ import java.util.*;
 public class CompositeElementSymbol extends ArchitectureElementSymbol {
 
     private boolean parallel;
-    private List<ArchitectureElementSymbol> element;
+    private List<ArchitectureElementSymbol> elements;
 
     protected CompositeElementSymbol() {
         super("");
@@ -45,13 +45,13 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
         this.parallel = parallel;
     }
 
-    public List<ArchitectureElementSymbol> getElement() {
-        return element;
+    public List<ArchitectureElementSymbol> getElements() {
+        return elements;
     }
 
-    protected void setElement(List<ArchitectureElementSymbol> element) {
+    protected void setElements(List<ArchitectureElementSymbol> elements) {
         ArchitectureElementSymbol previous = null;
-        for (ArchitectureElementSymbol current : element){
+        for (ArchitectureElementSymbol current : elements){
             if (previous != null && !isParallel()){
                 current.setInputElement(previous);
                 previous.setOutputElement(current);
@@ -66,25 +66,25 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
             }
             previous = current;
         }
-        this.element = element;
+        this.elements = elements;
     }
 
     @Override
     public boolean isAtomic() {
-        return getElement().isEmpty();
+        return getElements().isEmpty();
     }
 
     @Override
     public void setInputElement(ArchitectureElementSymbol inputElement) {
         super.setInputElement(inputElement);
         if (isParallel()){
-            for (ArchitectureElementSymbol current : getElement()){
+            for (ArchitectureElementSymbol current : getElements()){
                 current.setInputElement(inputElement);
             }
         }
         else {
-            if (!getElement().isEmpty()){
-                getElement().get(0).setInputElement(inputElement);
+            if (!getElements().isEmpty()){
+                getElements().get(0).setInputElement(inputElement);
             }
         }
     }
@@ -93,48 +93,48 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
     public void setOutputElement(ArchitectureElementSymbol outputElement) {
         super.setOutputElement(outputElement);
         if (isParallel()){
-            for (ArchitectureElementSymbol current : getElement()){
+            for (ArchitectureElementSymbol current : getElements()){
                 current.setOutputElement(outputElement);
             }
         }
         else {
-            if (!getElement().isEmpty()){
-                getElement().get(getElement().size()-1).setOutputElement(outputElement);
+            if (!getElements().isEmpty()){
+                getElements().get(getElements().size()-1).setOutputElement(outputElement);
             }
         }
     }
 
     @Override
     public List<ArchitectureElementSymbol> getFirstAtomicElements() {
-        if (getElement().isEmpty()){
+        if (getElements().isEmpty()){
             return Collections.singletonList(this);
         }
         else if (isParallel()){
             List<ArchitectureElementSymbol> firstElements = new ArrayList<>();
-            for (ArchitectureElementSymbol element : getElement()){
+            for (ArchitectureElementSymbol element : getElements()){
                 firstElements.addAll(element.getFirstAtomicElements());
             }
             return firstElements;
         }
         else {
-            return getElement().get(0).getFirstAtomicElements();
+            return getElements().get(0).getFirstAtomicElements();
         }
     }
 
     @Override
     public List<ArchitectureElementSymbol> getLastAtomicElements() {
-        if (getElement().isEmpty()){
+        if (getElements().isEmpty()){
             return Collections.singletonList(this);
         }
         else if (isParallel()){
             List<ArchitectureElementSymbol> lastElements = new ArrayList<>();
-            for (ArchitectureElementSymbol element : getElement()){
+            for (ArchitectureElementSymbol element : getElements()){
                 lastElements.addAll(element.getLastAtomicElements());
             }
             return lastElements;
         }
         else {
-            return getElement().get(getElement().size()-1).getLastAtomicElements();
+            return getElements().get(getElements().size()-1).getLastAtomicElements();
         }
     }
 
@@ -143,7 +143,7 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
         if (!isResolved()) {
             if (isResolvable()) {
                 List<ArchitectureElementSymbol> resolvedElements = new ArrayList<>();
-                for (ArchitectureElementSymbol element : getElement()) {
+                for (ArchitectureElementSymbol element : getElements()) {
                     element.resolve();
                 }
             }
@@ -153,7 +153,7 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
 
     @Override
     protected void resolveExpressions() throws ArchResolveException {
-        for (ArchitectureElementSymbol element : getElement()){
+        for (ArchitectureElementSymbol element : getElements()){
             element.resolveExpressions();
         }
     }
@@ -161,7 +161,7 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
     @Override
     public boolean isResolved() {
         boolean isResolved = true;
-        for (ArchitectureElementSymbol element : getElement()){
+        for (ArchitectureElementSymbol element : getElements()){
             if (!element.isResolved()){
                 isResolved = false;
             }
@@ -171,7 +171,7 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
 
     @Override
     protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables) {
-        for (ArchitectureElementSymbol element : getElement()){
+        for (ArchitectureElementSymbol element : getElements()){
             element.checkIfResolvable(allVariables);
             unresolvableVariables.addAll(element.getUnresolvableVariables());
         }
@@ -179,7 +179,7 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
 
     @Override
     public List<ArchTypeSymbol> computeOutputTypes() {
-        if (getElement().isEmpty()){
+        if (getElements().isEmpty()){
             if (getInputElement().isPresent()){
                 return getInputElement().get().getOutputTypes();
             }
@@ -189,8 +189,8 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
         }
         else {
             if (isParallel()){
-                List<ArchTypeSymbol> outputShapes = new ArrayList<>(getElement().size());
-                for (ArchitectureElementSymbol element : getElement()){
+                List<ArchTypeSymbol> outputShapes = new ArrayList<>(getElements().size());
+                for (ArchitectureElementSymbol element : getElements()){
                     if (element.getOutputTypes().size() != 0){
                         outputShapes.add(element.getOutputTypes().get(0));
                     }
@@ -198,22 +198,22 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
                 return outputShapes;
             }
             else {
-                for (ArchitectureElementSymbol element : getElement()){
+                for (ArchitectureElementSymbol element : getElements()){
                     element.getOutputTypes();
                 }
-                return getElement().get(getElement().size() - 1).getOutputTypes();
+                return getElements().get(getElements().size() - 1).getOutputTypes();
             }
         }
     }
 
     @Override
     public void checkInput() {
-        if (!getElement().isEmpty()){
-            for (ArchitectureElementSymbol element : getElement()){
+        if (!getElements().isEmpty()){
+            for (ArchitectureElementSymbol element : getElements()){
                 element.checkInput();
             }
             if (isParallel()){
-                for (ArchitectureElementSymbol element : getElement()){
+                for (ArchitectureElementSymbol element : getElements()){
                     if (element.getOutputTypes().size() > 1){
                         Log.error("0" + ErrorCodes.MISSING_MERGE + " Missing merge layer (Add(), Concatenate() or [i]). " +
                                         "Each stream at the end of a parallelization block can only have one output stream. "
@@ -227,7 +227,7 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
     @Override
     public Optional<Integer> getParallelLength() {
         if (isParallel()){
-            return Optional.of(getElement().size());
+            return Optional.of(getElements().size());
         }
         else {
             return Optional.of(1);
@@ -237,10 +237,10 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
     @Override
     public Optional<List<Integer>> getSerialLengths() {
         if (isParallel()){
-            return Optional.of(Collections.nCopies(getElement().size(), 1));
+            return Optional.of(Collections.nCopies(getElements().size(), 1));
         }
         else {
-            return Optional.of(Collections.singletonList(getElement().size()));
+            return Optional.of(Collections.singletonList(getElements().size()));
         }
     }
 
@@ -249,7 +249,7 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
         Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
         if (symbolsInScope == null || !symbolsInScope.contains(this)) {
             scope.getAsMutableScope().add(this);
-            for (ArchitectureElementSymbol element : getElement()) {
+            for (ArchitectureElementSymbol element : getElements()) {
                 element.putInScope(getSpannedScope());
             }
         }
@@ -263,12 +263,12 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
             copy.setAstNode(getAstNode().get());
         }
 
-        List<ArchitectureElementSymbol> elements = new ArrayList<>(getElement().size());
-        for (ArchitectureElementSymbol element : getElement()){
+        List<ArchitectureElementSymbol> elements = new ArrayList<>(getElements().size());
+        for (ArchitectureElementSymbol element : getElements()){
             ArchitectureElementSymbol elementCopy = element.preResolveDeepCopy();
             elements.add(elementCopy);
         }
-        copy.setElement(elements);
+        copy.setElements(elements);
         return copy;
     }
 
@@ -294,7 +294,7 @@ public class CompositeElementSymbol extends ArchitectureElementSymbol {
         public CompositeElementSymbol build(){
             CompositeElementSymbol sym = new CompositeElementSymbol();
             sym.setParallel(parallel);
-            sym.setElement(elements);
+            sym.setElements(elements);
             return sym;
         }
     }

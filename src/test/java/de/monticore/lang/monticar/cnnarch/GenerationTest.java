@@ -68,7 +68,6 @@ public class GenerationTest {
     private String readFileFromResources(String relativePath) throws IOException{
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource(relativePath).getFile());
-        StringBuilder stringBuilder = new StringBuilder();
         Scanner scanner = new Scanner(file);
         scanner.useDelimiter("\\Z");
         String content = scanner.next() + "\n";

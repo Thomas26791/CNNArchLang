@@ -93,9 +93,9 @@ public class InstanceTest extends AbstractSymtabTest {
         CNNArchCompilationUnitSymbol compilationUnit2 = compilationUnitSymbol.preResolveDeepCopy();
         compilationUnit2.setParameter("cardinality", 2);
         ArchitectureSymbol instance2 = compilationUnit2.resolve();
-        ArchRangeExpressionSymbol range1 = (ArchRangeExpressionSymbol) ((LayerSymbol)(((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol) instance1.getBody()).getElement().get(5).getResolvedThis().get()).getElement().get(0)).getElement().get(0)).getElement().get(0)))
+        ArchRangeExpressionSymbol range1 = (ArchRangeExpressionSymbol) ((LayerSymbol)(((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol) instance1.getBody()).getElements().get(5).getResolvedThis().get()).getElements().get(0)).getElements().get(0)).getElements().get(0)))
                 .getArgument(AllPredefinedVariables.PARALLEL_ARG_NAME).get().getRhs();
-        ArchRangeExpressionSymbol range2 = (ArchRangeExpressionSymbol) ((LayerSymbol)(((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol) instance2.getBody()).getElement().get(5).getResolvedThis().get()).getElement().get(0)).getElement().get(0)).getElement().get(0)))
+        ArchRangeExpressionSymbol range2 = (ArchRangeExpressionSymbol) ((LayerSymbol)(((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol) instance2.getBody()).getElements().get(5).getResolvedThis().get()).getElements().get(0)).getElements().get(0)).getElements().get(0)))
                 .getArgument(AllPredefinedVariables.PARALLEL_ARG_NAME).get().getRhs();
 
         assertEquals(32, range1.getElements().get().size());

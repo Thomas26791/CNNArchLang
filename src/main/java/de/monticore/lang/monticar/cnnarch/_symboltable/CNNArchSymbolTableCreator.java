@@ -332,7 +332,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         for (ASTArchBody astBody : node.getGroups()){
             elements.add((CompositeElementSymbol) astBody.getSymbol().get());
         }
-        compositeElement.setElement(elements);
+        compositeElement.setElements(elements);
 
         removeCurrentScope();
     }
@@ -352,7 +352,7 @@ public class CNNArchSymbolTableCreator extends de.monticore.symboltable.CommonSy
         for (ASTArchitectureElement astElement : ast.getElements()){
             elements.add((ArchitectureElementSymbol) astElement.getSymbol().get());
         }
-        compositeElement.setElement(elements);
+        compositeElement.setElements(elements);
 
         removeCurrentScope();
     }

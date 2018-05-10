@@ -199,7 +199,7 @@ public class CNNArchTemplateController {
         ArchitectureElementData previousElement = getCurrentElement();
         setCurrentElement(compositeElement);
 
-        for (ArchitectureElementSymbol element : compositeElement.getElement()){
+        for (ArchitectureElementSymbol element : compositeElement.getElements()){
             include(element, writer);
         }
 

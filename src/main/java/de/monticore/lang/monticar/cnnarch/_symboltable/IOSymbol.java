@@ -172,7 +172,7 @@ public class IOSymbol extends ArchitectureElementSymbol {
                                 .build()));
                 getLayer.setAstNode(getAstNode().get());
 
-                serialComposite.setElement(Arrays.asList(getLayer, ioElement));
+                serialComposite.setElements(Arrays.asList(getLayer, ioElement));
 
                 parallelElements.add(serialComposite);
             }

@@ -71,7 +71,7 @@ public class LayerNameCreator {
             int lastIndex = streamIndices.size() - 1;
 
             List<Integer> endStages = new ArrayList<>();
-            for (ArchitectureElementSymbol subElement : compositeElement.getElement()){
+            for (ArchitectureElementSymbol subElement : compositeElement.getElements()){
                 endStages.add(name(subElement, startStage, streamIndices));
                 streamIndices.set(lastIndex, streamIndices.get(lastIndex) + 1);
             }
@@ -81,7 +81,7 @@ public class LayerNameCreator {
         }
         else {
             int endStage = stage;
-            for (ArchitectureElementSymbol subElement : compositeElement.getElement()){
+            for (ArchitectureElementSymbol subElement : compositeElement.getElements()){
                 endStage = name(subElement, endStage, streamIndices);
             }
             return endStage;
