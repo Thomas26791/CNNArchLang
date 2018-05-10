@@ -41,14 +41,12 @@ public class ModifiedMathSymbolTableCreator extends MathSymbolTableCreator {
     }
 
 
-    //todo: only here because montimath true expression does not work at the moment
     @Override
     public void endVisit(ASTMathTrueExpression node){
         MathNameExpressionSymbol symbol = new MathNameExpressionSymbol(AllPredefinedVariables.TRUE_NAME);
         addToScopeAndLinkWithNode(symbol, node);
     }
 
-    //todo: only here because montimath false expression does not work at the moment
     @Override
     public void endVisit(ASTMathFalseExpression node){
         MathNameExpressionSymbol symbol = new MathNameExpressionSymbol(AllPredefinedVariables.FALSE_NAME);

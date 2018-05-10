@@ -21,21 +21,21 @@
 package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
+import de.monticore.lang.monticar.cnnarch._symboltable.LayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedLayerDeclaration;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Tanh extends PredefinedMethodDeclaration {
+public class Tanh extends PredefinedLayerDeclaration {
 
     private Tanh() {
-        super(AllPredefinedMethods.TANH_NAME);
+        super(AllPredefinedLayers.TANH_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         return Collections.singletonList(
                 new ArchTypeSymbol.Builder()
                         .channels(inputTypes.get(0).getChannels())
@@ -46,13 +46,13 @@ public class Tanh extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static Tanh create(){
-        Tanh method = new Tanh();
-        method.setParameters(new ArrayList<>());
-        return method;
+        Tanh declaration = new Tanh();
+        declaration.setParameters(new ArrayList<>());
+        return declaration;
     }
 }

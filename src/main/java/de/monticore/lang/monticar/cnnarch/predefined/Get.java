@@ -29,15 +29,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class Get extends PredefinedMethodDeclaration {
+public class Get extends PredefinedLayerDeclaration {
 
     private Get() {
-        super(AllPredefinedMethods.GET_NAME);
+        super(AllPredefinedLayers.GET_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
-        int index = layer.getIntValue(AllPredefinedMethods.INDEX_NAME).get();
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
+        int index = layer.getIntValue(AllPredefinedLayers.INDEX_NAME).get();
         if (index < inputTypes.size()){
             return Collections.singletonList(inputTypes.get(index));
         }
@@ -52,10 +52,10 @@ public class Get extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
-        int index = layer.getIntValue(AllPredefinedMethods.INDEX_NAME).get();
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
+        int index = layer.getIntValue(AllPredefinedLayers.INDEX_NAME).get();
         if (inputTypes.size() <= index){
-            Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_SHAPE + " Stream index out of bound. " +
+            Log.error("0" + ErrorCodes.INVALID_ELEMENT_INPUT_SHAPE + " Stream index out of bound. " +
                             "The selected input stream has the index " + index +
                             " but there are only " + inputTypes.size() + " input streams."
                     , layer.getSourcePosition());
@@ -63,13 +63,13 @@ public class Get extends PredefinedMethodDeclaration {
     }
 
     public static Get create(){
-        Get method = new Get();
+        Get declaration = new Get();
         List<VariableSymbol> parameters = new ArrayList<>(Arrays.asList(
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.INDEX_NAME)
+                        .name(AllPredefinedLayers.INDEX_NAME)
                         .constraints(Constraints.INTEGER, Constraints.NON_NEGATIVE)
                         .build()));
-        method.setParameters(parameters);
-        return method;
+        declaration.setParameters(parameters);
+        return declaration;
     }
 }

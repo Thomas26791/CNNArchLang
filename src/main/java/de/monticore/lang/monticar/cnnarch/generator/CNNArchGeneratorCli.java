@@ -29,31 +29,24 @@ public class CNNArchGeneratorCli {
 
     public static final Option OPTION_MODELS_PATH = Option.builder("m")
             .longOpt("models-dir")
-            .desc("full path to directory with CNNArch models e.g. C:\\Users\\vpupkin\\proj\\MyAwesomeAutopilot\\src\\main\\emam")
+            .desc("full path to the directory with the CNNArch model")
             .hasArg(true)
             .required(true)
             .build();
 
     public static final Option OPTION_ROOT_MODEL = Option.builder("r")
             .longOpt("root-model")
-            .desc("fully qualified name of the root model e.g. de.rwth.vpupkin.modeling.mySuperAwesomeAutopilotComponent")
+            .desc("name of the architecture")
             .hasArg(true)
             .required(true)
             .build();
 
     public static final Option OPTION_OUTPUT_PATH = Option.builder("o")
             .longOpt("output-dir")
-            .desc("full path to output directory for tests e.g. C:\\Users\\vpupkin\\proj\\MyAwesomeAutopilot\\target\\gen-cpp")
+            .desc("full path to output directory for tests")
             .hasArg(true)
             .required(false)
             .build();
-
-    /*public static final Option OPTION_TARGET_LANG = Option.builder("t")
-            .longOpt("target-language")
-            .desc("target language of network e.g. c++ or python")
-            .hasArg(true)
-            .required(false)
-            .build();*/
 
     private CNNArchGeneratorCli() {
     }
@@ -72,7 +65,6 @@ public class CNNArchGeneratorCli {
         options.addOption(OPTION_MODELS_PATH);
         options.addOption(OPTION_ROOT_MODEL);
         options.addOption(OPTION_OUTPUT_PATH);
-        //options.addOption(OPTION_TARGET_LANG);
         return options;
     }
 
@@ -92,7 +84,6 @@ public class CNNArchGeneratorCli {
         Path modelsDirPath = Paths.get(cliArgs.getOptionValue(OPTION_MODELS_PATH.getOpt()));
         String rootModelName = cliArgs.getOptionValue(OPTION_ROOT_MODEL.getOpt());
         String outputPath = cliArgs.getOptionValue(OPTION_OUTPUT_PATH.getOpt());
-        //String targetLanguage = cliArgs.getOptionValue(OPTION_TARGET_LANG.getOpt());
         CNNArchGenerator generator = new CNNArchGenerator();
         if (outputPath != null){
             generator.setGenerationTargetPath(outputPath);

@@ -21,8 +21,8 @@
 package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
+import de.monticore.lang.monticar.cnnarch._symboltable.LayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedLayerDeclaration;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
@@ -32,14 +32,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Add extends PredefinedMethodDeclaration {
+public class Add extends PredefinedLayerDeclaration {
 
     private Add() {
-        super(AllPredefinedMethods.ADD_NAME);
+        super(AllPredefinedLayers.ADD_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         List<String> range = computeStartAndEndValue(inputTypes, Rational::plus, Rational::plus);
 
         return Collections.singletonList(new ArchTypeSymbol.Builder()
@@ -51,7 +51,7 @@ public class Add extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputIsEmpty(inputTypes, layer);
         if (inputTypes.size() == 1){
             Log.warn("Add layer has only one input stream. Layer can be removed." , layer.getSourcePosition());
@@ -69,7 +69,7 @@ public class Add extends PredefinedMethodDeclaration {
             int countEqualWidths = (int)widthList.stream().distinct().count();
             int countEqualNumberOfChannels = (int)channelsList.stream().distinct().count();
             if (countEqualHeights != 1 || countEqualWidths != 1 || countEqualNumberOfChannels != 1){
-                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_SHAPE + " Invalid layer input. " +
+                Log.error("0" + ErrorCodes.INVALID_ELEMENT_INPUT_SHAPE + " Invalid layer input. " +
                                 "Shapes of all input streams must be equal. " +
                                 "Input heights: " + Joiners.COMMA.join(heightList) + ". " +
                                 "Input widths: " + Joiners.COMMA.join(widthList) + ". " +
@@ -80,8 +80,8 @@ public class Add extends PredefinedMethodDeclaration {
     }
 
     public static Add create(){
-        Add method = new Add();
-        method.setParameters(new ArrayList<>());
-        return method;
+        Add declaration = new Add();
+        declaration.setParameters(new ArrayList<>());
+        return declaration;
     }
 }

@@ -21,21 +21,21 @@
 package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
+import de.monticore.lang.monticar.cnnarch._symboltable.LayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedLayerDeclaration;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Relu extends PredefinedMethodDeclaration {
+public class Relu extends PredefinedLayerDeclaration {
 
     private Relu() {
-        super(AllPredefinedMethods.RELU_NAME);
+        super(AllPredefinedLayers.RELU_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         return Collections.singletonList(
                 new ArchTypeSymbol.Builder()
                         .channels(inputTypes.get(0).getChannels())
@@ -46,13 +46,13 @@ public class Relu extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static Relu create(){
-        Relu method = new Relu();
-        method.setParameters(new ArrayList<>());
-        return method;
+        Relu declaration = new Relu();
+        declaration.setParameters(new ArrayList<>());
+        return declaration;
     }
 }

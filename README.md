@@ -16,9 +16,9 @@ Variables which occur only in form of parameters are seemingly untyped.
 However, the correctness of their values is checked at compile time.
 The header of the architecture declares architecture parameters that can be used in all following expressions. 
 In this way, different instances of the same architecture can be created.
-The top part of the architecture consists of input, output and method declarations.
-The main part is the actual architecture definition in the form of a collection of layers which are connected through the two operators "->" and "|". 
-A layer can either be a method, an input or an output. 
+The top part of the architecture consists of input, output and layer declarations.
+The main part is the actual architecture definition in the form of a collection of architecture elements which are connected through the two operators "->" and "|". 
+An architecture element can either be a layer, an input or an output. 
 The following is a complete example of the original version of Alexnet by A. Krizhevsky. 
 There are more compact versions of the same architecture but we will get to that later. 
 All predefined methods are listed at the end of this document.
@@ -82,16 +82,16 @@ This is done for the sake of simplicity. However, this change should not affect 
 
 ## Data Flow Operators
 This language does not use symbols to denote a connections between layers like most deep learning frameworks but instead uses a approach which describes the data flow through the network. 
-The first operator is the serial connection "->". The operator simply connects the output of the first layer to the input of the second layer. 
+The first operator is the serial connection "->". The operator simply connects the output of the first element to the input of the second element. 
 Despite being sequential in nature, CNNArch is still able to describe complex networks like ResNeXt through the use of the parallelization operator "|". 
 This operator splits the network into parallel data streams. 
 The serial connection operator has a higher precedence than the parallel connection operator. 
-Therefore it is necessary to use brackets around each parallel group of layers.
+Therefore, it is necessary to use brackets around parallel groups of layers.
 Each element in a parallel group has the same input stream as the whole group. 
-The output of a parallel group is a list of streams which can be merged into a single stream through use of the following methods: 
+The output of a parallelization block is a list of streams which can be merged into a single stream through use of the following layers: 
 `Concatenate()`, `Add()` or `Get(index)`. 
 Note: `Get(index=i)` can be abbreviated by `[i]`. 
-The method `Split(n)` in the example above creates multiple output streams from a single input stream by splitting the channels of the input data into *n* streams.
+The layer `Split(n)` in the example above creates multiple output streams from a single input stream by splitting the channels of the input data into *n* streams.
 
 
 ## Inputs and Outputs
@@ -103,7 +103,7 @@ def input Z(0:255)^{3, h, w} image[2]
 def input Q(-oo:+oo)^{10} additionalData
 def output Q(0:1)^{3} predictions
 ```
-The first line defines the input *image* as an array of two rgb (or bgr) images with a resolution of `h` x `w`. 
+The first line defines the input *image* as an array of two color images with a resolution of `h` x `w`. 
 The part `Z(0:255)`, which corresponds to the type definition in EmbeddedMontiArc, restricts the values to integers between 0 and 255. 
 The following line `{3, h, w}` declares the shape of the input. 
 The shape denotes the dimensionality in form  of depth (number of channels), height and width. 
@@ -120,34 +120,38 @@ Inputs and outputs can also be used in the middle of an architecture.
 In general, inputs create new streams and outputs consume existing streams.
 
 ## Layer Construction
-It is possible to declare and construct new layer methods. The method declaration is similar to python. 
+It is possible to declare and construct new layers. The declaration of a layer is similar to methods in python. 
 Each parameter can have a default value that makes it an optional argument. 
-The method call is also similar to python but, in contrast to python, it is necessary to specify the name of each argument. 
-The body of a new layer is constructed from other layers including other constructed layers. However, recursion is not allowed. 
+A new layer is constructed from other layers including other constructed layers. However, recursion is not allowed. 
 The compiler will throw an error if recursion occurs. 
-The following is a example of multiple method declarations.
+The following is a example of multiple layer declarations.
 ```
     def conv(kernel, channels, stride=1, act=true){
         Convolution(kernel=(filter,filter), channels=channels, stride=(stride,stride)) ->
         BatchNorm() ->
         Relu(?=act)
     }
-    def resLayer(channels, stride=1){
+    def resLayer(channels, stride=1, addSkipConv=false){
         (
             conv(kernel=3, channels=channels, stride=stride) ->
             conv(kernel=3, channels=channels, act=false)
         |
-            conv(kernel=1, channels=channels, stride=stride, act=false, ?=(stride!=1))
+            conv(kernel=1, channels=channels, stride=stride, act=false, ?=addSkipConv)
         ) ->
         Add() ->
         Relu()
     }
 ```
-The method `resLayer` in this example corresponds to a building block of a Residual Network. 
+The constructed layer `resLayer` in this example corresponds to a building block of a Residual Network. 
 The `?` argument is a special argument which is explained in the next section.
 
 ## Structural Arguments
-Structural arguments are special arguments which can be set for each layer and which do not correspond to a layer parameter. The three structural arguments are "?", "->" and "|". The conditional argument "?" is a boolean. It does nothing if it is true and it removes the layer completely if it is false. This argument is only useful for layer construction. The other two structural arguments are non-negative integers which repeat the layer *x* number of times where *x* is equal to their value. The layer operator between each repetition has the same symbol as the argument.
+Structural arguments are special arguments which can be set for each layer and which do not correspond to a layer parameter. 
+The three structural arguments are "?", "->" and "|". The conditional argument "?" is a boolean. 
+It does nothing if it is true and it removes the layer completely if it is false. 
+This argument is only useful for layer construction. 
+The other two structural arguments are non-negative integers which repeat the layer *x* number of times where *x* is equal to their value. 
+The layer operator between each repetition has the same symbol as the argument.
 
 Assuming `a` is a method without required arguments, 
 then `a(-> = 3)->` is equal to `a()->a()->a()->`, 
@@ -155,9 +159,20 @@ then `a(-> = 3)->` is equal to `a()->a()->a()->`,
 `a(-> = 3, | = 2)->` is equal to `(a()->a()->a() | a()->a()->a())->`. 
 
 ## Argument Sequences
-Argument sequences can be used instead of regular arguments to declare that a layer should be repeated with the values of the given sequence. The operator between these so stacked layers is also given by the sequence. Other arguments that only have a single value are neutral to the repetition which means that the single value will be repeated an arbitrary number of times without having influence on the number of repetitions.
+Argument sequences can be used instead of regular arguments to declare that a layer should be repeated with the values of the given sequence. 
+The operator between these so stacked layers is also given by the sequence. 
+Other arguments that only have a single value are neutral to the repetition 
+which means that the single value will be repeated an arbitrary number of times without having an influence on the number of repetitions.
 
-The following are valid sequences: `[1->2->3->4]`, `[true | false]`, `{[1 | 3->2]`, `[ |2->3]` and `[1->..->4]`. All values in these examples could also be replaced by variable names or arithmetic or logical expressions. The last sequence is defined as a range and equal to the first one. A range in CNNArch is closed which means the start and end value are both in the sequence. Moreover, a range has always a step size of +1. Thus, the range `[0|..|-4]` would be empty. The data flow operators can be used both in the same argument sequence in which case a single parallelization block is created. A parallel group in this block can be empty, which is why `[ |2->3]` is a valid sequence. If a method contains multiple argument sequences, the language will try to combine them by expanding the smaller one and will throw an error at model creation if this fails. Let `m` be a layer with parameters `a`, `b` and `c`, then the expression `m(a=[3->2],b=1)` is equal to `m(a=3,b=1)->m(a=2,b=1)`. Furthermore, the line `m(a=[5->3],b=[3|4|2],c=2)->` is equal to:
+The following are valid sequences: `[1->2->3->4]`, `[true | false]`, `{[1 | 3->2]`, `[ |2->3]` and `[1->..->4]`. 
+All values in these examples could also be replaced by variable names or arithmetic or logical expressions. 
+The last sequence is defined as a range and equal to the first one. A range in CNNArch is closed which means the start and end value are both in the sequence. 
+Moreover, a range has always a step size of +1. Thus, the range `[0|..|-4]` would be empty. 
+The data flow operators can be used both in the same argument sequence in which case a single parallelization block is created. 
+A parallel group in this block can be empty, which is why `[ |2->3]` is a valid sequence. 
+If a method contains multiple argument sequences, the language will try to combine them by expanding the smaller one and will throw an error at model creation if this fails.
+Let `m` be a layer with parameters `a`, `b` and `c`, then the expression `m(a=[3->2],b=1)` is equal to `m(a=3,b=1)->m(a=2,b=1)`. 
+Furthermore, the line `m(a=[5->3],b=[3|4|2],c=2)->` is equal to:
 ```
 (
     m(a=5, b=3, c=2) ->
@@ -186,7 +201,8 @@ However, `m(a=[5->3], b=[2|4->6], c=2)->` and `m(a=[5->3], b=[2->4->6], c=2)->` 
 
 
 ## Expressions
-This language supports the basic arithmetic operators "+", "-", "\*", "/", the logical operators "&&", "||" and the comparison operators "==", "!=", "<", ">", "<=", ">=". 
+This language supports the basic arithmetic operators "+", "-", "\*", "/", the logical operators "&&", "||", the comparison operators "==", "!=", "<", ">", "<=", ">=" 
+and the constants `true` and `false`. 
 At the moment, it is sometimes necessary to use parentheses around an expression to avoid a parsing error. 
 For example, the line `someMethod(booleanArg = (1!=1))` does not parse without the parentheses around `1!=1`.
 
@@ -234,7 +250,7 @@ architecture Alexnet_alt2(img_height=224, img_width=224, img_channels=3, classes
 }
 ```
 
-The following architecture defines ResNet-152.
+The following architecture is the extremely deep ResNet-152.
 ```
 architecture ResNet152(img_height=224, img_width=224, img_channels=3, classes=1000){
     def input Z(0:255)^{img_channels, img_height, img_width} data

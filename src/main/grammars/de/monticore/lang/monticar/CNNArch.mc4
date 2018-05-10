@@ -18,21 +18,21 @@ grammar CNNArch extends de.monticore.lang.math.Math {
         Use nonterminal Architecture for embedding in another language (e.g. EmbeddedMontiArc)
     */
     symbol scope CNNArchCompilationUnit = "architecture"
-                                          name:Name&
+                                          name:Name
                                           ( "(" (ArchitectureParameter || ",")* ")" )? "{"
                                           ioDeclarations:IODeclaration*
                                           Architecture
                                           "}";
 
-    MethodDeclaration = NEWLINETOKEN* "def"
-                        Name& "("
-                        parameters:(MethodParameter || ",")* ")" "{" NEWLINETOKEN*
-                        body:ArchBody NEWLINETOKEN* "}";
+    LayerDeclaration = NEWLINETOKEN* "def"
+                       Name "("
+                       parameters:(LayerParameter || ",")* ")" "{" NEWLINETOKEN*
+                       body:ArchBody NEWLINETOKEN* "}";
 
     IODeclaration = NEWLINETOKEN* "def"
                     (in:"input" | out:"output")
                     type:ArchType
-                    Name&
+                    Name
                     (ArrayDeclaration)?;
 
 
@@ -53,22 +53,24 @@ grammar CNNArch extends de.monticore.lang.math.Math {
         Defines the architecture of the neural network.
         This NT is used for integration in EmbeddedMontiArc.
         @attribute methodDeclaration*
-                 A list of new methods/layers which can be used in the architecture.
+                 A list of new layers which can be used in the architecture.
         @attribute body
                  The architecture of the neural network.
     */
-    Architecture = NEWLINETOKEN* methodDeclaration:MethodDeclaration* NEWLINETOKEN*
+    Architecture = NEWLINETOKEN* methodDeclaration:LayerDeclaration* NEWLINETOKEN*
                    body:ArchBody NEWLINETOKEN*;
 
     scope ArchBody = elements:(ArchitectureElement || "->")*;
 
     interface ArchitectureElement;
 
-    IOLayer implements ArchitectureElement = NEWLINETOKEN* Name& ("[" index:ArchSimpleExpression "]")?;
+    IOElement implements ArchitectureElement = NEWLINETOKEN* Name ("[" index:ArchSimpleExpression "]")?;
 
-    MethodLayer implements ArchitectureElement = NEWLINETOKEN* Name& "(" arguments:(ArchArgument || ",")* ")";
+    Layer implements ArchitectureElement = NEWLINETOKEN* Name "(" arguments:(ArchArgument || ",")* ")";
 
-    ParallelLayer implements ArchitectureElement = NEWLINETOKEN* "(" NEWLINETOKEN* groups:ArchBody NEWLINETOKEN* "|" NEWLINETOKEN* groups:(ArchBody || "|")+ NEWLINETOKEN* ")";
+    ParallelBlock implements ArchitectureElement = NEWLINETOKEN* "(" NEWLINETOKEN*
+                                                   groups:ArchBody NEWLINETOKEN* "|" NEWLINETOKEN*
+                                                   groups:(ArchBody || "|")+ NEWLINETOKEN* ")";
 
     ArrayAccessLayer implements ArchitectureElement = NEWLINETOKEN* "[" index:ArchSimpleExpression "]";
 
@@ -77,16 +79,17 @@ grammar CNNArch extends de.monticore.lang.math.Math {
 
     interface Variable;
 
-    ArchitectureParameter implements Variable = NEWLINETOKEN* Name& ("=" default:ArchSimpleExpression)? NEWLINETOKEN*;
+    ArchitectureParameter implements Variable = NEWLINETOKEN* Name ("=" default:ArchSimpleExpression)? NEWLINETOKEN*;
 
-    MethodParameter implements Variable = NEWLINETOKEN* Name& ("=" default:ArchSimpleExpression)? NEWLINETOKEN*;
+    LayerParameter implements Variable = NEWLINETOKEN* Name ("=" default:ArchSimpleExpression)? NEWLINETOKEN*;
 
     interface ArchArgument;
 
     ArchParameterArgument implements ArchArgument = NEWLINETOKEN* Name "=" rhs:ArchExpression NEWLINETOKEN*;
 
-    ArchSpecialArgument implements ArchArgument = NEWLINETOKEN* (serial:"->" | parallel:"|" | conditional:"?") "="
-                                                      rhs:ArchExpression NEWLINETOKEN*;
+    ArchSpecialArgument implements ArchArgument = NEWLINETOKEN*
+                                                  (serial:"->" | parallel:"|" | conditional:"?") "="
+                                                  rhs:ArchExpression NEWLINETOKEN*;
 
 
     /* ======= Value Expressions =======*/
@@ -108,14 +111,14 @@ grammar CNNArch extends de.monticore.lang.math.Math {
                                                   (serial2:"->" | parallel2:"|")
                                                   end:ArchSimpleExpression "]";
     /**
-        Expression for variable values.
+        Expressions for variable values.
     */
     ArchSimpleExpression = (arithmeticExpression:MathArithmeticExpression
                          | booleanExpression:MathBooleanExpression
                          | tupleExpression:TupleExpression
                          | string:StringLiteral);
 
-    TupleExpression = "(" expressions:MathExpression "," expressions:(MathExpression || ",")* ")";
+    TupleExpression = "(" expressions:MathArithmeticExpression "," expressions:(MathArithmeticExpression || ",")* ")";
 
 
     /* =================================*/

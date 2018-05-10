@@ -26,31 +26,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Dropout extends PredefinedMethodDeclaration {
+public class Dropout extends PredefinedLayerDeclaration {
 
     private Dropout() {
-        super(AllPredefinedMethods.DROPOUT_NAME);
+        super(AllPredefinedLayers.DROPOUT_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         return inputTypes;
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static Dropout create(){
-        Dropout method = new Dropout();
+        Dropout declaration = new Dropout();
         List<VariableSymbol> parameters = new ArrayList<>(Arrays.asList(
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.P_NAME)
+                        .name(AllPredefinedLayers.P_NAME)
                         .constraints(Constraints.NUMBER, Constraints.BETWEEN_ZERO_AND_ONE)
                         .defaultValue(0.5)
                         .build()));
-        method.setParameters(parameters);
-        return method;
+        declaration.setParameters(parameters);
+        return declaration;
     }
 }

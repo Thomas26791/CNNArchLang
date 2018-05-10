@@ -32,28 +32,28 @@ public class AllPredefinedVariables {
     public static final String TRUE_NAME = "true";
     public static final String FALSE_NAME = "false";
 
-    public static VariableSymbol createIfParameter(){
+    public static VariableSymbol createConditionalParameter(){
         return new VariableSymbol.Builder()
                 .name(CONDITIONAL_ARG_NAME)
-                .type(VariableType.METHOD_PARAMETER)
+                .type(VariableType.LAYER_PARAMETER)
                 .constraints(Constraints.BOOLEAN)
                 .defaultValue(true)
                 .build();
     }
 
-    public static VariableSymbol createForParameter(){
+    public static VariableSymbol createSerialParameter(){
         return new VariableSymbol.Builder()
                 .name(SERIAL_ARG_NAME)
-                .type(VariableType.METHOD_PARAMETER)
+                .type(VariableType.LAYER_PARAMETER)
                 .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                 .defaultValue(1)
                 .build();
     }
 
-    public static VariableSymbol createCardinalityParameter(){
+    public static VariableSymbol createParallelParameter(){
         return new VariableSymbol.Builder()
                 .name(PARALLEL_ARG_NAME)
-                .type(VariableType.METHOD_PARAMETER)
+                .type(VariableType.LAYER_PARAMETER)
                 .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                 .defaultValue(1)
                 .build();

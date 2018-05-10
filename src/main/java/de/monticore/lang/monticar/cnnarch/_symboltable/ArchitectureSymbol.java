@@ -24,7 +24,7 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 import de.monticore.lang.monticar.cnnarch.helper.Utils;
-import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedLayers;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.CommonScopeSpanningSymbol;
 import de.monticore.symboltable.Scope;
@@ -37,32 +37,32 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
 
     public static final ArchitectureKind KIND = new ArchitectureKind();
 
-    private LayerSymbol body;
-    private List<IOLayerSymbol> inputs = new ArrayList<>();
-    private List<IOLayerSymbol> outputs = new ArrayList<>();
+    private ArchitectureElementSymbol body;
+    private List<IOSymbol> inputs = new ArrayList<>();
+    private List<IOSymbol> outputs = new ArrayList<>();
     private Map<String, IODeclarationSymbol> ioDeclarationMap = new HashMap<>();
 
     public ArchitectureSymbol() {
         super("", KIND);
     }
 
-    public LayerSymbol getBody() {
+    public ArchitectureElementSymbol getBody() {
         return body;
     }
 
-    protected void setBody(LayerSymbol body) {
+    protected void setBody(ArchitectureElementSymbol body) {
         this.body = body;
     }
 
-    public List<IOLayerSymbol> getInputs() {
+    public List<IOSymbol> getInputs() {
         return inputs;
     }
 
-    public List<IOLayerSymbol> getOutputs() {
+    public List<IOSymbol> getOutputs() {
         return outputs;
     }
 
-    //called in IOLayer to get IODeclaration; only null if error; will be checked in coco CheckIOName
+    //called in IOSymbol to get the IODeclarationSymbol; only null if error; will be checked in coco CheckIOName
     @Nullable
     protected IODeclarationSymbol resolveIODeclaration(String name){
         IODeclarationSymbol ioDeclaration = ioDeclarationMap.get(name);
@@ -81,8 +81,8 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
         return ioDeclarationMap.values();
     }
 
-    public Collection<MethodDeclarationSymbol> getMethodDeclarations(){
-        return getSpannedScope().resolveLocally(MethodDeclarationSymbol.KIND);
+    public Collection<LayerDeclarationSymbol> getLayerDeclarations(){
+        return getSpannedScope().resolveLocally(LayerDeclarationSymbol.KIND);
     }
 
 
@@ -96,11 +96,11 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
         }
     }
 
-    public List<LayerSymbol> getFirstLayers(){
+    public List<ArchitectureElementSymbol> getFirstElements(){
         if (!getBody().isResolved()){
             resolve();
         }
-        return getBody().getFirstAtomicLayers();
+        return getBody().getFirstAtomicElements();
     }
 
     public boolean isResolved(){
@@ -133,12 +133,12 @@ public class ArchitectureSymbol extends CommonScopeSpanningSymbol {
         }
         copy.getSpannedScope().getAsMutableScope().add(AllPredefinedVariables.createTrueConstant());
         copy.getSpannedScope().getAsMutableScope().add(AllPredefinedVariables.createFalseConstant());
-        for (MethodDeclarationSymbol methodDeclaration : AllPredefinedMethods.createList()){
-            copy.getSpannedScope().getAsMutableScope().add(methodDeclaration);
+        for (LayerDeclarationSymbol layerDeclaration : AllPredefinedLayers.createList()){
+            copy.getSpannedScope().getAsMutableScope().add(layerDeclaration);
         }
-        for (MethodDeclarationSymbol methodDeclaration : getSpannedScope().<MethodDeclarationSymbol>resolveLocally(MethodDeclarationSymbol.KIND)){
-            if (!methodDeclaration.isPredefined()) {
-                copy.getSpannedScope().getAsMutableScope().add(methodDeclaration.deepCopy());
+        for (LayerDeclarationSymbol layerDeclaration : getSpannedScope().<LayerDeclarationSymbol>resolveLocally(LayerDeclarationSymbol.KIND)){
+            if (!layerDeclaration.isPredefined()) {
+                copy.getSpannedScope().getAsMutableScope().add(layerDeclaration.deepCopy());
             }
         }
 

@@ -62,7 +62,7 @@ public class CNNArchCocos {
     public static CNNArchSymbolCoCoChecker createCNNArchPostResolveSymbolChecker() {
         return new CNNArchSymbolCoCoChecker()
                 .addCoCo(new CheckIOType())
-                .addCoCo(new CheckLayerInputs())
+                .addCoCo(new CheckElementInputs())
                 .addCoCo(new CheckIOAccessAndIOMissing())
                 .addCoCo(new CheckArchitectureFinished());
     }
@@ -71,17 +71,17 @@ public class CNNArchCocos {
     public static CNNArchSymbolCoCoChecker createCNNArchPreResolveSymbolChecker() {
         return new CNNArchSymbolCoCoChecker()
                 .addCoCo(new CheckIOName())
-                .addCoCo(new CheckNameExpression());
+                .addCoCo(new CheckExpressions());
     }
 
     //checks all normal cocos
     public static CNNArchCoCoChecker createASTChecker() {
         return new CNNArchCoCoChecker()
-                .addCoCo(new CheckMethodLayer())
+                .addCoCo(new CheckLayer())
                 .addCoCo(new CheckRangeOperators())
                 .addCoCo(new CheckVariableName())
-                .addCoCo(new CheckMethodName())
+                .addCoCo(new CheckLayerName())
                 .addCoCo(new CheckArgument())
-                .addCoCo(new CheckMethodRecursion());
+                .addCoCo(new CheckLayerRecursion());
     }
 }

@@ -27,41 +27,41 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class FullyConnected extends PredefinedMethodDeclaration {
+public class FullyConnected extends PredefinedLayerDeclaration {
 
     private FullyConnected() {
-        super(AllPredefinedMethods.FULLY_CONNECTED_NAME);
+        super(AllPredefinedLayers.FULLY_CONNECTED_NAME);
     }
 
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         return Collections.singletonList(new ArchTypeSymbol.Builder()
                 .height(1)
                 .width(1)
-                .channels(layer.getIntValue(AllPredefinedMethods.UNITS_NAME).get())
+                .channels(layer.getIntValue(AllPredefinedLayers.UNITS_NAME).get())
                 .elementType("-oo", "oo")
                 .build());
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static FullyConnected create(){
-        FullyConnected method = new FullyConnected();
+        FullyConnected declaration = new FullyConnected();
         List<VariableSymbol> parameters = new ArrayList<>(Arrays.asList(
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.UNITS_NAME)
+                        .name(AllPredefinedLayers.UNITS_NAME)
                         .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.NOBIAS_NAME)
+                        .name(AllPredefinedLayers.NOBIAS_NAME)
                         .constraints(Constraints.BOOLEAN)
                         .defaultValue(false)
                         .build()));
-        method.setParameters(parameters);
-        return method;
+        declaration.setParameters(parameters);
+        return declaration;
     }
 }

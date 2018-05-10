@@ -21,8 +21,8 @@
 package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
+import de.monticore.lang.monticar.cnnarch._symboltable.LayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedLayerDeclaration;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
@@ -31,14 +31,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Concatenate extends PredefinedMethodDeclaration {
+public class Concatenate extends PredefinedLayerDeclaration {
 
     private Concatenate() {
-        super(AllPredefinedMethods.CONCATENATE_NAME);
+        super(AllPredefinedLayers.CONCATENATE_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         int height = inputTypes.get(0).getHeight();
         int width = inputTypes.get(0).getWidth();
         int channels = 0;
@@ -57,7 +57,7 @@ public class Concatenate extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         if (!inputTypes.isEmpty()) {
             List<Integer> heightList = new ArrayList<>();
             List<Integer> widthList = new ArrayList<>();
@@ -68,7 +68,7 @@ public class Concatenate extends PredefinedMethodDeclaration {
             int countEqualHeights = (int)heightList.stream().distinct().count();
             int countEqualWidths = (int)widthList.stream().distinct().count();
             if (countEqualHeights != 1 || countEqualWidths != 1){
-                Log.error("0" + ErrorCodes.INVALID_LAYER_INPUT_SHAPE + " Invalid layer input. " +
+                Log.error("0" + ErrorCodes.INVALID_ELEMENT_INPUT_SHAPE + " Invalid layer input. " +
                                 "Concatenation of inputs with different resolutions is not possible. " +
                                 "Input heights: " + Joiners.COMMA.join(heightList) + ". " +
                                 "Input widths: " + Joiners.COMMA.join(widthList) + ". "
@@ -81,8 +81,8 @@ public class Concatenate extends PredefinedMethodDeclaration {
     }
 
     public static Concatenate create(){
-        Concatenate method = new Concatenate();
-        method.setParameters(new ArrayList<>());
-        return method;
+        Concatenate declaration = new Concatenate();
+        declaration.setParameters(new ArrayList<>());
+        return declaration;
     }
 }

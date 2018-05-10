@@ -82,10 +82,6 @@ public class VariableSymbol extends CommonSymbol {
         }
     }
 
-    /*public boolean isGlobalVariable(){
-        return type == VariableType.ARCHITECTURE_PARAMETER;
-    }*/
-
     public boolean isArchitectureParameter(){
         return type == VariableType.ARCHITECTURE_PARAMETER;
     }
@@ -94,8 +90,8 @@ public class VariableSymbol extends CommonSymbol {
         return type == VariableType.CONSTANT;
     }
 
-    public boolean isMethodParameter(){
-        return type == VariableType.METHOD_PARAMETER;
+    public boolean isLayerParameter(){
+        return type == VariableType.LAYER_PARAMETER;
     }
 
 
@@ -168,7 +164,7 @@ public class VariableSymbol extends CommonSymbol {
 
 
     public static class Builder{
-        private VariableType type = VariableType.METHOD_PARAMETER;
+        private VariableType type = VariableType.LAYER_PARAMETER;
         private ArchSimpleExpressionSymbol defaultValue = null;
         private String name = null;
         private Set<Constraints> constraints = new HashSet<>();

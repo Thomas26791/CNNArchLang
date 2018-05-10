@@ -22,7 +22,7 @@ package de.monticore.lang.monticar.cnnarch._cocos;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.IOLayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.IOSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
@@ -48,16 +48,16 @@ public class CheckIOAccessAndIOMissing extends CNNArchSymbolCoCo {
     }
 
     private void checkSingleIO(IODeclarationSymbol ioDeclaration){
-        if (ioDeclaration.getConnectedLayers().isEmpty()){
+        if (ioDeclaration.getConnectedElements().isEmpty()){
             Log.error("0" + ErrorCodes.MISSING_IO + " Input or output '" + ioDeclaration.getName() + "' was declared but never used."
                     , ioDeclaration.getSourcePosition());
         }
         else {
-            for (IOLayerSymbol layer : ioDeclaration.getConnectedLayers()){
-                if (layer.getArrayAccess().isPresent()){
+            for (IOSymbol ioElement : ioDeclaration.getConnectedElements()){
+                if (ioElement.getArrayAccess().isPresent()){
                     Log.error("0" + ErrorCodes.INVALID_ARRAY_ACCESS + " Invalid IO array access. " +
                                     "This input or output is not an array."
-                            , layer.getSourcePosition());
+                            , ioElement.getSourcePosition());
                 }
             }
         }
@@ -67,17 +67,17 @@ public class CheckIOAccessAndIOMissing extends CNNArchSymbolCoCo {
     private void checkIOArray(IODeclarationSymbol ioDeclaration){
         List<Integer> unusedIndices = IntStream.range(0, ioDeclaration.getArrayLength()).boxed().collect(Collectors.toList());
 
-        for (IOLayerSymbol layer : ioDeclaration.getConnectedLayers()){
-            if (layer.getArrayAccess().isPresent()){
-                Optional<Integer> arrayAccess = layer.getArrayAccess().get().getIntValue();
+        for (IOSymbol ioElement : ioDeclaration.getConnectedElements()){
+            if (ioElement.getArrayAccess().isPresent()){
+                Optional<Integer> arrayAccess = ioElement.getArrayAccess().get().getIntValue();
                 if (arrayAccess.isPresent() && arrayAccess.get() >= 0 && arrayAccess.get() < ioDeclaration.getArrayLength()){
                     unusedIndices.remove(arrayAccess.get());
                 }
                 else {
-                    Log.error("0" + ErrorCodes.INVALID_ARRAY_ACCESS + " The IO array access value of '" + layer.getName() +
+                    Log.error("0" + ErrorCodes.INVALID_ARRAY_ACCESS + " The IO array access value of '" + ioElement.getName() +
                                     "' must be an integer between 0 and " + (ioDeclaration.getArrayLength()-1) + ". " +
-                                    "The current value is: " + layer.getArrayAccess().get().getValue().get().toString()
-                            , layer.getSourcePosition());
+                                    "The current value is: " + ioElement.getArrayAccess().get().getValue().get().toString()
+                            , ioElement.getSourcePosition());
                 }
             }
             else{

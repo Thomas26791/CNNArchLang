@@ -83,16 +83,16 @@ public class AllCoCoTest extends AbstractCoCoTest {
 
     @Test
     public void testUnknownMethod(){
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodLayer()),
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckLayer()),
                 new CNNArchSymbolCoCoChecker(),
                 new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "UnknownMethod",
-                new ExpectedErrorInfo(1, ErrorCodes.UNKNOWN_METHOD));
+                new ExpectedErrorInfo(1, ErrorCodes.UNKNOWN_LAYER));
     }
 
     @Test
     public void testDuplicatedNames(){
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckVariableName()).addCoCo(new CheckMethodName()),
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckVariableName()).addCoCo(new CheckLayerName()),
                 new CNNArchSymbolCoCoChecker(),
                 new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "DuplicatedNames",
@@ -111,7 +111,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
     @Test
     public void testUnknownVariableName(){
         checkInvalid(new CNNArchCoCoChecker(),
-                new CNNArchSymbolCoCoChecker().addCoCo(new CheckNameExpression()),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckExpressions()),
                 new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "UnknownVariableName",
                 new ExpectedErrorInfo(1, ErrorCodes.UNKNOWN_VARIABLE_NAME));
@@ -128,7 +128,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
 
     @Test
     public void testDuplicatedArgument(){
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodLayer()),
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckLayer()),
                 new CNNArchSymbolCoCoChecker(),
                 new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "DuplicatedArgument",
@@ -137,7 +137,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
 
     @Test
     public void testWrongArgument(){
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckArgument()).addCoCo(new CheckMethodLayer()),
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckArgument()).addCoCo(new CheckLayer()),
                 new CNNArchSymbolCoCoChecker(),
                 new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "WrongArgument",
@@ -146,7 +146,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
 
     @Test
     public void testInvalidRecursion(){
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodRecursion()),
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckLayerRecursion()),
                 new CNNArchSymbolCoCoChecker(),
                 new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "InvalidRecursion",
@@ -218,7 +218,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
 
     @Test
     public void testMissingArgument(){
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckMethodLayer()),
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckLayer()),
                 new CNNArchSymbolCoCoChecker(),
                 new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "MissingArgument",
@@ -227,7 +227,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
 
     @Test
     public void testIllegalName(){
-        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckVariableName()).addCoCo(new CheckMethodName()),
+        checkInvalid(new CNNArchCoCoChecker().addCoCo(new CheckVariableName()).addCoCo(new CheckLayerName()),
                 new CNNArchSymbolCoCoChecker(),
                 new CNNArchSymbolCoCoChecker(),
                 "invalid_tests", "IllegalName",
@@ -247,18 +247,18 @@ public class AllCoCoTest extends AbstractCoCoTest {
     public void testInvalidInputShape(){
         checkInvalid(new CNNArchCoCoChecker(),
                 new CNNArchSymbolCoCoChecker(),
-                new CNNArchSymbolCoCoChecker().addCoCo(new CheckLayerInputs()),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckElementInputs()),
                 "invalid_tests", "InvalidInputShape",
-                new ExpectedErrorInfo(2, ErrorCodes.INVALID_LAYER_INPUT_SHAPE));
+                new ExpectedErrorInfo(2, ErrorCodes.INVALID_ELEMENT_INPUT_SHAPE));
     }
 
     @Test
     public void testWrongIOType() {
         checkInvalid(new CNNArchCoCoChecker(),
                 new CNNArchSymbolCoCoChecker(),
-                new CNNArchSymbolCoCoChecker().addCoCo(new CheckLayerInputs()),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckElementInputs()),
                 "invalid_tests", "WrongIOType",
-                new ExpectedErrorInfo(1, ErrorCodes.INVALID_LAYER_INPUT_TYPE));
+                new ExpectedErrorInfo(1, ErrorCodes.INVALID_ELEMENT_INPUT_DOMAIN));
     }
 
     @Test
@@ -310,7 +310,7 @@ public class AllCoCoTest extends AbstractCoCoTest {
     public void testMissingMerge() {
         checkInvalid(new CNNArchCoCoChecker(),
                 new CNNArchSymbolCoCoChecker(),
-                new CNNArchSymbolCoCoChecker().addCoCo(new CheckLayerInputs()),
+                new CNNArchSymbolCoCoChecker().addCoCo(new CheckElementInputs()),
                 "invalid_tests", "MissingMerge",
                 new ExpectedErrorInfo(2, ErrorCodes.MISSING_MERGE));
     }

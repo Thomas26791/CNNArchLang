@@ -34,7 +34,7 @@ public class ArchTypeSymbol extends CommonSymbol {
     public static final ArchTypeKind KIND = new ArchTypeKind();
 
     protected static final String DEFAULT_ELEMENT_TYPE = "Q(-oo:oo)";
-    private ASTElementType elementType;
+    private ASTElementType domain;
 
     private int channelIndex = -1;
     private int heightIndex = -1;
@@ -46,15 +46,15 @@ public class ArchTypeSymbol extends CommonSymbol {
         super("", KIND);
         ASTElementType elementType = new ASTElementType();
         elementType.setTElementType(DEFAULT_ELEMENT_TYPE);
-        setElementType(elementType);
+        setDomain(elementType);
     }
 
-    public ASTElementType getElementType() {
-        return elementType;
+    public ASTElementType getDomain() {
+        return domain;
     }
 
-    public void setElementType(ASTElementType elementType) {
-        this.elementType = elementType;
+    public void setDomain(ASTElementType domain) {
+        this.domain = domain;
     }
 
     public int getHeightIndex() {
@@ -207,7 +207,7 @@ public class ArchTypeSymbol extends CommonSymbol {
             copy.setAstNode(getAstNode().get());
         }
 
-        copy.setElementType(getElementType());
+        copy.setDomain(getDomain());
         copy.setWidthIndex(getWidthIndex());
         copy.setChannelIndex(getChannelIndex());
         copy.setHeightIndex(getHeightIndex());
@@ -224,7 +224,7 @@ public class ArchTypeSymbol extends CommonSymbol {
         private int height = 1;
         private int width = 1;
         private int channels = 1;
-        private ASTElementType elementType = null;
+        private ASTElementType domain = null;
 
         public Builder height(int height){
             this.height = height;
@@ -238,13 +238,13 @@ public class ArchTypeSymbol extends CommonSymbol {
             this.channels = channels;
             return this;
         }
-        public Builder elementType(ASTElementType elementType){
-            this.elementType = elementType;
+        public Builder elementType(ASTElementType domain){
+            this.domain = domain;
             return this;
         }
         public Builder elementType(String start, String end){
-            elementType = new ASTElementType();
-            elementType.setTElementType("Q(" + start + ":" + end +")");
+            domain = new ASTElementType();
+            domain.setTElementType("Q(" + start + ":" + end +")");
             return this;
         }
 
@@ -255,11 +255,11 @@ public class ArchTypeSymbol extends CommonSymbol {
             sym.setWidthIndex(2);
             sym.setDimensions(Arrays.asList(channels, height, width));
 
-            if (elementType == null){
-                elementType = new ASTElementType();
-                elementType.setTElementType(DEFAULT_ELEMENT_TYPE);
+            if (domain == null){
+                domain = new ASTElementType();
+                domain.setTElementType(DEFAULT_ELEMENT_TYPE);
             }
-            sym.setElementType(elementType);
+            sym.setDomain(domain);
             return sym;
         }
     }

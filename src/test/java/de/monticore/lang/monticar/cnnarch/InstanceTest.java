@@ -21,6 +21,7 @@
 package de.monticore.lang.monticar.cnnarch;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.*;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.Scope;
 import de.se_rwth.commons.logging.Log;
 import org.junit.Before;
@@ -92,8 +93,10 @@ public class InstanceTest extends AbstractSymtabTest {
         CNNArchCompilationUnitSymbol compilationUnit2 = compilationUnitSymbol.preResolveDeepCopy();
         compilationUnit2.setParameter("cardinality", 2);
         ArchitectureSymbol instance2 = compilationUnit2.resolve();
-        ArchRangeExpressionSymbol range1 = (ArchRangeExpressionSymbol) ((MethodLayerSymbol)(((CompositeLayerSymbol)((CompositeLayerSymbol)((CompositeLayerSymbol)((CompositeLayerSymbol) instance1.getBody()).getLayers().get(5).getResolvedThis().get()).getLayers().get(0)).getLayers().get(0)).getLayers().get(0))).getArgument("|").get().getRhs();
-        ArchRangeExpressionSymbol range2 = (ArchRangeExpressionSymbol) ((MethodLayerSymbol)(((CompositeLayerSymbol)((CompositeLayerSymbol)((CompositeLayerSymbol)((CompositeLayerSymbol) instance2.getBody()).getLayers().get(5).getResolvedThis().get()).getLayers().get(0)).getLayers().get(0)).getLayers().get(0))).getArgument("|").get().getRhs();
+        ArchRangeExpressionSymbol range1 = (ArchRangeExpressionSymbol) ((LayerSymbol)(((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol) instance1.getBody()).getElement().get(5).getResolvedThis().get()).getElement().get(0)).getElement().get(0)).getElement().get(0)))
+                .getArgument(AllPredefinedVariables.PARALLEL_ARG_NAME).get().getRhs();
+        ArchRangeExpressionSymbol range2 = (ArchRangeExpressionSymbol) ((LayerSymbol)(((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol)((CompositeElementSymbol) instance2.getBody()).getElement().get(5).getResolvedThis().get()).getElement().get(0)).getElement().get(0)).getElement().get(0)))
+                .getArgument(AllPredefinedVariables.PARALLEL_ARG_NAME).get().getRhs();
 
         assertEquals(32, range1.getElements().get().size());
         assertEquals(2, range2.getElements().get().size());

@@ -41,7 +41,7 @@ public class CheckIOType extends CNNArchSymbolCoCo {
     public void checkIO(IODeclarationSymbol ioDeclaration) {
         ArchTypeSymbol type = ioDeclaration.getType();
 
-        if (type.getElementType().isIsComplex() || type.getElementType().isIsBoolean()){
+        if (type.getDomain().isIsComplex() || type.getDomain().isIsBoolean()){
             Log.error("0" + ErrorCodes.INVALID_IO_TYPE + " Invalid IO element type. " +
                     "Type has to be rational or whole number.");
         }

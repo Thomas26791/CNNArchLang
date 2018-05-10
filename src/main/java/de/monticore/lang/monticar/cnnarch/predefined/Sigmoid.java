@@ -21,21 +21,21 @@
 package de.monticore.lang.monticar.cnnarch.predefined;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.ArchTypeSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.MethodLayerSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedMethodDeclaration;
+import de.monticore.lang.monticar.cnnarch._symboltable.LayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.PredefinedLayerDeclaration;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Sigmoid extends PredefinedMethodDeclaration {
+public class Sigmoid extends PredefinedLayerDeclaration {
 
     private Sigmoid() {
-        super(AllPredefinedMethods.SIGMOID_NAME);
+        super(AllPredefinedLayers.SIGMOID_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         return Collections.singletonList(
                 new ArchTypeSymbol.Builder()
                         .channels(inputTypes.get(0).getChannels())
@@ -46,13 +46,13 @@ public class Sigmoid extends PredefinedMethodDeclaration {
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static Sigmoid create(){
-        Sigmoid method = new Sigmoid();
-        method.setParameters(new ArrayList<>());
-        return method;
+        Sigmoid declaration = new Sigmoid();
+        declaration.setParameters(new ArrayList<>());
+        return declaration;
     }
 }

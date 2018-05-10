@@ -20,261 +20,478 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.symboltable.CommonScopeSpanningSymbol;
+
+import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
 import de.monticore.symboltable.Scope;
 import de.monticore.symboltable.Symbol;
-import de.se_rwth.commons.Joiners;
+import de.se_rwth.commons.logging.Log;
 
 import java.util.*;
+import java.util.function.Function;
 
-public abstract class LayerSymbol extends CommonScopeSpanningSymbol {
+public class LayerSymbol extends ArchitectureElementSymbol {
 
-    public static final LayerKind KIND = new LayerKind();
-
-    private LayerSymbol inputLayer;
-    private LayerSymbol outputLayer;
-    private List<ArchTypeSymbol> outputTypes = null;
-    private Set<VariableSymbol> unresolvableVariables = null;
-    private LayerSymbol resolvedThis = null;
+    private LayerDeclarationSymbol declaration = null;
+    private List<ArgumentSymbol> arguments;
 
     protected LayerSymbol(String name) {
-        super(name, KIND);
+        super(name);
+    }
+
+    public LayerDeclarationSymbol getDeclaration() {
+        if (declaration == null){
+            Collection<LayerDeclarationSymbol> declarationCollection = getEnclosingScope().resolveMany(getName(), LayerDeclarationSymbol.KIND);
+            if (!declarationCollection.isEmpty()){
+                setDeclaration(declarationCollection.iterator().next());
+            }
+        }
+        return declaration;
     }
 
     @Override
-    protected LayerScope createSpannedScope() {
-        return new LayerScope();
+    public boolean isResolvable() {
+        return super.isResolvable() && getDeclaration() != null;
+    }
+
+    private void setDeclaration(LayerDeclarationSymbol declaration) {
+        this.declaration = declaration;
+    }
+
+    public List<ArgumentSymbol> getArguments() {
+        return arguments;
+    }
+
+    protected void setArguments(List<ArgumentSymbol> arguments) {
+        this.arguments = arguments;
+    }
+
+    public ArchExpressionSymbol getIfExpression(){
+        Optional<ArgumentSymbol> argument = getArgument(AllPredefinedVariables.CONDITIONAL_ARG_NAME);
+        if (argument.isPresent()){
+            return argument.get().getRhs();
+        }
+        else {
+            return ArchSimpleExpressionSymbol.of(true);
+        }
     }
 
     @Override
-    public LayerScope getSpannedScope() {
-        return (LayerScope) super.getSpannedScope();
-    }
-
-    public Optional<LayerSymbol> getInputLayer() {
-        return Optional.ofNullable(inputLayer);
-    }
-
-    public void setInputLayer(LayerSymbol inputLayer) {
-        this.inputLayer = inputLayer;
-    }
-
-    public Optional<LayerSymbol> getOutputLayer() {
-        return Optional.ofNullable(outputLayer);
-    }
-
-    public void setOutputLayer(LayerSymbol outputLayer) {
-        this.outputLayer = outputLayer;
-    }
-
-    //only call after resolve
-    public List<ArchTypeSymbol> getOutputTypes() {
-        if (outputTypes == null){
-            outputTypes = computeOutputTypes();
-        }
-        return outputTypes;
-    }
-
-    protected void setOutputTypes(List<ArchTypeSymbol> outputTypes) {
-        this.outputTypes = outputTypes;
-    }
-
-    public List<ArchTypeSymbol> getInputTypes() {
-        if (getInputLayer().isPresent()){
-            return getInputLayer().get().getOutputTypes();
-        }
-        else {
-            return new ArrayList<>();
-        }
-    }
-
-    public boolean isInput(){
-        //override by IOLayerSymbol
-        return false;
-    }
-
-    public boolean isOutput(){
-        //override by IOLayerSymbol
-        return false;
-    }
-
-    public ArchitectureSymbol getArchitecture(){
-        Symbol sym = getEnclosingScope().getSpanningSymbol().get();
-        if (sym instanceof ArchitectureSymbol){
-            return (ArchitectureSymbol) sym;
-        }
-        else {
-            return ((LayerSymbol) sym).getArchitecture();
-        }
-    }
-
-    /**
-     * only call after resolve():
-     * @return returns the non-empty atomic layers which have the output of this layer as input.
-     */
-    public List<LayerSymbol> getNext(){
-        if (getOutputLayer().isPresent()){
-            List<LayerSymbol> outputLayers = new ArrayList<>();
-            for (LayerSymbol layer : getOutputLayer().get().getFirstAtomicLayers()){
-                if (layer.getMaxSerialLength().get() == 0){
-                    outputLayers.addAll(layer.getNext());
-                }
-                else {
-                    outputLayers.add(layer);
-                }
-            }
-            return outputLayers;
-        }
-        else {
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * only call after resolve():
-     * @return returns the non-empty atomic layers which are the input to this layer.
-     */
-    public List<LayerSymbol> getPrevious(){
-        if (getInputLayer().isPresent()){
-            List<LayerSymbol> inputLayers = new ArrayList<>();
-            for (LayerSymbol layer : getInputLayer().get().getLastAtomicLayers()){
-                if (layer.getMaxSerialLength().get() == 0){
-                    inputLayers.addAll(layer.getPrevious());
-                }
-                else {
-                    inputLayers.add(layer);
-                }
-            }
-            return inputLayers;
-        }
-        else {
-            return new ArrayList<>();
-        }
-    }
-
-    public Set<VariableSymbol> getUnresolvableVariables() {
-        if (unresolvableVariables == null){
-            checkIfResolvable();
-        }
-        return unresolvableVariables;
-    }
-
-    protected void setUnresolvableVariables(Set<VariableSymbol> unresolvableVariables) {
-        this.unresolvableVariables = unresolvableVariables;
-    }
-
-    public boolean isResolvable(){
-        return getUnresolvableVariables().isEmpty();
-    }
-
-    public void checkIfResolvable(){
-        checkIfResolvable(new HashSet<>());
-    }
-
-    protected void checkIfResolvable(Set<VariableSymbol> occurringVariables){
-        Set<VariableSymbol> unresolvableVariables = new HashSet<>();
-        computeUnresolvableVariables(unresolvableVariables, occurringVariables);
-        setUnresolvableVariables(unresolvableVariables);
-    }
-
-    public Optional<LayerSymbol> getResolvedThis() {
-        return Optional.ofNullable(resolvedThis);
-    }
-
-    protected void setResolvedThis(LayerSymbol resolvedThis) {
-        if (resolvedThis != null && resolvedThis != this){
-            resolvedThis.putInScope(getSpannedScope());
-            if (getInputLayer().isPresent()){
-                resolvedThis.setInputLayer(getInputLayer().get());
-            }
-            if (getOutputLayer().isPresent()){
-                resolvedThis.setOutputLayer(getOutputLayer().get());
-            }
-        }
-        this.resolvedThis = resolvedThis;
-    }
-
-    public void resolveOrError() throws ArchResolveException{
-        Set<VariableSymbol> names = resolve();
-        if (!isResolved()){
-            throw new IllegalStateException("The following names could not be resolved: " + Joiners.COMMA.join(getUnresolvableVariables()));
-        }
-    }
-
-    public boolean isResolved(){
+    public void setInputElement(ArchitectureElementSymbol inputElement) {
+        super.setInputElement(inputElement);
         if (getResolvedThis().isPresent() && getResolvedThis().get() != this){
-            return getResolvedThis().get().isResolved();
-        }
-        else {
-            return getResolvedThis().isPresent();
+            getResolvedThis().get().setInputElement(inputElement);
         }
     }
 
-    /**
-     * resolves all expressions and underlying layers and handles method calls and sequences.
-     * Architecture parameters have to be set before calling resolve.
-     * Resolves prepares the layers such that the output type and shape of each layer can be calculated and checked.
-     * CNNArchPreResolveCocos have to be checked before calling resolve and CNNArchPostResolvesCocos have to be checked after calling resolve.
-     * @return returns the set of all variables which could not be resolved. Should be ignored.
-     * @throws ArchResolveException thrown to interrupt the recursive resolve process to avoid follow-up Runtime Exceptions in tests after an error was logged.
-     *                              Can be caught and ignored.
-     */
-    abstract public Set<VariableSymbol> resolve() throws ArchResolveException;
+    @Override
+    public void setOutputElement(ArchitectureElementSymbol outputElement) {
+        super.setOutputElement(outputElement);
+        if (getResolvedThis().isPresent() && getResolvedThis().get() != this){
+            getResolvedThis().get().setOutputElement(outputElement);
+        }
+    }
 
-    //only call after resolve
-    protected abstract List<ArchTypeSymbol> computeOutputTypes();
+    @Override
+    protected void putInScope(Scope scope){
+        Collection<Symbol> symbolsInScope = scope.getLocalSymbols().get(getName());
+        if (symbolsInScope == null || !symbolsInScope.contains(this)){
+            scope.getAsMutableScope().add(this);
+            /*if (getResolvedThis().isPresent()){
+                getResolvedThis().get().putInScope(getSpannedScope());
+            }*/
+            for (ArgumentSymbol argument : getArguments()){
+                argument.putInScope(getSpannedScope());
+            }
+        }
+    }
 
-    abstract protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables);
+    @Override
+    public boolean isAtomic(){
+        return getResolvedThis().isPresent() && getResolvedThis().get() == this;
+    }
 
-    abstract public Optional<Integer> getParallelLength();
+    @Override
+    public List<ArchitectureElementSymbol> getFirstAtomicElements() {
+        if (isAtomic()){
+            return Collections.singletonList(this);
+        }
+        else {
+            return getResolvedThis().get().getFirstAtomicElements();
+        }
+    }
 
-    abstract public Optional<List<Integer>> getSerialLengths();
+    @Override
+    public List<ArchitectureElementSymbol> getLastAtomicElements() {
+        if (isAtomic()){
+            return Collections.singletonList(this);
+        }
+        else {
+            return getResolvedThis().get().getLastAtomicElements();
+        }
+    }
 
-    public Optional<Integer> getMaxSerialLength() {
-        Optional<List<Integer>> optLengths = getSerialLengths();
-        if (optLengths.isPresent()){
-            int max = 0;
-            for (int length : optLengths.get()){
-                if (length > max){
-                    max = length;
+    @Override
+    public Set<VariableSymbol> resolve() throws ArchResolveException {
+        if (!isResolved()) {
+            if (isResolvable()) {
+                getDeclaration();
+                resolveExpressions();
+                int parallelLength = getParallelLength().get();
+                int maxSerialLength = getMaxSerialLength().get();
+
+                if (!isActive() || maxSerialLength == 0) {
+                    //set resolvedThis to empty composite to remove the layer.
+                    setResolvedThis(new CompositeElementSymbol.Builder().build());
+                }
+                else if (parallelLength == 1 && maxSerialLength == 1) {
+                    //resolve the layer call
+                    ArchitectureElementSymbol resolvedLayer = getDeclaration().call(this);
+                    setResolvedThis(resolvedLayer);
+                }
+                else {
+                    //split the layer if it contains an argument sequence
+                    ArchitectureElementSymbol splitComposite = resolveSequences(parallelLength, getSerialLengths().get());
+                    setResolvedThis(splitComposite);
+                    splitComposite.resolveOrError();
                 }
             }
-            return Optional.of(max);
+        }
+        return getUnresolvableVariables();
+    }
+
+    private boolean isActive(){
+        if (getIfExpression().isSimpleValue() && !getIfExpression().getBooleanValue().get()){
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    protected void resolveExpressions() throws ArchResolveException{
+        for (ArgumentSymbol argument : getArguments()){
+            argument.resolveExpression();
+        }
+    }
+
+    private ArchitectureElementSymbol resolveSequences(int parallelLength, List<Integer> serialLengths){
+        List<List<ArchitectureElementSymbol>> elements = computeExpandedSplit(parallelLength, serialLengths);
+        List<ArchitectureElementSymbol> serialComposites = new ArrayList<>();
+
+        if (elements.size() == 1){
+            return createSerialSequencePart(elements.get(0));
+        }
+        else {
+            for (List<ArchitectureElementSymbol> serialElements : elements) {
+                serialComposites.add(createSerialSequencePart(serialElements));
+            }
+            CompositeElementSymbol parallelElement = new CompositeElementSymbol.Builder()
+                    .parallel(true)
+                    .elements(serialComposites)
+                    .build();
+
+            if (getAstNode().isPresent()) {
+                parallelElement.setAstNode(getAstNode().get());
+            }
+            return parallelElement;
+        }
+    }
+
+    private ArchitectureElementSymbol createSerialSequencePart(List<ArchitectureElementSymbol> elements){
+        if (elements.size() == 1){
+            return elements.get(0);
+        }
+        else {
+            CompositeElementSymbol serialComposite = new CompositeElementSymbol.Builder()
+                    .parallel(false)
+                    .elements(elements)
+                    .build();
+
+            if (getAstNode().isPresent()){
+                serialComposite.setAstNode(getAstNode().get());
+            }
+            return serialComposite;
+        }
+    }
+
+    private List<List<ArchitectureElementSymbol>> computeExpandedSplit(int parallelLength, List<Integer> serialLengths){
+        List<List<ArchitectureElementSymbol>> elements = new ArrayList<>(parallelLength);
+
+        List<List<List<ArgumentSymbol>>> allExpandedArguments = new ArrayList<>(getArguments().size());
+        for (ArgumentSymbol argument : getArguments()){
+            allExpandedArguments.add(argument.expandedSplit(parallelLength, serialLengths).get());
+        }
+
+        for (int i = 0; i < parallelLength; i++){
+            List<ArchitectureElementSymbol> serialElementList = new ArrayList<>(serialLengths.get(i));
+            for (int j = 0; j < serialLengths.get(i); j++){
+                List<ArgumentSymbol> layerArguments = new ArrayList<>();
+                for (List<List<ArgumentSymbol>> args : allExpandedArguments){
+                    layerArguments.add(args.get(i).get(j));
+                }
+
+                LayerSymbol layer = new LayerSymbol.Builder()
+                        .declaration(getDeclaration())
+                        .arguments(layerArguments)
+                        .build();
+                if (getAstNode().isPresent()){
+                    layer.setAstNode(getAstNode().get());
+                }
+                serialElementList.add(layer);
+            }
+            elements.add(serialElementList);
+        }
+        return elements;
+    }
+
+    @Override
+    protected void computeUnresolvableVariables(Set<VariableSymbol> unresolvableVariables, Set<VariableSymbol> allVariables) {
+        for (ArgumentSymbol argument : getArguments()){
+            argument.getRhs().checkIfResolvable(allVariables);
+            unresolvableVariables.addAll(argument.getRhs().getUnresolvableVariables());
+        }
+    }
+
+    @Override
+    public List<ArchTypeSymbol> computeOutputTypes() {
+        if (getResolvedThis().isPresent()) {
+            if (getResolvedThis().get() == this) {
+                return ((PredefinedLayerDeclaration) getDeclaration()).computeOutputTypes(getInputTypes(), this);
+            }
+            else {
+                return getResolvedThis().get().getOutputTypes();
+
+            }
+        }
+        else {
+            throw new IllegalStateException("Output type cannot be computed before the layer is resolved");
+        }
+    }
+
+    @Override
+    public void checkInput() {
+        if (getResolvedThis().isPresent()){
+            if (getResolvedThis().get() == this){
+                ((PredefinedLayerDeclaration) getDeclaration()).checkInput(getInputTypes(), this);
+            }
+            else {
+                getResolvedThis().get().checkInput();
+            }
+        }
+    }
+
+    public Optional<ArgumentSymbol> getArgument(String name){
+        for (ArgumentSymbol argument : getArguments()){
+            if (argument.getName().equals(name)) {
+                return Optional.of(argument);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Integer> getIntValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getIntValue);
+    }
+
+    public Optional<List<Integer>> getIntTupleValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getIntTupleValues);
+    }
+
+    public Optional<Boolean> getBooleanValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getBooleanValue);
+    }
+
+    public Optional<String> getStringValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getStringValue);
+    }
+
+    public Optional<Double> getDoubleValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getDoubleValue);
+    }
+
+    public Optional<Object> getValue(String parameterName){
+        return getTValue(parameterName, ArchExpressionSymbol::getValue);
+    }
+
+    public <T> Optional<T> getTValue(String parameterName, Function<ArchExpressionSymbol, Optional<T>> getValue){
+        Optional<ArgumentSymbol> arg = getArgument(parameterName);
+        Optional<VariableSymbol> param = getDeclaration().getParameter(parameterName);
+        if (arg.isPresent()){
+            return getValue.apply(arg.get().getRhs());
+        }
+        else if (param.isPresent() && param.get().getDefaultExpression().isPresent()){
+            return getValue.apply(param.get().getDefaultExpression().get());
         }
         else {
             return Optional.empty();
         }
     }
 
-    abstract protected void putInScope(Scope scope);
+    @Override
+    public Optional<Integer> getParallelLength(){
+        int length = -1;
+        for (ArgumentSymbol argument : getArguments()) {
+            if (argument.getRhs() instanceof ArchAbstractSequenceExpression) {
+                Optional<Integer> optParallelLength = argument.getRhs().getParallelLength();
+                if (optParallelLength.isPresent()) {
+                    int argLength = optParallelLength.get();
+                    if (length == -1) {
+                        length = argLength;
+                    }
+                    else if (length != argLength) {
+                        Log.error("0" + ErrorCodes.ILLEGAL_SEQUENCE_LENGTH + " Illegal sequence length. " +
+                                        "Length is " + argLength + " but it should be " + length + " or not a sequence. " +
+                                        "All parallel sequences in the same layer must be of the same size. "
+                                , argument.getSourcePosition());
+                    }
+                }
+                else {
+                    return Optional.empty();
+                }
+            }
+        }
+        if (length == -1) length = 1;
+        return Optional.of(length);
+    }
 
-    abstract protected void resolveExpressions() throws ArchResolveException;
+    @Override
+    public Optional<Integer> getMaxSerialLength(){
+        int max = 0;
+        for (ArgumentSymbol arg : getArguments()){
+            Optional<Integer> argLen = arg.getRhs().getMaxSerialLength();
+            if (argLen.isPresent()){
+                if (argLen.get() > max){
+                    max = argLen.get();
+                }
+            }
+            else {
+                return Optional.empty();
+            }
+        }
+        if (getArguments().isEmpty()){
+            max = 1;
+        }
+        return Optional.of(max);
+    }
 
-    /**
-     * only call after resolve.
-     * @return returns the first atomic layers which are contained in this layer or itself if it is atomic.
-     */
-    abstract public List<LayerSymbol> getFirstAtomicLayers();
+    @Override
+    public Optional<List<Integer>> getSerialLengths(){
+        Optional<Integer> optParallelLength = getParallelLength();
+        if (optParallelLength.isPresent()){
+            Optional<List<List<Integer>>> allArgLengths = expandArgumentSerialLengths(getArguments(), optParallelLength.get());
+            if (allArgLengths.isPresent()){
+                List<Integer> serialLengths = new ArrayList<>(optParallelLength.get());
+                for (int i = 0; i < optParallelLength.get(); i++){
+                    int serialLength = checkSerialLength(allArgLengths.get(), i);
+                    serialLengths.add(serialLength);
+                }
+                return Optional.of(serialLengths);
+            }
+        }
+        return Optional.empty();
+    }
 
-    /**
-     * only call after resolve.
-     * @return returns the last atomic layers which are contained in this layer or itself if it is atomic.
-     */
-    abstract public List<LayerSymbol> getLastAtomicLayers();
+    private int checkSerialLength(List<List<Integer>> allArgumentLengths, int serialIndex){
+        int serialLength = -1;
+        for (List<Integer> argLengths : allArgumentLengths){
+            int argLength = argLengths.get(serialIndex);
+            if (serialLength == -1){
+                serialLength = argLength;
+            }
+            else if (serialLength == 1) {
+                serialLength = argLength;
+            }
+            else if (argLength != 1 && argLength != serialLength){
+                Log.error("0" + ErrorCodes.ILLEGAL_SEQUENCE_LENGTH + " Illegal sequence length. " +
+                                "Length of sequence dimension "+ serialIndex +" is " + argLength + " but it should be " + serialLength + " or not a sequence. " +
+                                "All serial sequences of the same paralle dimension in the same layer must be of the same size. "
+                        , getSourcePosition());
+            }
+        }
+        if (serialLength == -1){
+            serialLength = 1;
+        }
+        return serialLength;
+    }
 
-    /**
-     * A layer is called atomic if it is either a active predefined method, an input, an output or an empty composite.
-     * This method only works correctly after a successful resolve().
-     * @return returns true iff this layer is atomic and resolved.
-     */
-    abstract public boolean isAtomic();
+    private Optional<List<List<Integer>>> expandArgumentSerialLengths(List<ArgumentSymbol> arguments, int parallelLength){
+        List<List<Integer>> argumentLengths = new ArrayList<>();
+        for (ArgumentSymbol arg : arguments){
+            Optional<List<Integer>> argLen = arg.getRhs().getSerialLengths();
+            if (argLen.isPresent()){
+                if (argLen.get().size() == 1){
+                    argumentLengths.add(Collections.nCopies(parallelLength, argLen.get().get(0)));
+                }
+                else {
+                    //assuming argLen.get().size() == parallelLength.
+                    argumentLengths.add(argLen.get());
+                }
+            }
+            else {
+                return Optional.empty();
+            }
+        }
+        if (getArguments().isEmpty()){
+            argumentLengths.add(Collections.singletonList(1));
+        }
+        return Optional.of(argumentLengths);
+    }
 
-    //only call after resolve; used in coco CheckLayerInputs to check the input type and shape of each layer.
-    abstract public void checkInput();
+    @Override
+    protected ArchitectureElementSymbol preResolveDeepCopy() {
+        LayerSymbol copy = new LayerSymbol(getName());
+        if (getAstNode().isPresent()){
+            copy.setAstNode(getAstNode().get());
+        }
 
-    /**
-     * preResolveDeepCopy for LayerSymbols, ArgumentSymbol and ArchExpressionSymbols but does not copy math expressions.
-     * @return returns a copy of this object
-     */
-    protected abstract LayerSymbol preResolveDeepCopy();
+        List<ArgumentSymbol> args = new ArrayList<>(getArguments().size());
+        for (ArgumentSymbol argument : getArguments()){
+            args.add(argument.preResolveDeepCopy());
+        }
+        copy.setArguments(args);
+
+        return copy;
+    }
+
+    public static class Builder{
+        private LayerDeclarationSymbol declaration;
+        private List<ArgumentSymbol> arguments = new ArrayList<>();
+        private boolean isResolved = false;
+
+        public Builder declaration(LayerDeclarationSymbol declaration){
+            this.declaration = declaration;
+            return this;
+        }
+
+        public Builder arguments(List<ArgumentSymbol> arguments){
+            this.arguments = arguments;
+            return this;
+        }
+
+        public Builder arguments(ArgumentSymbol... arguments){
+            this.arguments = Arrays.asList(arguments);
+            return this;
+        }
+
+        public Builder isResolved(boolean isResolved){
+            this.isResolved = isResolved;
+            return this;
+        }
+
+        public LayerSymbol build(){
+            if (declaration == null){
+                throw new IllegalStateException("Missing declaration for LayerSymbol");
+            }
+            LayerSymbol sym = new LayerSymbol(declaration.getName());
+            sym.setDeclaration(declaration);
+            sym.setArguments(arguments);
+            if (isResolved){
+                sym.setResolvedThis(sym);
+            }
+            return sym;
+        }
+
+    }
+
 }

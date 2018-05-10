@@ -26,52 +26,52 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Convolution extends PredefinedMethodDeclaration {
+public class Convolution extends PredefinedLayerDeclaration {
 
     private Convolution() {
-        super(AllPredefinedMethods.CONVOLUTION_NAME);
+        super(AllPredefinedLayers.CONVOLUTION_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         return computeConvAndPoolOutputShape(inputTypes.get(0),
                 layer,
-                layer.getIntValue(AllPredefinedMethods.CHANNELS_NAME).get());
+                layer.getIntValue(AllPredefinedLayers.CHANNELS_NAME).get());
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputTypes, layer);
         errorIfInputSmallerThanKernel(inputTypes, layer);
     }
 
     public static Convolution create(){
-        Convolution method = new Convolution();
+        Convolution declaration = new Convolution();
         List<VariableSymbol> parameters = new ArrayList<>(Arrays.asList(
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.KERNEL_NAME)
+                        .name(AllPredefinedLayers.KERNEL_NAME)
                         .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.CHANNELS_NAME)
+                        .name(AllPredefinedLayers.CHANNELS_NAME)
                         .constraints(Constraints.INTEGER, Constraints.POSITIVE)
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.STRIDE_NAME)
+                        .name(AllPredefinedLayers.STRIDE_NAME)
                         .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
                         .defaultValue(Arrays.asList(1, 1))
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.NOBIAS_NAME)
+                        .name(AllPredefinedLayers.NOBIAS_NAME)
                         .constraints(Constraints.BOOLEAN)
                         .defaultValue(false)
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.PADDING_NAME)
+                        .name(AllPredefinedLayers.PADDING_NAME)
                         .constraints(Constraints.PADDING_TYPE)
-                        .defaultValue(AllPredefinedMethods.PADDING_SAME)
+                        .defaultValue(AllPredefinedLayers.PADDING_SAME)
                         .build()));
-        method.setParameters(parameters);
-        return method;
+        declaration.setParameters(parameters);
+        return declaration;
     }
 }

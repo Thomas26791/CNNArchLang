@@ -20,7 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
-import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
+import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedLayers;
 import de.se_rwth.commons.SourcePosition;
 import de.se_rwth.commons.logging.Log;
 
@@ -151,9 +151,9 @@ public enum Constraints {
         public boolean isValid(ArchSimpleExpressionSymbol exp) {
             Optional<String> optString= exp.getStringValue();
             if (optString.isPresent()){
-                if (optString.get().equals(AllPredefinedMethods.PADDING_VALID)
-                        || optString.get().equals(AllPredefinedMethods.PADDING_SAME)
-                        || optString.get().equals(AllPredefinedMethods.PADDING_NO_LOSS)){
+                if (optString.get().equals(AllPredefinedLayers.PADDING_VALID)
+                        || optString.get().equals(AllPredefinedLayers.PADDING_SAME)
+                        || optString.get().equals(AllPredefinedLayers.PADDING_NO_LOSS)){
                     return true;
                 }
             }
@@ -161,9 +161,9 @@ public enum Constraints {
         }
         @Override
         protected String msgString() {
-            return AllPredefinedMethods.PADDING_VALID + ", "
-                    + AllPredefinedMethods.PADDING_SAME + " or "
-                    + AllPredefinedMethods.PADDING_NO_LOSS;
+            return AllPredefinedLayers.PADDING_VALID + ", "
+                    + AllPredefinedLayers.PADDING_SAME + " or "
+                    + AllPredefinedLayers.PADDING_NO_LOSS;
         }
     },
     POOL_TYPE {
@@ -171,8 +171,8 @@ public enum Constraints {
         public boolean isValid(ArchSimpleExpressionSymbol exp) {
             Optional<String> optString= exp.getStringValue();
             if (optString.isPresent()){
-                if (optString.get().equals(AllPredefinedMethods.POOL_MAX)
-                        || optString.get().equals(AllPredefinedMethods.POOL_AVG)){
+                if (optString.get().equals(AllPredefinedLayers.POOL_MAX)
+                        || optString.get().equals(AllPredefinedLayers.POOL_AVG)){
                     return true;
                 }
             }
@@ -181,8 +181,8 @@ public enum Constraints {
 
         @Override
         protected String msgString() {
-            return AllPredefinedMethods.POOL_MAX + " or "
-                    + AllPredefinedMethods.POOL_AVG;
+            return AllPredefinedLayers.POOL_MAX + " or "
+                    + AllPredefinedLayers.POOL_AVG;
         }
     };
 

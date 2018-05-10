@@ -20,9 +20,9 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
+import de.monticore.lang.monticar.cnnarch._symboltable.ArchitectureElementSymbol;
 import de.monticore.lang.monticar.cnnarch._symboltable.IODeclarationSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.IOLayerSymbol;
-import de.monticore.lang.monticar.cnnarch._symboltable.LayerSymbol;
+import de.monticore.lang.monticar.cnnarch._symboltable.IOSymbol;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.se_rwth.commons.logging.Log;
 
@@ -35,19 +35,19 @@ public class CheckIOName extends CNNArchSymbolCoCo {
     private Set<IODeclarationSymbol> checkedIODeclarations = new HashSet<>();
 
     @Override
-    public void check(LayerSymbol sym) {
-        if (sym instanceof IOLayerSymbol){
-            checkIOLayer((IOLayerSymbol) sym);
+    public void check(ArchitectureElementSymbol sym) {
+        if (sym instanceof IOSymbol){
+            checkIOElement((IOSymbol) sym);
         }
     }
 
-    public void checkIOLayer(IOLayerSymbol ioLayer) {
-        Collection<IODeclarationSymbol> ioDeclarations = ioLayer.getEnclosingScope().resolveMany(ioLayer.getName(), IODeclarationSymbol.KIND);
+    public void checkIOElement(IOSymbol ioElement) {
+        Collection<IODeclarationSymbol> ioDeclarations = ioElement.getEnclosingScope().resolveMany(ioElement.getName(), IODeclarationSymbol.KIND);
 
         if (ioDeclarations.isEmpty()){
             Log.error("0" + ErrorCodes.UNKNOWN_IO + " Unknown input or output name. " +
-                            "The input or output '" + ioLayer.getName() + "' does not exist"
-                    , ioLayer.getSourcePosition());
+                            "The input or output '" + ioElement.getName() + "' does not exist"
+                    , ioElement.getSourcePosition());
         }
         else {
             IODeclarationSymbol ioDeclaration = ioDeclarations.iterator().next();

@@ -26,45 +26,45 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Lrn extends PredefinedMethodDeclaration {
+public class Lrn extends PredefinedLayerDeclaration {
 
     private Lrn() {
-        super(AllPredefinedMethods.LRN_NAME);
+        super(AllPredefinedLayers.LRN_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         return inputTypes;
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static Lrn create(){
-        Lrn method = new Lrn();
+        Lrn declaration = new Lrn();
         List<VariableSymbol> parameters = new ArrayList<>(Arrays.asList(
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.NSIZE_NAME)
+                        .name(AllPredefinedLayers.NSIZE_NAME)
                         .constraints(Constraints.INTEGER, Constraints.NON_NEGATIVE)
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.KNORM_NAME)
+                        .name(AllPredefinedLayers.KNORM_NAME)
                         .constraints(Constraints.NUMBER)
                         .defaultValue(2)
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.ALPHA_NAME)
+                        .name(AllPredefinedLayers.ALPHA_NAME)
                         .constraints(Constraints.NUMBER)
                         .defaultValue(0.0001)
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.BETA_NAME)
+                        .name(AllPredefinedLayers.BETA_NAME)
                         .constraints(Constraints.NUMBER)
                         .defaultValue(0.75)
                         .build()));
-        method.setParameters(parameters);
-        return method;
+        declaration.setParameters(parameters);
+        return declaration;
     }
 }

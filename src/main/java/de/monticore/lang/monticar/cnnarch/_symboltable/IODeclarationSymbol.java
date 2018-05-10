@@ -53,12 +53,12 @@ public class IODeclarationSymbol extends CommonSymbol {
         this.type = type;
     }
 
-    public List<IOLayerSymbol> getConnectedLayers() {
+    public List<IOSymbol> getConnectedElements() {
         if (getArchitecture() == null){
             return new ArrayList<>();
         }
         else {
-            List<IOLayerSymbol> completeList;
+            List<IOSymbol> completeList;
             if (input) {
                 completeList = getArchitecture().getInputs();
             } else {

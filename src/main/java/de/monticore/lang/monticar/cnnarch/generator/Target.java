@@ -20,6 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch.generator;
 
+//can be removed
 public enum Target {
     PYTHON{
         @Override

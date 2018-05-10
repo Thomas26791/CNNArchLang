@@ -21,16 +21,13 @@
 package de.monticore.lang.monticar.cnnarch.generator;
 
 import de.monticore.lang.monticar.cnnarch._symboltable.*;
-import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedMethods;
 import de.monticore.lang.monticar.cnnarch.predefined.Sigmoid;
 import de.monticore.lang.monticar.cnnarch.predefined.Softmax;
-import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.logging.Log;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -39,8 +36,9 @@ import java.util.*;
 public class CNNArchTemplateController {
 
     public static final String FTL_FILE_ENDING = ".ftl";
-    public static final String TEMPLATE_LAYER_DIR_PATH = "layers/";
+    public static final String TEMPLATE_ELEMENTS_DIR_PATH = "elements/";
     public static final String TEMPLATE_CONTROLLER_KEY = "tc";
+    public static final String ELEMENT_DATA_KEY = "element";
 
     private LayerNameCreator nameManager;
     private Configuration freemarkerConfig = TemplateConfiguration.get();
@@ -49,7 +47,7 @@ public class CNNArchTemplateController {
     private Writer writer;
     private String mainTemplateNameWithoutEnding;
     private Target targetLanguage;
-    private LayerSymbol currentLayer;
+    private ArchitectureElementData dataElement;
 
     public CNNArchTemplateController(ArchitectureSymbol architecture) {
         setArchitecture(architecture);
@@ -67,12 +65,16 @@ public class CNNArchTemplateController {
         this.targetLanguage = targetLanguage;
     }
 
-    public LayerSymbol getCurrentLayer() {
-        return currentLayer;
+    public ArchitectureElementData getCurrentElement() {
+        return dataElement;
     }
 
-    public void setCurrentLayer(LayerSymbol currentLayer) {
-        this.currentLayer = currentLayer;
+    public void setCurrentElement(ArchitectureElementSymbol layer) {
+        this.dataElement = new ArchitectureElementData(getName(layer), layer, this);
+    }
+
+    public void setCurrentElement(ArchitectureElementData dataElement) {
+        this.dataElement = dataElement;
     }
 
     public ArchitectureSymbol getArchitecture() {
@@ -84,15 +86,7 @@ public class CNNArchTemplateController {
         this.nameManager = new LayerNameCreator(architecture);
     }
 
-    private String shapeToString(ArchTypeSymbol shape){
-        return "[" + Joiners.COMMA.join(shape.getDimensions()) + "]";
-    }
-
-    public String getCurrentName(){
-        return getName(getCurrentLayer());
-    }
-
-    public String getName(LayerSymbol layer){
+    public String getName(ArchitectureElementSymbol layer){
         return nameManager.getName(layer);
     }
 
@@ -104,18 +98,14 @@ public class CNNArchTemplateController {
         return getArchitecture().getEnclosingScope().getSpanningSymbol().get().getFullName().replaceAll("\\.","_");
     }
 
-    public List<String> getCurrentInputs(){
-        return getLayerInputs(getCurrentLayer());
-    }
-
-    public List<String> getLayerInputs(LayerSymbol layer){
+    public List<String> getLayerInputs(ArchitectureElementSymbol layer){
         List<String> inputNames = new ArrayList<>();
 
         if (isSoftmaxOutput(layer) || isLogisticRegressionOutput(layer)){
-            inputNames = getLayerInputs(layer.getInputLayer().get());
+            inputNames = getLayerInputs(layer.getInputElement().get());
         }
         else {
-            for (LayerSymbol input : layer.getPrevious()) {
+            for (ArchitectureElementSymbol input : layer.getPrevious()) {
                 if (input.getOutputTypes().size() == 1) {
                     inputNames.add(getName(input));
                 } else {
@@ -131,16 +121,16 @@ public class CNNArchTemplateController {
 
     public List<String> getArchitectureInputs(){
         List<String> list = new ArrayList<>();
-        for (IOLayerSymbol layer : getArchitecture().getInputs()){
-            list.add(nameManager.getName(layer));
+        for (IOSymbol ioElement : getArchitecture().getInputs()){
+            list.add(nameManager.getName(ioElement));
         }
         return list;
     }
 
     public List<String> getArchitectureOutputs(){
         List<String> list = new ArrayList<>();
-        for (IOLayerSymbol layer : getArchitecture().getOutputs()){
-            list.add(nameManager.getName(layer));
+        for (IOSymbol ioElement : getArchitecture().getOutputs()){
+            list.add(nameManager.getName(ioElement));
         }
         return list;
     }
@@ -150,7 +140,9 @@ public class CNNArchTemplateController {
 
         try {
             Template template = freemarkerConfig.getTemplate(templatePath);
-            Map<String, Object> ftlContext = Collections.singletonMap(TEMPLATE_CONTROLLER_KEY, this);
+            Map<String, Object> ftlContext = new HashMap<>();
+            ftlContext.put(TEMPLATE_CONTROLLER_KEY, this);
+            ftlContext.put(ELEMENT_DATA_KEY, getCurrentElement());
 
             this.writer = writer;
             template.process(ftlContext, writer);
@@ -166,71 +158,71 @@ public class CNNArchTemplateController {
         }
     }
 
-    public void include(IOLayerSymbol layer, Writer writer){
-        LayerSymbol previousLayer = getCurrentLayer();
-        setCurrentLayer(layer);
+    public void include(IOSymbol ioElement, Writer writer){
+        ArchitectureElementData previousElement = getCurrentElement();
+        setCurrentElement(ioElement);
 
-        if (layer.isAtomic()){
-            if (layer.isInput()){
-                include(TEMPLATE_LAYER_DIR_PATH, "Input", writer);
+        if (ioElement.isAtomic()){
+            if (ioElement.isInput()){
+                include(TEMPLATE_ELEMENTS_DIR_PATH, "Input", writer);
             }
             else {
-                include(TEMPLATE_LAYER_DIR_PATH, "Output", writer);
+                include(TEMPLATE_ELEMENTS_DIR_PATH, "Output", writer);
             }
         }
         else {
-            include(layer.getResolvedThis().get(), writer);
+            include(ioElement.getResolvedThis().get(), writer);
         }
 
-        setCurrentLayer(previousLayer);
-    }
-
-    public void include(MethodLayerSymbol layer, Writer writer){
-        LayerSymbol previousLayer = getCurrentLayer();
-        setCurrentLayer(layer);
-
-        if (layer.isAtomic()){
-            LayerSymbol nextLayer = layer.getOutputLayer().get();
-            if (!isSoftmaxOutput(nextLayer) && !isLogisticRegressionOutput(nextLayer)){
-                String templateName = layer.getMethod().getName();
-                include(TEMPLATE_LAYER_DIR_PATH, templateName, writer);
-            }
-        }
-        else {
-            include(layer.getResolvedThis().get(), writer);
-        }
-
-        setCurrentLayer(previousLayer);
-    }
-
-    public void include(CompositeLayerSymbol compositeLayer, Writer writer){
-        LayerSymbol previousLayer = getCurrentLayer();
-        setCurrentLayer(compositeLayer);
-
-        for (LayerSymbol layer : compositeLayer.getLayers()){
-            include(layer, writer);
-        }
-
-        setCurrentLayer(previousLayer);
+        setCurrentElement(previousElement);
     }
 
     public void include(LayerSymbol layer, Writer writer){
-        if (layer instanceof CompositeLayerSymbol){
-            include((CompositeLayerSymbol) layer, writer);
-        }
-        else if (layer instanceof MethodLayerSymbol){
-            include((MethodLayerSymbol) layer, writer);
+        ArchitectureElementData previousElement = getCurrentElement();
+        setCurrentElement(layer);
+
+        if (layer.isAtomic()){
+            ArchitectureElementSymbol nextElement = layer.getOutputElement().get();
+            if (!isSoftmaxOutput(nextElement) && !isLogisticRegressionOutput(nextElement)){
+                String templateName = layer.getDeclaration().getName();
+                include(TEMPLATE_ELEMENTS_DIR_PATH, templateName, writer);
+            }
         }
         else {
-            include((IOLayerSymbol) layer, writer);
+            include(layer.getResolvedThis().get(), writer);
+        }
+
+        setCurrentElement(previousElement);
+    }
+
+    public void include(CompositeElementSymbol compositeElement, Writer writer){
+        ArchitectureElementData previousElement = getCurrentElement();
+        setCurrentElement(compositeElement);
+
+        for (ArchitectureElementSymbol element : compositeElement.getElement()){
+            include(element, writer);
+        }
+
+        setCurrentElement(previousElement);
+    }
+
+    public void include(ArchitectureElementSymbol architectureElement, Writer writer){
+        if (architectureElement instanceof CompositeElementSymbol){
+            include((CompositeElementSymbol) architectureElement, writer);
+        }
+        else if (architectureElement instanceof LayerSymbol){
+            include((LayerSymbol) architectureElement, writer);
+        }
+        else {
+            include((IOSymbol) architectureElement, writer);
         }
     }
 
-    public void include(LayerSymbol layer){
+    public void include(ArchitectureElementSymbol architectureElement){
         if (writer == null){
             throw new IllegalStateException("missing writer");
         }
-        include(layer, writer);
+        include(architectureElement, writer);
     }
 
     public Map.Entry<String,String> process(String templateNameWithoutEnding, Target targetLanguage){
@@ -272,150 +264,30 @@ public class CNNArchTemplateController {
     }
 
 
-    public boolean isLogisticRegressionOutput(){
-        return isLogisticRegressionOutput(getCurrentLayer());
+    public boolean isLogisticRegressionOutput(ArchitectureElementSymbol architectureElement){
+        return isTOutput(Sigmoid.class, architectureElement);
     }
 
-    public boolean isLogisticRegressionOutput(LayerSymbol layer){
-        return isTOutput(Sigmoid.class, layer);
+    public boolean isLinearRegressionOutput(ArchitectureElementSymbol architectureElement){
+        return architectureElement.isOutput()
+                && !isLogisticRegressionOutput(architectureElement)
+                && !isSoftmaxOutput(architectureElement);
     }
 
-    public boolean isLinearRegressionOutput(){
-        boolean result = isLinearRegressionOutput(getCurrentLayer());
-        if (result){
-            Log.warn("The Output '" + getCurrentLayer().getName() + "' is a linear regression output (squared loss) during training" +
-                            " because the previous layer is not a softmax (cross-entropy loss) or sigmoid (logistic regression loss) activation. " +
-                            "Other loss functions are currently not supported. "
-                    , getCurrentLayer().getSourcePosition());
-        }
-        return result;
+
+    public boolean isSoftmaxOutput(ArchitectureElementSymbol architectureElement){
+        return isTOutput(Softmax.class, architectureElement);
     }
 
-    public boolean isLinearRegressionOutput(LayerSymbol layer){
-        return layer.isOutput()
-                && !isLogisticRegressionOutput(layer)
-                && !isSoftmaxOutput(layer);
-    }
-
-    public boolean isSoftmaxOutput(){
-        return isSoftmaxOutput(getCurrentLayer());
-    }
-
-    public boolean isSoftmaxOutput(LayerSymbol layer){
-        return isTOutput(Softmax.class, layer);
-    }
-
-    private boolean isTOutput(Class inputLayerMethodClass, LayerSymbol layer){
-        if (layer.isOutput()){
-            if (layer.getInputLayer().isPresent() && layer.getInputLayer().get() instanceof MethodLayerSymbol){
-                MethodLayerSymbol inputLayer = (MethodLayerSymbol) layer.getInputLayer().get();
-                if (inputLayerMethodClass.isInstance(inputLayer.getMethod())){
+    private boolean isTOutput(Class inputPredefinedLayerClass, ArchitectureElementSymbol architectureElement){
+        if (architectureElement.isOutput()){
+            if (architectureElement.getInputElement().isPresent() && architectureElement.getInputElement().get() instanceof LayerSymbol){
+                LayerSymbol inputLayer = (LayerSymbol) architectureElement.getInputElement().get();
+                if (inputPredefinedLayerClass.isInstance(inputLayer.getDeclaration())){
                     return true;
                 }
             }
         }
         return false;
-    }
-
-
-
-    public List<Integer> getKernel(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getIntTupleValue(AllPredefinedMethods.KERNEL_NAME).get();
-    }
-
-    public int getChannels(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getIntValue(AllPredefinedMethods.CHANNELS_NAME).get();
-    }
-
-    public List<Integer> getStride(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getIntTupleValue(AllPredefinedMethods.STRIDE_NAME).get();
-    }
-
-    public int getUnits(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getIntValue(AllPredefinedMethods.UNITS_NAME).get();
-    }
-
-    public boolean getNoBias(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getBooleanValue(AllPredefinedMethods.NOBIAS_NAME).get();
-    }
-
-    public double getP(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getDoubleValue(AllPredefinedMethods.P_NAME).get();
-    }
-
-    public int getIndex(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getIntValue(AllPredefinedMethods.INDEX_NAME).get();
-    }
-
-    public int getNumOutputs(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getIntValue(AllPredefinedMethods.NUM_SPLITS_NAME).get();
-    }
-
-    public boolean getFixGamma(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getBooleanValue(AllPredefinedMethods.FIX_GAMMA_NAME).get();
-    }
-
-    public int getNsize(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getIntValue(AllPredefinedMethods.NSIZE_NAME).get();
-    }
-
-    public double getKnorm(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getDoubleValue(AllPredefinedMethods.KNORM_NAME).get();
-    }
-
-    public double getAlpha(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getDoubleValue(AllPredefinedMethods.ALPHA_NAME).get();
-    }
-
-    public double getBeta(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getDoubleValue(AllPredefinedMethods.BETA_NAME).get();
-    }
-
-    @Nullable
-    public String getPoolType(){
-        return ((MethodLayerSymbol) getCurrentLayer())
-                .getStringValue(AllPredefinedMethods.POOL_TYPE_NAME).get();
-    }
-
-    @Nullable
-    public List<Integer> getPadding(){
-        return getPadding((MethodLayerSymbol) getCurrentLayer());
-    }
-
-    @Nullable
-    public List<Integer> getPadding(MethodLayerSymbol layer){
-        List<Integer> kernel = layer.getIntTupleValue(AllPredefinedMethods.KERNEL_NAME).get();
-        List<Integer> stride = layer.getIntTupleValue(AllPredefinedMethods.STRIDE_NAME).get();
-        ArchTypeSymbol inputType = layer.getInputTypes().get(0);
-        ArchTypeSymbol outputType = layer.getOutputTypes().get(0);
-
-        int heightWithPad = kernel.get(0) + stride.get(0)*(outputType.getHeight() - 1);
-        int widthWithPad = kernel.get(1) + stride.get(1)*(outputType.getWidth() - 1);
-        int heightPad = Math.max(0, heightWithPad - inputType.getHeight());
-        int widthPad = Math.max(0, widthWithPad - inputType.getWidth());
-
-        int topPad = (int)Math.ceil(heightPad / 2.0);
-        int bottomPad = (int)Math.floor(heightPad / 2.0);
-        int leftPad = (int)Math.ceil(widthPad / 2.0);
-        int rightPad = (int)Math.floor(widthPad / 2.0);
-
-        if (topPad == 0 && bottomPad == 0 && leftPad == 0 && rightPad == 0){
-            return null;
-        }
-
-        return Arrays.asList(0,0,0,0,topPad,bottomPad,leftPad,rightPad);
     }
 }

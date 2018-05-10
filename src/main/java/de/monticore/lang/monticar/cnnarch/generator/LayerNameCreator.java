@@ -29,50 +29,50 @@ import java.util.*;
 
 public class LayerNameCreator {
 
-    private Map<LayerSymbol, String> layerToName = new HashMap<>();
-    private Map<String, LayerSymbol> nameToLayer = new HashMap<>();
+    private Map<ArchitectureElementSymbol, String> elementToName = new HashMap<>();
+    private Map<String, ArchitectureElementSymbol> nameToElement = new HashMap<>();
 
     public LayerNameCreator(ArchitectureSymbol architecture) {
         name(architecture.getBody(), 1, new ArrayList<>());
     }
 
-    public LayerSymbol getLayer(String name){
-        return nameToLayer.get(name);
+    public ArchitectureElementSymbol getArchitectureElement(String name){
+        return nameToElement.get(name);
     }
 
-    public String getName(LayerSymbol layer){
-        return layerToName.get(layer);
+    public String getName(ArchitectureElementSymbol architectureElement){
+        return elementToName.get(architectureElement);
     }
 
-    protected int name(LayerSymbol layer, int stage, List<Integer> streamIndices){
-        if (layer instanceof CompositeLayerSymbol){
-            return nameComposite((CompositeLayerSymbol) layer, stage, streamIndices);
+    protected int name(ArchitectureElementSymbol architectureElement, int stage, List<Integer> streamIndices){
+        if (architectureElement instanceof CompositeElementSymbol){
+            return nameComposite((CompositeElementSymbol) architectureElement, stage, streamIndices);
         }
         else{
-            if (layer.isAtomic()){
-                if (layer.getMaxSerialLength().get() > 0){
-                    return add(layer, stage, streamIndices);
+            if (architectureElement.isAtomic()){
+                if (architectureElement.getMaxSerialLength().get() > 0){
+                    return add(architectureElement, stage, streamIndices);
                 }
                 else {
                     return stage;
                 }
             }
             else {
-                LayerSymbol resolvedLayer = layer.getResolvedThis().get();
-                return name(resolvedLayer, stage, streamIndices);
+                ArchitectureElementSymbol resolvedElement = architectureElement.getResolvedThis().get();
+                return name(resolvedElement, stage, streamIndices);
             }
         }
     }
 
-    protected int nameComposite(CompositeLayerSymbol compositeLayer, int stage, List<Integer> streamIndices){
-        if (compositeLayer.isParallel()){
+    protected int nameComposite(CompositeElementSymbol compositeElement, int stage, List<Integer> streamIndices){
+        if (compositeElement.isParallel()){
             int startStage = stage + 1;
             streamIndices.add(1);
             int lastIndex = streamIndices.size() - 1;
 
             List<Integer> endStages = new ArrayList<>();
-            for (LayerSymbol subLayer : compositeLayer.getLayers()){
-                endStages.add(name(subLayer, startStage, streamIndices));
+            for (ArchitectureElementSymbol subElement : compositeElement.getElement()){
+                endStages.add(name(subElement, startStage, streamIndices));
                 streamIndices.set(lastIndex, streamIndices.get(lastIndex) + 1);
             }
 
@@ -81,63 +81,63 @@ public class LayerNameCreator {
         }
         else {
             int endStage = stage;
-            for (LayerSymbol subLayer : compositeLayer.getLayers()){
-                endStage = name(subLayer, endStage, streamIndices);
+            for (ArchitectureElementSymbol subElement : compositeElement.getElement()){
+                endStage = name(subElement, endStage, streamIndices);
             }
             return endStage;
         }
     }
 
-    protected int add(LayerSymbol layer, int stage, List<Integer> streamIndices){
+    protected int add(ArchitectureElementSymbol architectureElement, int stage, List<Integer> streamIndices){
         int endStage = stage;
-        if (!layerToName.containsKey(layer)) {
-            String name = createName(layer, endStage, streamIndices);
+        if (!elementToName.containsKey(architectureElement)) {
+            String name = createName(architectureElement, endStage, streamIndices);
 
-            while (nameToLayer.containsKey(name)) {
+            while (nameToElement.containsKey(name)) {
                 endStage++;
-                name = createName(layer, endStage, streamIndices);
+                name = createName(architectureElement, endStage, streamIndices);
             }
 
-            layerToName.put(layer, name);
-            nameToLayer.put(name, layer);
+            elementToName.put(architectureElement, name);
+            nameToElement.put(name, architectureElement);
         }
         return endStage;
     }
 
-    protected String createName(LayerSymbol layer, int stage, List<Integer> streamIndices){
-        if (layer instanceof IOLayerSymbol){
-            String name = createBaseName(layer);
-            IOLayerSymbol ioLayer = (IOLayerSymbol) layer;
-            if (ioLayer.getArrayAccess().isPresent()){
-                int arrayAccess = ioLayer.getArrayAccess().get().getIntValue().get();
+    protected String createName(ArchitectureElementSymbol architectureElement, int stage, List<Integer> streamIndices){
+        if (architectureElement instanceof IOSymbol){
+            String name = createBaseName(architectureElement);
+            IOSymbol ioElement = (IOSymbol) architectureElement;
+            if (ioElement.getArrayAccess().isPresent()){
+                int arrayAccess = ioElement.getArrayAccess().get().getIntValue().get();
                 name = name + "_" + arrayAccess + "_";
             }
             return name;
         }
         else {
-            return createBaseName(layer) + stage + createStreamPostfix(streamIndices) + "_";
+            return createBaseName(architectureElement) + stage + createStreamPostfix(streamIndices) + "_";
         }
     }
 
 
-    protected String createBaseName(LayerSymbol layer){
-        if (layer instanceof MethodLayerSymbol) {
-            MethodDeclarationSymbol method = ((MethodLayerSymbol) layer).getMethod();
-            if (method instanceof Convolution) {
+    protected String createBaseName(ArchitectureElementSymbol architectureElement){
+        if (architectureElement instanceof LayerSymbol) {
+            LayerDeclarationSymbol layerDeclaration = ((LayerSymbol) architectureElement).getDeclaration();
+            if (layerDeclaration instanceof Convolution) {
                 return "conv";
-            } else if (method instanceof FullyConnected) {
+            } else if (layerDeclaration instanceof FullyConnected) {
                 return "fc";
-            } else if (method instanceof Pooling) {
+            } else if (layerDeclaration instanceof Pooling) {
                 return "pool";
             } else {
-                return method.getName().toLowerCase();
+                return layerDeclaration.getName().toLowerCase();
             }
         }
-        else if (layer instanceof CompositeLayerSymbol){
+        else if (architectureElement instanceof CompositeElementSymbol){
             return "group";
         }
         else {
-            return layer.getName();
+            return architectureElement.getName();
         }
     }
 

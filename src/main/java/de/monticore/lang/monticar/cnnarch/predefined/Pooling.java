@@ -26,47 +26,47 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Pooling extends PredefinedMethodDeclaration {
+public class Pooling extends PredefinedLayerDeclaration {
 
     protected Pooling() {
-        super(AllPredefinedMethods.POOLING_NAME);
+        super(AllPredefinedLayers.POOLING_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         return computeConvAndPoolOutputShape(inputTypes.get(0),
                 layer,
                 inputTypes.get(0).getChannels());
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputTypes, layer);
         errorIfInputSmallerThanKernel(inputTypes, layer);
     }
 
     public static Pooling create(){
-        Pooling method = new Pooling();
+        Pooling declaration = new Pooling();
         List<VariableSymbol> parameters = new ArrayList<>(Arrays.asList(
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.POOL_TYPE_NAME)
+                        .name(AllPredefinedLayers.POOL_TYPE_NAME)
                         .constraints(Constraints.POOL_TYPE)
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.KERNEL_NAME)
+                        .name(AllPredefinedLayers.KERNEL_NAME)
                         .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.STRIDE_NAME)
+                        .name(AllPredefinedLayers.STRIDE_NAME)
                         .constraints(Constraints.INTEGER_TUPLE, Constraints.POSITIVE)
                         .defaultValue(Arrays.asList(1, 1))
                         .build(),
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.PADDING_NAME)
+                        .name(AllPredefinedLayers.PADDING_NAME)
                         .constraints(Constraints.PADDING_TYPE)
-                        .defaultValue(AllPredefinedMethods.PADDING_SAME)
+                        .defaultValue(AllPredefinedLayers.PADDING_SAME)
                         .build()));
-        method.setParameters(parameters);
-        return method;
+        declaration.setParameters(parameters);
+        return declaration;
     }
 }

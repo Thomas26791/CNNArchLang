@@ -43,8 +43,8 @@ public class ArgumentSymbol extends CommonSymbol {
 
     public VariableSymbol getParameter() {
         if (parameter == null){
-            if (getMethodLayer().getMethod() != null){
-                Optional<VariableSymbol> optParam = getMethodLayer().getMethod().getParameter(getName());
+            if (getLayer().getDeclaration() != null){
+                Optional<VariableSymbol> optParam = getLayer().getDeclaration().getParameter(getName());
                 optParam.ifPresent(this::setParameter);
             }
         }
@@ -55,8 +55,8 @@ public class ArgumentSymbol extends CommonSymbol {
         this.parameter = parameter;
     }
 
-    public MethodLayerSymbol getMethodLayer() {
-        return (MethodLayerSymbol) getEnclosingScope().getSpanningSymbol().get();
+    public LayerSymbol getLayer() {
+        return (LayerSymbol) getEnclosingScope().getSpanningSymbol().get();
     }
 
     public ArchExpressionSymbol getRhs() {

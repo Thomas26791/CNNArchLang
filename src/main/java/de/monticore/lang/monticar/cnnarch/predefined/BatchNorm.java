@@ -26,31 +26,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class BatchNorm extends PredefinedMethodDeclaration {
+public class BatchNorm extends PredefinedLayerDeclaration {
 
     private BatchNorm() {
-        super(AllPredefinedMethods.BATCHNORM_NAME);
+        super(AllPredefinedLayers.BATCHNORM_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         return inputTypes;
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static BatchNorm create(){
-        BatchNorm method = new BatchNorm();
+        BatchNorm declaration = new BatchNorm();
         List<VariableSymbol> parameters = new ArrayList<>(Arrays.asList(
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.FIX_GAMMA_NAME)
+                        .name(AllPredefinedLayers.FIX_GAMMA_NAME)
                         .constraints(Constraints.BOOLEAN)
                         .defaultValue(true)
                         .build()));
-        method.setParameters(parameters);
-        return method;
+        declaration.setParameters(parameters);
+        return declaration;
     }
 }

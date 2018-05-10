@@ -27,35 +27,35 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class GlobalPooling extends PredefinedMethodDeclaration {
+public class GlobalPooling extends PredefinedLayerDeclaration {
 
     protected GlobalPooling() {
-        super(AllPredefinedMethods.GLOBAL_POOLING_NAME);
+        super(AllPredefinedLayers.GLOBAL_POOLING_NAME);
     }
 
     @Override
-    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public List<ArchTypeSymbol> computeOutputTypes(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         return Collections.singletonList(new ArchTypeSymbol.Builder()
                 .height(1)
                 .width(1)
                 .channels(inputTypes.get(0).getChannels())
-                .elementType(inputTypes.get(0).getElementType())
+                .elementType(inputTypes.get(0).getDomain())
                 .build());
     }
 
     @Override
-    public void checkInput(List<ArchTypeSymbol> inputTypes, MethodLayerSymbol layer) {
+    public void checkInput(List<ArchTypeSymbol> inputTypes, LayerSymbol layer) {
         errorIfInputSizeIsNotOne(inputTypes, layer);
     }
 
     public static GlobalPooling create(){
-        GlobalPooling method = new GlobalPooling();
+        GlobalPooling declaration = new GlobalPooling();
         List<VariableSymbol> parameters = new ArrayList<>(Arrays.asList(
                 new VariableSymbol.Builder()
-                        .name(AllPredefinedMethods.POOL_TYPE_NAME)
+                        .name(AllPredefinedLayers.POOL_TYPE_NAME)
                         .constraints(Constraints.POOL_TYPE)
                         .build()));
-        method.setParameters(parameters);
-        return method;
+        declaration.setParameters(parameters);
+        return declaration;
     }
 }

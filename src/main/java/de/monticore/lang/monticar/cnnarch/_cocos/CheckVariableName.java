@@ -20,7 +20,7 @@
  */
 package de.monticore.lang.monticar.cnnarch._cocos;
 
-import de.monticore.lang.monticar.cnnarch._ast.ASTMethodParameter;
+import de.monticore.lang.monticar.cnnarch._ast.ASTLayerParameter;
 import de.monticore.lang.monticar.cnnarch._ast.ASTVariable;
 import de.monticore.lang.monticar.cnnarch.helper.ErrorCodes;
 import de.monticore.lang.monticar.cnnarch.predefined.AllPredefinedVariables;
@@ -64,7 +64,7 @@ public class CheckVariableName implements CNNArchASTVariableCoCo {
     private void checkForDuplicates(ASTVariable node){
         String name = node.getName();
         if (variableNames.contains(name)){
-            if (node instanceof ASTMethodParameter){
+            if (node instanceof ASTLayerParameter){
                 Collection<Symbol> allParametersWithSameName = node.getEnclosingScope().get().getLocalSymbols().get(name);
                 if (allParametersWithSameName.size() > 1){
                     duplicationError(node);

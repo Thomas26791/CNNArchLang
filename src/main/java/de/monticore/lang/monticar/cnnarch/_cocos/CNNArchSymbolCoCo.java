@@ -30,11 +30,11 @@ public class CNNArchSymbolCoCo {
         if (sym instanceof ArchitectureSymbol){
             check((ArchitectureSymbol) sym);
         }
-        else if (sym instanceof MethodDeclarationSymbol){
-            check((MethodDeclarationSymbol) sym);
+        else if (sym instanceof LayerDeclarationSymbol){
+            check((LayerDeclarationSymbol) sym);
         }
-        else if (sym instanceof LayerSymbol){
-            check((LayerSymbol) sym);
+        else if (sym instanceof ArchitectureElementSymbol){
+            check((ArchitectureElementSymbol) sym);
         }
         else if (sym instanceof ArchExpressionSymbol){
             check((ArchExpressionSymbol) sym);
@@ -68,11 +68,11 @@ public class CNNArchSymbolCoCo {
         //Override if needed
     }
 
-    public void check(MethodDeclarationSymbol sym){
+    public void check(LayerDeclarationSymbol sym){
         //Override if needed
     }
 
-    public void check(LayerSymbol sym){
+    public void check(ArchitectureElementSymbol sym){
         //Override if needed
     }
 

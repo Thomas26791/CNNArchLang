@@ -21,10 +21,10 @@
 package de.monticore.lang.monticar.cnnarch._symboltable;
 
 public enum VariableType {
-    METHOD_PARAMETER {
+    LAYER_PARAMETER {
         @Override
         public String toString(){
-            return "method parameter";
+            return "layer parameter";
         }
     },
     ARCHITECTURE_PARAMETER {
